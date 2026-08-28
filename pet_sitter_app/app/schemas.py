@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from .models import BookingStatus, ServiceType, UserRole
+from .models import BookingStatus, ReportReason, ReportStatus, ReportTargetType, ServiceType, UserRole
 
 
 class UserCreate(BaseModel):
@@ -143,4 +143,22 @@ class ReviewOut(BaseModel):
     reviewer: UserOut
     rating: int
     comment: str
+    created_at: datetime
+
+
+class ReportCreate(BaseModel):
+    target_type: ReportTargetType
+    target_id: int
+    reason: ReportReason
+    details: str = ""
+
+
+class ReportOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    target_type: ReportTargetType
+    target_id: int
+    reason: ReportReason
+    details: str
+    status: ReportStatus
     created_at: datetime

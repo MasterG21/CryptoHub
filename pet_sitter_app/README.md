@@ -18,6 +18,16 @@ served by the same app.
 - Per-booking messaging thread between the owner and sitter
 - Owners leave a 1-5 star review with a comment once a booking is `completed`; sitter profiles
   show the average rating and review count
+- Users can report a message, review, or another user (`POST /api/reports`) — required for App
+  Store review of apps with user-generated content
+
+## iOS app
+
+`ios/PawConnect` is a native SwiftUI client for this API — see
+[`ios/PawConnect/README.md`](ios/PawConnect/README.md) to build it, and
+[`ios/SUBMISSION_CHECKLIST.md`](ios/SUBMISSION_CHECKLIST.md) for the full path to the App Store
+(most of which requires your own Mac and Apple Developer account). Since a mobile app can't call
+`localhost`, deploy the backend somewhere public first — see [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 ## Setup
 
@@ -59,7 +69,9 @@ pet_sitter_app/
     schemas.py        Pydantic request/response schemas
     security.py       Password hashing (PBKDF2) and JWT issuing/verification
     deps.py            Auth dependencies (current user, role checks)
-    routers/           auth, sitters, pets, bookings, reviews
+    routers/           auth, sitters, pets, bookings, reviews, reports
   frontend/           Static single-page app (no build step) consuming the API
+  ios/PawConnect/     Native SwiftUI app (XcodeGen project) consuming the same API
   tests/              pytest suite using FastAPI's TestClient
+  Dockerfile          Container build for deploying the backend (see DEPLOYMENT.md)
 ```

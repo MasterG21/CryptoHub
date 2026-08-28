@@ -39,6 +39,25 @@ class ServiceType(str, enum.Enum):
     house_sitting = "house_sitting"
 
 
+class ReportTargetType(str, enum.Enum):
+    message = "message"
+    review = "review"
+    user = "user"
+
+
+class ReportReason(str, enum.Enum):
+    spam = "spam"
+    harassment = "harassment"
+    inappropriate_content = "inappropriate_content"
+    safety_concern = "safety_concern"
+    other = "other"
+
+
+class ReportStatus(str, enum.Enum):
+    open = "open"
+    resolved = "resolved"
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -132,3 +151,25 @@ class Review(Base):
 
     booking = relationship("Booking", back_populates="review")
     reviewer = relationship("User", foreign_keys=[reviewer_id])
+
+
+class Report(Base):
+    """A user-submitted flag on a message, review, or another user.
+
+    Required for App Store review of apps with user-generated content
+    (App Store Review Guideline 1.2): the app must let users report
+    objectionable content so it can be reviewed and acted on.
+    """
+
+    __tablename__ = "reports"
+
+    id = Column(Integer, primary_key=True)
+    reporter_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    target_type = Column(SAEnum(ReportTargetType), nullable=False)
+    target_id = Column(Integer, nullable=False)
+    reason = Column(SAEnum(ReportReason), nullable=False)
+    details = Column(Text, default="")
+    status = Column(SAEnum(ReportStatus), default=ReportStatus.open, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    reporter = relationship("User", foreign_keys=[reporter_id])
