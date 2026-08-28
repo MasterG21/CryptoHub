@@ -1,5 +1,12 @@
 # CryptoHub
 
+## pet_sitter_app
+
+A separate, unrelated project also lives in this repo: [`pet_sitter_app`](pet_sitter_app/) is
+**PawConnect**, a FastAPI + vanilla-JS web app connecting pet owners with pet sitters (search,
+booking requests, in-booking messaging, and reviews). See
+[`pet_sitter_app/README.md`](pet_sitter_app/README.md) for setup and usage.
+
 ## robinhood_meme_scan
 
 A CLI heuristic health-check for ERC-20 meme coins on [Robinhood Chain](https://chain.robinhood.com)
