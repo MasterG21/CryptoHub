@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robinhood Chain Token Scanner</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1e222b;
+    --border: #2a2f3a;
+    --text: #e6e9ef;
+    --muted: #8b93a3;
+    --accent: #c3f53c;
+    --good: #34d399;
+    --warn: #fbbf24;
+    --bad: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); margin: 0 0 28px; font-size: 14px; }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; margin-bottom: 20px;
+  }
+  .step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+  .step:last-child { margin-bottom: 0; }
+  .num {
+    flex: 0 0 24px; height: 24px; border-radius: 50%;
+    background: var(--accent); color: #111; font-weight: 700; font-size: 13px;
+    display: grid; place-items: center;
+  }
+  .step div { padding-top: 2px; }
+  code {
+    background: var(--panel-2); border: 1px solid var(--border);
+    padding: 1px 6px; border-radius: 4px; font-size: 13px;
+  }
+
+  #drop {
+    border: 2px dashed var(--border); border-radius: 12px;
+    padding: 36px 20px; text-align: center; cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  #drop:hover, #drop.over { border-color: var(--accent); background: #1a1f17; }
+  #drop strong { display: block; font-size: 16px; margin-bottom: 4px; }
+  #drop span { color: var(--muted); font-size: 13px; }
+
+  textarea {
+    width: 100%; min-height: 90px; resize: vertical;
+    background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+  }
+  textarea:focus { outline: none; border-color: var(--accent); }
+
+  button {
+    background: var(--accent); color: #111; border: 0;
+    padding: 11px 22px; border-radius: 8px; font-weight: 650; font-size: 15px;
+    cursor: pointer; margin-top: 14px;
+  }
+  button:disabled { opacity: .45; cursor: default; }
+
+  #status { margin: 16px 0; color: var(--muted); font-size: 14px; min-height: 20px; }
+  .bar { height: 4px; background: var(--panel-2); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+  .bar div { height: 100%; background: var(--accent); width: 0; transition: width .2s; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; }
+  th {
+    text-align: left; padding: 10px 8px; color: var(--muted);
+    font-weight: 600; font-size: 12px; text-transform: uppercase;
+    letter-spacing: .04em; border-bottom: 1px solid var(--border);
+  }
+  td { padding: 12px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  .score { font-weight: 700; font-size: 17px; font-variant-numeric: tabular-nums; }
+  .s-good { color: var(--good); } .s-warn { color: var(--warn); } .s-bad { color: var(--bad); }
+  .tok { font-weight: 600; }
+  .addr {
+    color: var(--muted); font-family: ui-monospace, Menlo, monospace;
+    font-size: 11px; word-break: break-all;
+  }
+  .flag {
+    display: inline-block; background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px 7px; margin: 2px 3px 2px 0;
+    font-size: 11.5px; color: var(--muted);
+  }
+  .flag.bad { color: var(--bad); border-color: #4a2626; }
+  .num-cell { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  a { color: var(--accent); }
+
+  .note {
+    background: #1a1712; border: 1px solid #3d3320; color: #d6c9a8;
+    border-radius: 8px; padding: 14px 16px; font-size: 13.5px; margin-top: 20px;
+  }
+  .err { background: #1e1414; border-color: #4a2626; color: #f0b4b4; }
+  .hide { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Robinhood Chain Token Scanner</h1>
+  <p class="sub">Screens tokens for structural rug risk. Runs entirely in your browser.</p>
+
+  <div class="card">
+    <div class="step">
+      <div class="num">1</div>
+      <div>Open the launchpad page in another tab and press <code>Ctrl+S</code> (Windows) or <code>Cmd+S</code> (Mac) to save it. Choose <strong>"Webpage, Complete"</strong> or <strong>"Webpage, HTML Only"</strong>.</div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div>Drag that saved file into the box below. Repeat for as many pages as you like.</div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div>Press Scan. Takes a few seconds per token.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="drop">
+      <strong>Drop the saved page here</strong>
+      <span>or click to choose a file &nbsp;·&nbsp; you can also paste addresses below</span>
+      <input type="file" id="file" accept=".html,.htm,.txt" multiple hidden>
+    </div>
+
+    <p style="margin:18px 0 8px;color:var(--muted);font-size:13px">
+      Addresses found (edit freely, one per line):
+    </p>
+    <textarea id="addrs" placeholder="0x2103faA9D1762e27a716C61718b3aCf3Ec1F9bf1&#10;0xDF4D0E556ED73e5f45BfA74708490f39c3a576A4"></textarea>
+    <button id="scan">Scan tokens</button>
+
+    <div id="status"></div>
+    <div class="bar hide" id="barwrap"><div id="bar"></div></div>
+  </div>
+
+  <div id="out"></div>
+
+  <div class="note">
+    <strong>What this tells you.</strong> It checks whether a contract <em>can</em> be used
+    against holders — hidden mint functions, admin controls, supply concentrated in one
+    wallet, a deployer who has launched many tokens before. Those are verifiable facts.
+    <br><br>
+    <strong>What it does not tell you.</strong> Whether the price will go up. Nothing here
+    predicts returns. A token can pass every check and still go to zero. Use this to avoid
+    traps, not to pick winners.
+  </div>
+</div>
+
+<script>
+const API = 'https://robinhoodchain.blockscout.com/api/v2';
+const EXPLORER = 'https://robinhoodchain.blockscout.com';
+const BURN = new Set([
+  '0x0000000000000000000000000000000000000000',
+  '0x000000000000000000000000000000000000dead'
+]);
+
+const $ = id => document.getElementById(id);
+const drop = $('drop'), fileInput = $('file'), addrs = $('addrs');
+
+drop.onclick = () => fileInput.click();
+drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+drop.ondragleave = () => drop.classList.remove('over');
+drop.ondrop = e => {
+  e.preventDefault(); drop.classList.remove('over');
+  handleFiles(e.dataTransfer.files);
+};
+fileInput.onchange = () => handleFiles(fileInput.files);
+
+function handleFiles(files) {
+  [...files].forEach(f => {
+    const r = new FileReader();
+    r.onload = () => addAddresses(extractAddresses(r.result));
+    r.readAsText(f);
+  });
+}
+
+// Pull full 40-hex addresses out of whatever was dropped in — saved HTML,
+// a list of URLs, or plain text. Truncated display forms (0xAB...CD) are
+// deliberately not matched; they can't be queried.
+function extractAddresses(text) {
+  return [...new Set((text.match(/0x[a-fA-F0-9]{40}/g) || []))];
+}
+
+function addAddresses(found) {
+  const existing = extractAddresses(addrs.value);
+  const merged = [...new Set([...existing, ...found])];
+  addrs.value = merged.join('\n');
+  setStatus(`${merged.length} address${merged.length === 1 ? '' : 'es'} loaded.`);
+}
+
+function setStatus(msg) { $('status').textContent = msg; }
+
+async function api(path) {
+  const res = await fetch(API + path);
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+const MINT_PATTERNS = ['function mint', '_mint('];
+const RISKY_PATTERNS = ['function blacklist', 'function pause', 'function setfee',
+                        'function excludefromfee', 'onlyowner'];
+
+async function screenToken(address) {
+  const token = await api(`/tokens/${address}`);
+  if (!token) throw new Error('not a token on this chain');
+
+  const flags = [];
+  const add = (label, pts) => flags.push({ label, pts });
+
+  // Verification + source scan
+  let contract = null;
+  try { contract = await api(`/smart-contracts/${address}`); } catch (e) {}
+  const source = (contract && contract.source_code || '').toLowerCase();
+  if (!source) {
+    add('unverified contract', -30);
+  } else {
+    if (MINT_PATTERNS.some(p => source.includes(p))) add('has mint function', -15);
+    const risky = RISKY_PATTERNS.filter(p => source.includes(p));
+    if (risky.length) add('privileged functions', -10);
+  }
+
+  // Holder concentration, excluding burn + liquidity pool
+  let top1 = null, top10 = null;
+  try {
+    const hd = await api(`/tokens/${address}/holders`);
+    const items = (hd && hd.items) || [];
+    const supply = Number(token.total_supply || 0);
+    const holders = items.map(h => ({
+      addr: ((h.address && h.address.hash) || h.address || '').toLowerCase(),
+      name: (h.address && (h.address.name || '')) || '',
+      bal: Number(h.value || 0)
+    })).filter(h => h.addr && !BURN.has(h.addr) && !/pool|pair/i.test(h.name));
+
+    if (supply > 0 && holders.length) {
+      top1 = holders[0].bal / supply * 100;
+      top10 = holders.slice(0, 10).reduce((s, h) => s + h.bal, 0) / supply * 100;
+      if (top1 > 20) add(`top wallet ${top1.toFixed(1)}%`, -20);
+      else if (top1 > 10) add(`top wallet ${top1.toFixed(1)}%`, -10);
+      if (top10 > 70) add(`top 10 hold ${top10.toFixed(0)}%`, -15);
+      else if (top10 > 50) add(`top 10 hold ${top10.toFixed(0)}%`, -8);
+    }
+  } catch (e) {}
+
+  const holderCount = token.holders_count != null ? Number(token.holders_count)
+                    : (token.holders != null ? Number(token.holders) : null);
+  if (holderCount != null && holderCount < 25) add(`only ${holderCount} holders`, -10);
+
+  // Deployer + how many other tokens it has launched
+  let deployer = null, deployCount = null, ageHours = null;
+  try {
+    const info = await api(`/addresses/${address}`);
+    if (info) {
+      const c = info.creator_address_hash || info.creator_address || info.creator;
+      deployer = (typeof c === 'object' && c) ? c.hash : c;
+      if (deployer) {
+        deployer = deployer.toLowerCase();
+        try {
+          const dt = await api(`/addresses/${deployer}/tokens?type=ERC-20`);
+          const list = (dt && dt.items) || [];
+          deployCount = list.length;
+          if (deployCount >= 10) add(`deployer launched ${deployCount} tokens`, -15);
+          else if (deployCount >= 4) add(`deployer launched ${deployCount} tokens`, -8);
+        } catch (e) {}
+      }
+      const txh = info.creation_tx_hash || info.creation_transaction_hash;
+      if (txh) {
+        try {
+          const tx = await api(`/transactions/${txh}`);
+          if (tx && tx.timestamp) {
+            ageHours = (Date.now() - new Date(tx.timestamp).getTime()) / 3.6e6;
+            if (ageHours < 24) add(`only ${ageHours.toFixed(0)}h old`, -10);
+          }
+        } catch (e) {}
+      }
+    }
+  } catch (e) {}
+
+  const score = Math.max(0, Math.min(100, 100 + flags.reduce((s, f) => s + f.pts, 0)));
+  return { address, token, score, flags, top1, top10, holderCount, deployer, deployCount, ageHours };
+}
+
+function verdict(s) {
+  if (s >= 80) return ['Looks clean', 's-good'];
+  if (s >= 50) return ['Caution', 's-warn'];
+  return ['High risk', 's-bad'];
+}
+
+function fmtAge(h) {
+  if (h == null) return '—';
+  if (h < 24) return `${h.toFixed(0)}h`;
+  return `${(h / 24).toFixed(0)}d`;
+}
+
+function render(results, failures) {
+  const rows = results.map(r => {
+    const [label, cls] = verdict(r.score);
+    const t = r.token;
+    const flagHtml = r.flags.length
+      ? r.flags.sort((a, b) => a.pts - b.pts)
+          .map(f => `<span class="flag bad">${f.label}</span>`).join('')
+      : '<span class="flag">no flags</span>';
+    return `<tr>
+      <td><span class="score ${cls}">${r.score}</span><br>
+          <span class="addr">${label}</span></td>
+      <td><span class="tok">${t.symbol || '?'}</span><br>
+          <span class="addr">${t.name || ''}</span><br>
+          <a class="addr" href="${EXPLORER}/token/${r.address}" target="_blank" rel="noopener">${r.address.slice(0,10)}…${r.address.slice(-6)}</a></td>
+      <td class="num-cell">${r.top1 != null ? r.top1.toFixed(1) + '%' : '—'}</td>
+      <td class="num-cell">${r.holderCount != null ? r.holderCount : '—'}</td>
+      <td class="num-cell">${r.deployCount != null ? r.deployCount : '—'}</td>
+      <td class="num-cell">${fmtAge(r.ageHours)}</td>
+      <td>${flagHtml}</td>
+    </tr>`;
+  }).join('');
+
+  let html = `<div class="card">
+    <table>
+      <thead><tr>
+        <th>Score</th><th>Token</th><th>Top&nbsp;wallet</th>
+        <th>Holders</th><th>Deploys</th><th>Age</th><th>Flags</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+
+  if (failures.length) {
+    html += `<div class="note err"><strong>Could not scan ${failures.length}:</strong><br>` +
+      failures.map(f => `<span class="addr">${f.address}</span> — ${f.error}`).join('<br>') +
+      `</div>`;
+  }
+  $('out').innerHTML = html;
+}
+
+$('scan').onclick = async () => {
+  const list = extractAddresses(addrs.value);
+  if (!list.length) { setStatus('No full addresses found. Drop a saved page in, or paste addresses.'); return; }
+
+  const btn = $('scan');
+  btn.disabled = true;
+  $('out').innerHTML = '';
+  $('barwrap').classList.remove('hide');
+
+  const results = [], failures = [];
+  for (let i = 0; i < list.length; i++) {
+    setStatus(`Scanning ${i + 1} of ${list.length}…`);
+    $('bar').style.width = ((i / list.length) * 100) + '%';
+    try {
+      results.push(await screenToken(list[i]));
+    } catch (err) {
+      const msg = String(err.message || err);
+      failures.push({ address: list[i], error: msg });
+      // A failure on the very first token usually means the browser blocked
+      // the request outright, not that the token is bad — stop and say so.
+      if (i === 0 && /Failed to fetch|NetworkError|CORS/i.test(msg)) {
+        $('barwrap').classList.add('hide');
+        setStatus('');
+        $('out').innerHTML = `<div class="note err">
+          <strong>The browser blocked the connection to Blockscout.</strong><br><br>
+          This is a CORS restriction, not a problem with the token. Try opening this
+          file directly in Chrome (double-click it), and make sure
+          <a href="${EXPLORER}" target="_blank" rel="noopener">${EXPLORER}</a>
+          loads normally in another tab. If it still fails, tell Claude — the explorer
+          may need a different endpoint.</div>`;
+        btn.disabled = false;
+        return;
+      }
+    }
+    await new Promise(r => setTimeout(r, 120)); // be polite to the API
+  }
+
+  $('bar').style.width = '100%';
+  results.sort((a, b) => b.score - a.score);
+  setStatus(`Done — ${results.length} scanned, ${failures.length} failed.`);
+  render(results, failures);
+  btn.disabled = false;
+};
+</script>
+</body>
+</html>
