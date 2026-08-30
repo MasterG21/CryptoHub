@@ -40,6 +40,8 @@ class HealthReport:
     liquidity_found: bool = False
     ownership_renounced: Optional[bool] = None
     contract_age_note: Optional[str] = None
+    deployer: Optional[str] = None
+    deployer_token_count: Optional[int] = None
 
     @property
     def score(self) -> int:
@@ -143,6 +145,36 @@ def score_age(report: HealthReport, hours_old: Optional[float]) -> None:
         _add(report, "very-new-contract", -10, f"Contract is only {hours_old:.1f} hours old")
     else:
         report.contract_age_note = f"Deployed ~{hours_old / 24:.1f} days ago"
+
+
+def score_deployer(
+    report: HealthReport, deployer: Optional[str], deployed_token_count: Optional[int]
+) -> None:
+    """Flag serial launchers.
+
+    Deploying many tokens is not proof of bad intent — some teams ship
+    repeatedly — but a wallet with a long tail of prior launches is the
+    pattern behind launch-farming, and it is worth surfacing rather than
+    burying. The deduction stays modest for that reason.
+    """
+    report.deployer = deployer
+    report.deployer_token_count = deployed_token_count
+    if deployed_token_count is None:
+        return
+    if deployed_token_count >= 10:
+        _add(
+            report,
+            "serial-deployer",
+            -15,
+            f"Deployer wallet has launched {deployed_token_count} tokens",
+        )
+    elif deployed_token_count >= 4:
+        _add(
+            report,
+            "repeat-deployer",
+            -8,
+            f"Deployer wallet has launched {deployed_token_count} tokens",
+        )
 
 
 def build_report(token: TokenInfo) -> HealthReport:

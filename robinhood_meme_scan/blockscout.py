@@ -146,3 +146,28 @@ class BlockscoutClient:
         if not tx:
             return None
         return tx.get("timestamp")
+
+    def get_deployer(self, token_address: str) -> Optional[str]:
+        """The wallet that created this token contract, if the explorer reports it."""
+        addr_info = self.get_address_info(token_address)
+        if not addr_info:
+            return None
+        for key in ("creator_address_hash", "creator_address", "creator"):
+            value = addr_info.get(key)
+            if isinstance(value, dict):
+                value = value.get("hash")
+            if isinstance(value, str) and value:
+                return value.lower()
+        return None
+
+    def get_deployed_tokens(self, deployer_address: str, limit: int = 100) -> list[dict]:
+        """Other token contracts created by the same wallet.
+
+        A deployer with a long tail of prior launches is the serial-launcher
+        pattern; the caller decides what to make of it.
+        """
+        data = self._get(f"/addresses/{deployer_address}/tokens", params={"type": "ERC-20"})
+        if not data:
+            return []
+        items = data.get("items", data if isinstance(data, list) else [])
+        return items[:limit]

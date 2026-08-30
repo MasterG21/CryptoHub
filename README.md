@@ -18,9 +18,27 @@ pip install -r requirements.txt
 
 ### Usage
 
+One address gives a detailed report:
+
 ```bash
 python -m robinhood_meme_scan 0xTokenContractAddress
 ```
+
+Several addresses give a table ranked by score, best first — this is the useful mode when
+triaging a launchpad listing:
+
+```bash
+python -m robinhood_meme_scan 0xAaa... 0xBbb... 0xCcc...
+
+# or from a file, one address per line ('#' comments allowed)
+python -m robinhood_meme_scan -f addresses.txt
+
+# machine-readable
+python -m robinhood_meme_scan -f addresses.txt --json
+```
+
+One address failing (not a token, typo, unreachable) does not sink the batch — it is
+reported separately under "Could not screen".
 
 By default this checks:
 - Whether the contract source is verified on Blockscout, and (if verified) scans for `mint`,
@@ -28,6 +46,18 @@ By default this checks:
 - Holder count and concentration (top holder / top 10 holders, as a % of supply)
 - Contract age
 - Whether `owner()` has been renounced (for `Ownable` contracts)
+- The deployer wallet, and how many other tokens it has launched — a long tail of prior
+  launches is the serial-launcher pattern. Disable with `--no-deployer-check` (saves two
+  API calls per token).
+
+### What this does and does not tell you
+
+It screens for whether a contract **can be used against holders** — mint functions, admin
+levers, supply concentrated in one wallet, missing liquidity. Those are verifiable facts.
+
+It says nothing about whether a token's price will go up. Memecoin returns are driven by
+attention and reflexivity, which are not readable from a contract. A token can pass every
+check here and still go to zero. Use it to eliminate traps, not to pick winners.
 
 Liquidity-pool verification (does a Uniswap V3 pool for `token/WETH` actually exist and hold
 tokens) is **off by default**, because it needs the Uniswap V3 factory and WETH addresses for
@@ -48,6 +78,9 @@ python -m robinhood_meme_scan 0xTokenContractAddress \
 | `--explorer-api` | `https://robinhoodchain.blockscout.com/api/v2` | Blockscout v2 API base |
 | `--v3-factory` | none (check skipped) | Uniswap V3 factory address on this chain |
 | `--weth` | none (check skipped) | Wrapped ETH token address on this chain |
+| `-f`, `--addresses-file` | none | File of addresses, one per line |
+| `--json` | off | Emit JSON instead of a table |
+| `--no-deployer-check` | off | Skip the deployer / serial-launcher lookup |
 
 ### Tests
 
