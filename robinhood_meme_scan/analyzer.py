@@ -7,19 +7,40 @@ cannot prove a token is safe, and a high score is not investment advice.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Callable, Optional
 
 from .blockscout import BURN_ADDRESSES, Holder, TokenInfo
 
 STARTING_SCORE = 100
 
-MINT_KEYWORDS = ("function mint", "_mint(")
-DANGEROUS_KEYWORDS = (
-    "function blacklist",
-    "function pause",
-    "function setfee",
-    "function excludefromfee",
-    "onlyowner",
+# Judge a contract by its ABI — the functions anyone can actually call — not
+# by grepping source text. Source scanning produced constant false positives:
+# every OpenZeppelin ERC20 calls _mint() once in its constructor to create the
+# initial supply, and nearly all of them contain "onlyOwner" somewhere. Neither
+# indicates risk. What matters is whether a callable, state-changing function
+# lets someone mint supply, freeze wallets, or halt trading after launch.
+DANGEROUS_FUNCTIONS: tuple[tuple[str, int, "Callable[[str], bool]"], ...] = (
+    ("owner can mint new supply", -25, lambda n: n in ("mint", "mintto")),
+    (
+        "can blacklist wallets",
+        -20,
+        lambda n: any(k in n for k in ("blacklist", "blocklist", "denylist")),
+    ),
+    (
+        "trading can be paused",
+        -15,
+        lambda n: n in ("pause", "unpause", "settradingenabled"),
+    ),
+    (
+        "fees can be changed",
+        -8,
+        lambda n: any(k in n for k in ("setfee", "settax", "updatefee")),
+    ),
+    (
+        "limits can be changed after launch",
+        -5,
+        lambda n: any(k in n for k in ("setmaxtx", "setmaxwallet")),
+    ),
 )
 
 
@@ -42,6 +63,8 @@ class HealthReport:
     contract_age_note: Optional[str] = None
     deployer: Optional[str] = None
     deployer_token_count: Optional[int] = None
+    deployer_is_factory: bool = False
+    has_owner_role: Optional[bool] = None
 
     @property
     def score(self) -> int:
@@ -98,26 +121,33 @@ def score_holder_count(report: HealthReport, holder_count: Optional[int]) -> Non
 
 
 def score_verification(report: HealthReport, contract: Optional[dict]) -> None:
-    if not contract:
+    if not contract or not (contract.get("abi") or contract.get("source_code")):
         _add(report, "unverified-contract", -30, "Contract source is not verified on Blockscout")
         return
 
-    source = (contract.get("source_code") or "").lower()
-    if not source:
-        _add(report, "unverified-contract", -30, "Contract source is not verified on Blockscout")
+    abi = contract.get("abi")
+    if not isinstance(abi, list):
+        # Verified, but no machine-readable ABI to inspect. Say so rather than
+        # falling back to source grepping, which is what produced false positives.
+        _add(report, "abi-unavailable", -5, "Verified, but no ABI available to inspect functions")
         return
 
-    if any(k in source for k in MINT_KEYWORDS):
-        _add(report, "mint-function", -15, "Verified source contains a mint function outside typical fixed-supply patterns")
+    functions = [f for f in abi if f.get("type") == "function" and f.get("name")]
+    writable = [
+        f["name"].lower()
+        for f in functions
+        if f.get("stateMutability") not in ("view", "pure")
+    ]
+    all_names = [f["name"].lower() for f in functions]
 
-    hits = [k for k in DANGEROUS_KEYWORDS if k in source]
-    if hits:
-        _add(
-            report,
-            "sensitive-functions",
-            -10,
-            f"Verified source references privileged functions: {', '.join(hits)}",
-        )
+    for label, points, matches in DANGEROUS_FUNCTIONS:
+        if any(matches(name) for name in writable):
+            _add(report, label.replace(" ", "-"), points, label)
+
+    has_owner = "owner" in all_names or "transferownership" in writable
+    report.has_owner_role = has_owner
+    if has_owner:
+        _add(report, "has-owner-role", -8, "Contract has an owner role")
 
 
 def score_ownership(report: HealthReport, renounced: Optional[bool]) -> None:
@@ -148,33 +178,32 @@ def score_age(report: HealthReport, hours_old: Optional[float]) -> None:
 
 
 def score_deployer(
-    report: HealthReport, deployer: Optional[str], deployed_token_count: Optional[int]
+    report: HealthReport,
+    deployer: Optional[str],
+    deployed_token_count: Optional[int],
+    deployer_is_factory: bool = False,
 ) -> None:
-    """Flag serial launchers.
+    """Flag serial launchers — but only human wallets.
 
-    Deploying many tokens is not proof of bad intent — some teams ship
-    repeatedly — but a wallet with a long tail of prior launches is the
-    pattern behind launch-farming, and it is worth surfacing rather than
-    burying. The deduction stays modest for that reason.
+    On a launchpad the creator of every token is the platform's factory
+    contract, which has legitimately deployed hundreds. Counting those
+    penalises every token on the platform equally and means nothing. Only
+    an ordinary wallet spinning up token after token is the pattern worth
+    surfacing, and even then the deduction stays modest: shipping several
+    tokens is not by itself proof of bad intent.
     """
     report.deployer = deployer
     report.deployer_token_count = deployed_token_count
-    if deployed_token_count is None:
+    report.deployer_is_factory = deployer_is_factory
+    if deployer_is_factory or deployed_token_count is None:
         return
-    if deployed_token_count >= 10:
-        _add(
-            report,
-            "serial-deployer",
-            -15,
-            f"Deployer wallet has launched {deployed_token_count} tokens",
-        )
+    # The explorer pages at 50, so a full page means "at least this many".
+    capped = deployed_token_count >= 50
+    shown = "50+" if capped else str(deployed_token_count)
+    if capped or deployed_token_count >= 10:
+        _add(report, "serial-deployer", -15, f"Deployer wallet has launched {shown} tokens")
     elif deployed_token_count >= 4:
-        _add(
-            report,
-            "repeat-deployer",
-            -8,
-            f"Deployer wallet has launched {deployed_token_count} tokens",
-        )
+        _add(report, "repeat-deployer", -8, f"Deployer wallet has launched {shown} tokens")
 
 
 def build_report(token: TokenInfo) -> HealthReport:

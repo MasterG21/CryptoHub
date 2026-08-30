@@ -105,12 +105,15 @@ def analyze_token(
     if opts.check_deployer:
         deployer = None
         deployed_count = None
+        is_factory = False
         try:
             deployer = explorer.get_deployer(address)
             if deployer:
+                info = explorer.get_address_info(deployer)
+                is_factory = bool(info and info.get("is_contract"))
                 deployed_count = len(explorer.get_deployed_tokens(deployer))
         except Exception as exc:
             warn(f"deployer lookup failed: {exc}")
-        score_deployer(report, deployer, deployed_count)
+        score_deployer(report, deployer, deployed_count, is_factory)
 
     return report

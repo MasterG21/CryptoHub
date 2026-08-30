@@ -13,6 +13,14 @@ import pytest
 from robinhood_meme_scan.blockscout import BlockscoutError, Holder, TokenInfo
 from robinhood_meme_scan.cli import main
 
+PLAIN_ABI = [
+    {"type": "function", "name": n, "stateMutability": "view"}
+    for n in ("name", "symbol", "decimals", "totalSupply", "balanceOf")
+] + [
+    {"type": "function", "name": n, "stateMutability": "nonpayable"}
+    for n in ("transfer", "approve")
+]
+
 
 def make_token(symbol="DOGGY", name="Doggy", holder_count=120):
     return TokenInfo(
@@ -34,13 +42,16 @@ def mocked_chain():
     ), patch("robinhood_meme_scan.screen.check_ownership") as mock_ownership:
         mock_ownership.return_value.supported = False
         instance = MockClient.return_value
-        instance.get_smart_contract.return_value = {"source_code": "contract Doggy {}"}
+        instance.get_smart_contract.return_value = {"abi": PLAIN_ABI}
         instance.get_top_holders.return_value = [
             Holder(address=f"0x{i:040x}", balance=5_000) for i in range(20)
         ]
         instance.get_creation_timestamp.return_value = None
         instance.get_deployer.return_value = None
         instance.get_deployed_tokens.return_value = []
+        # A real dict, not a MagicMock: .get("is_contract") on a MagicMock is
+        # truthy, which would make every deployer look like a launchpad factory.
+        instance.get_address_info.return_value = {"is_contract": False}
         yield instance
 
 
@@ -66,7 +77,7 @@ def test_batch_prints_ranked_table_best_first(mocked_chain, capsys):
 
     def contract_by_address(addr):
         # The risky token is unverified, which is the heaviest deduction.
-        return {"source_code": "contract Clean {}"} if addr == "0xClean" else None
+        return {"abi": PLAIN_ABI} if addr == "0xClean" else None
 
     mocked_chain.get_smart_contract.side_effect = contract_by_address
 
@@ -82,7 +93,7 @@ def test_json_output_is_valid_and_sorted(mocked_chain, capsys):
         symbol="CLEAN" if addr == "0xClean" else "RISKY"
     )
     mocked_chain.get_smart_contract.side_effect = lambda addr: (
-        {"source_code": "contract Clean {}"} if addr == "0xClean" else None
+        {"abi": PLAIN_ABI} if addr == "0xClean" else None
     )
 
     assert main(["0xClean", "0xRisky", "--json"]) == 0
@@ -157,3 +168,17 @@ def test_no_deployer_check_skips_the_lookup(mocked_chain, capsys):
 
 def test_no_addresses_exits_nonzero(capsys):
     assert main([]) == 1
+
+
+def test_factory_deployer_not_flagged_via_cli(mocked_chain, capsys):
+    """Launchpad tokens are all created by the platform factory — that must
+    not penalise every token on the platform."""
+    mocked_chain.get_token.return_value = make_token()
+    mocked_chain.get_deployer.return_value = "0xfactory"
+    mocked_chain.get_address_info.return_value = {"is_contract": True}
+    mocked_chain.get_deployed_tokens.return_value = [{} for _ in range(50)]
+
+    assert main(["0xToken", "--json"]) == 0
+
+    result = json.loads(capsys.readouterr().out)["results"][0]
+    assert not any("deployer" in f["label"] for f in result["flags"])

@@ -206,9 +206,25 @@ async function api(path) {
   return res.json();
 }
 
-const MINT_PATTERNS = ['function mint', '_mint('];
-const RISKY_PATTERNS = ['function blacklist', 'function pause', 'function setfee',
-                        'function excludefromfee', 'onlyowner'];
+// Judge a contract by its ABI — the list of functions anyone can actually
+// call — not by grepping source text. Source scanning produced constant
+// false positives: every OpenZeppelin ERC20 calls _mint() once in its
+// constructor to create the initial supply, and almost all of them contain
+// the word "onlyOwner" somewhere. Neither says anything about risk. What
+// matters is whether a *callable, state-changing* function exists that lets
+// someone mint new supply, freeze wallets, or halt trading after launch.
+const DANGEROUS_FUNCTIONS = [
+  { match: n => n === 'mint' || n === 'mintto',
+    label: 'owner can mint new supply', pts: -25 },
+  { match: n => n.includes('blacklist') || n.includes('blocklist') || n.includes('denylist'),
+    label: 'can blacklist wallets', pts: -20 },
+  { match: n => n === 'pause' || n === 'unpause' || n === 'settradingenabled',
+    label: 'trading can be paused', pts: -15 },
+  { match: n => n.includes('setfee') || n.includes('settax') || n.includes('updatefee'),
+    label: 'fees can be changed', pts: -8 },
+  { match: n => n.includes('setmaxtx') || n.includes('setmaxwallet'),
+    label: 'limits can be changed after launch', pts: -5 },
+];
 
 async function screenToken(address) {
   const token = await api(`/tokens/${address}`);
@@ -217,16 +233,29 @@ async function screenToken(address) {
   const flags = [];
   const add = (label, pts) => flags.push({ label, pts });
 
-  // Verification + source scan
+  // Verification + ABI inspection
   let contract = null;
   try { contract = await api(`/smart-contracts/${address}`); } catch (e) {}
-  const source = (contract && contract.source_code || '').toLowerCase();
-  if (!source) {
+  const verified = !!(contract && (contract.abi || contract.source_code));
+  let hasOwnerRole = null;
+
+  if (!verified) {
     add('unverified contract', -30);
-  } else {
-    if (MINT_PATTERNS.some(p => source.includes(p))) add('has mint function', -15);
-    const risky = RISKY_PATTERNS.filter(p => source.includes(p));
-    if (risky.length) add('privileged functions', -10);
+  } else if (Array.isArray(contract.abi)) {
+    const fns = contract.abi.filter(x => x.type === 'function' && x.name);
+    // State-changing functions only; a view function can't hurt anyone.
+    const writable = fns
+      .filter(f => f.stateMutability !== 'view' && f.stateMutability !== 'pure')
+      .map(f => f.name.toLowerCase());
+    const allNames = fns.map(f => f.name.toLowerCase());
+
+    for (const rule of DANGEROUS_FUNCTIONS) {
+      if (writable.some(rule.match)) add(rule.label, rule.pts);
+    }
+
+    // An owner role only matters if something can still be done with it.
+    hasOwnerRole = allNames.includes('owner') || writable.includes('transferownership');
+    if (hasOwnerRole) add('has an owner role', -8);
   }
 
   // Holder concentration, excluding burn + liquidity pool
@@ -255,8 +284,11 @@ async function screenToken(address) {
                     : (token.holders != null ? Number(token.holders) : null);
   if (holderCount != null && holderCount < 25) add(`only ${holderCount} holders`, -10);
 
-  // Deployer + how many other tokens it has launched
-  let deployer = null, deployCount = null, ageHours = null;
+  // Deployer. On a launchpad the creator is the factory contract, which has
+  // legitimately deployed every token on the platform — counting its launches
+  // flags the whole platform equally and means nothing. Only a human wallet
+  // (EOA) spinning up token after token is the serial-launcher pattern.
+  let deployer = null, deployCount = null, deployerIsFactory = false, ageHours = null;
   try {
     const info = await api(`/addresses/${address}`);
     if (info) {
@@ -265,11 +297,21 @@ async function screenToken(address) {
       if (deployer) {
         deployer = deployer.toLowerCase();
         try {
+          const dinfo = await api(`/addresses/${deployer}`);
+          deployerIsFactory = !!(dinfo && dinfo.is_contract);
+        } catch (e) {}
+
+        try {
           const dt = await api(`/addresses/${deployer}/tokens?type=ERC-20`);
           const list = (dt && dt.items) || [];
+          // The API pages at 50; a full page means "at least this many".
           deployCount = list.length;
-          if (deployCount >= 10) add(`deployer launched ${deployCount} tokens`, -15);
-          else if (deployCount >= 4) add(`deployer launched ${deployCount} tokens`, -8);
+          const capped = list.length >= 50;
+          if (!deployerIsFactory) {
+            const shown = capped ? '50+' : String(deployCount);
+            if (capped || deployCount >= 10) add(`same wallet launched ${shown} tokens`, -15);
+            else if (deployCount >= 4) add(`same wallet launched ${shown} tokens`, -8);
+          }
         } catch (e) {}
       }
       const txh = info.creation_tx_hash || info.creation_transaction_hash;
@@ -286,7 +328,8 @@ async function screenToken(address) {
   } catch (e) {}
 
   const score = Math.max(0, Math.min(100, 100 + flags.reduce((s, f) => s + f.pts, 0)));
-  return { address, token, score, flags, top1, top10, holderCount, deployer, deployCount, ageHours };
+  return { address, token, score, flags, top1, top10, holderCount,
+           deployer, deployCount, deployerIsFactory, hasOwnerRole, ageHours };
 }
 
 function verdict(s) {
@@ -299,6 +342,14 @@ function fmtAge(h) {
   if (h == null) return '—';
   if (h < 24) return `${h.toFixed(0)}h`;
   return `${(h / 24).toFixed(0)}d`;
+}
+
+// A factory's launch count says nothing about any one token, so label it
+// rather than printing a number that looks like a score.
+function fmtDeploys(r) {
+  if (r.deployerIsFactory) return '<span class="addr">launchpad</span>';
+  if (r.deployCount == null) return '—';
+  return r.deployCount >= 50 ? '50+' : String(r.deployCount);
 }
 
 function render(results, failures) {
@@ -317,7 +368,7 @@ function render(results, failures) {
           <a class="addr" href="${EXPLORER}/token/${r.address}" target="_blank" rel="noopener">${r.address.slice(0,10)}…${r.address.slice(-6)}</a></td>
       <td class="num-cell">${r.top1 != null ? r.top1.toFixed(1) + '%' : '—'}</td>
       <td class="num-cell">${r.holderCount != null ? r.holderCount : '—'}</td>
-      <td class="num-cell">${r.deployCount != null ? r.deployCount : '—'}</td>
+      <td class="num-cell">${fmtDeploys(r)}</td>
       <td class="num-cell">${fmtAge(r.ageHours)}</td>
       <td>${flagHtml}</td>
     </tr>`;

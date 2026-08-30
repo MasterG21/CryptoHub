@@ -1,5 +1,6 @@
 from robinhood_meme_scan.analyzer import (
     build_report,
+    score_deployer,
     score_age,
     score_holder_count,
     score_holders,
@@ -8,6 +9,19 @@ from robinhood_meme_scan.analyzer import (
     score_verification,
 )
 from robinhood_meme_scan.blockscout import Holder, TokenInfo
+
+
+def abi(views=(), writes=()):
+    return (
+        [{"type": "function", "name": n, "stateMutability": "view"} for n in views]
+        + [{"type": "function", "name": n, "stateMutability": "nonpayable"} for n in writes]
+    )
+
+
+PLAIN_ERC20_ABI = abi(
+    views=["name", "symbol", "decimals", "totalSupply", "balanceOf", "allowance"],
+    writes=["transfer", "approve", "transferFrom"],
+)
 
 
 def make_token(**overrides):
@@ -31,7 +45,7 @@ def test_clean_token_scores_high():
     holders = [Holder(address=f"0x{i:040x}", balance=10_000) for i in range(20)]
     score_holders(report, holders, token.total_supply, lp_address=None)
     score_holder_count(report, token.holder_count)
-    score_verification(report, {"source_code": "// SPDX\ncontract Doggy is ERC20 { constructor() ERC20(\"x\",\"y\") { _mint(msg.sender, 1_000_000); } }"})
+    score_verification(report, {"abi": PLAIN_ERC20_ABI})
     score_ownership(report, renounced=True)
     score_liquidity(report, checked=True, found=True, token_balance=500_000)
     score_age(report, hours_old=24 * 30)
@@ -120,12 +134,58 @@ def test_score_never_goes_below_zero_or_above_hundred():
     assert report2.score == 100
 
 
-def test_mint_and_dangerous_keywords_detected():
-    token = make_token()
-    report = build_report(token)
-    source = "function mint(address to, uint amount) onlyOwner { function blacklist(address a) {} }"
-    score_verification(report, {"source_code": source})
+def test_dangerous_abi_functions_detected():
+    report = build_report(make_token())
+    score_verification(report, {"abi": abi(
+        views=["name", "owner"],
+        writes=["mint", "setBlacklist", "pause", "transferOwnership"],
+    )})
 
     labels = [f.label for f in report.flags]
-    assert "mint-function" in labels
-    assert "sensitive-functions" in labels
+    assert "owner-can-mint-new-supply" in labels
+    assert "can-blacklist-wallets" in labels
+    assert "trading-can-be-paused" in labels
+    assert report.score <= 40
+
+
+def test_plain_erc20_source_patterns_no_longer_false_positive():
+    """A normal fixed-supply ERC20 calls _mint() in its constructor and
+    contains 'onlyOwner' in its imports. Neither is exposed as a callable
+    function, so neither should be flagged."""
+    report = build_report(make_token())
+    score_verification(report, {"abi": PLAIN_ERC20_ABI})
+
+    assert report.flags == []
+    assert report.score == 100
+
+
+def test_view_only_function_is_not_treated_as_dangerous():
+    report = build_report(make_token())
+    score_verification(report, {"abi": abi(views=["mint"], writes=["transfer"])})
+
+    assert report.score == 100
+
+
+def test_verified_without_abi_is_not_scanned_by_source():
+    report = build_report(make_token())
+    score_verification(report, {"source_code": "contract X { function mint() {} }"})
+
+    labels = [f.label for f in report.flags]
+    assert labels == ["abi-unavailable"]
+
+
+def test_factory_deployer_is_not_penalised():
+    """Every token on a launchpad is created by the platform's factory."""
+    report = build_report(make_token())
+    score_deployer(report, "0xfactory", 50, deployer_is_factory=True)
+
+    assert report.flags == []
+    assert report.deployer_is_factory is True
+
+
+def test_human_wallet_with_many_launches_is_flagged():
+    report = build_report(make_token())
+    score_deployer(report, "0xwallet", 50, deployer_is_factory=False)
+
+    assert any(f.label == "serial-deployer" for f in report.flags)
+    assert "50+" in report.flags[0].detail
