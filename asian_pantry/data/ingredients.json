@@ -1,0 +1,3452 @@
+[
+  {
+    "id": "garlic",
+    "en": "Garlic",
+    "category": "produce",
+    "role": "core",
+    "pantry_default": true,
+    "note": "Buy loose bulbs rather than pre-minced jars — the jarred stuff tastes sour in a hot wok.",
+    "defaults": {
+      "nl": {
+        "name": "Knoflook",
+        "package": "netje van 3 bollen",
+        "size": 3,
+        "unit": "piece"
+      },
+      "de": {
+        "name": "Knoblauch",
+        "package": "Netz mit 3 Knollen",
+        "size": 3,
+        "unit": "piece"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Garlic granules",
+        "note": "1/4 tsp per clove. Fine in a marinade, flat in a stir-fry."
+      }
+    ]
+  },
+  {
+    "id": "ginger",
+    "en": "Fresh ginger",
+    "category": "produce",
+    "role": "core",
+    "note": "Sold loose by weight. A thumb-sized piece is roughly 25 g. Freeze what you don't use and grate it from frozen.",
+    "defaults": {
+      "nl": {
+        "name": "Gemberwortel",
+        "package": "los per kilo, ca. 100 g stuk",
+        "shelf": "Bij de exotische groenten, naast de knoflook en chilipepers"
+      },
+      "de": {
+        "name": "Ingwer",
+        "package": "lose, ca. 100 g Stück",
+        "shelf": "Bei den exotischen Früchten, neben Knoblauch und Chili"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Ground ginger",
+        "note": "1/2 tsp per 15 g fresh. Loses the citrus note but keeps the heat."
+      }
+    ]
+  },
+  {
+    "id": "spring_onion",
+    "en": "Spring onions",
+    "aka": [
+      "scallions"
+    ],
+    "category": "produce",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Bosui",
+        "package": "bosje van ca. 100 g"
+      },
+      "de": {
+        "name": "Frühlingszwiebeln",
+        "package": "Bund, ca. 100 g"
+      }
+    },
+    "substitutes": [
+      {
+        "id": "onion",
+        "note": "Use the green tops' job for a small amount of finely sliced raw onion, or chives."
+      }
+    ]
+  },
+  {
+    "id": "onion",
+    "en": "Onion",
+    "category": "produce",
+    "role": "core",
+    "pantry_default": true,
+    "defaults": {
+      "nl": {
+        "name": "Uien",
+        "package": "net van 1 kg",
+        "size": 1000,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Zwiebeln",
+        "package": "Netz 1 kg",
+        "size": 1000,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "carrot",
+    "en": "Carrots",
+    "category": "produce",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Winterpeen / bospeen",
+        "package": "zak 1 kg",
+        "size": 1000,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Möhren (Karotten)",
+        "package": "Beutel 1 kg",
+        "size": 1000,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "broccoli",
+    "en": "Broccoli",
+    "category": "produce",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Broccoli",
+        "package": "stuk van ca. 400 g",
+        "size": 400,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Brokkoli",
+        "package": "Stück, ca. 400 g",
+        "size": 400,
+        "unit": "g"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Tenderstem / broccolini or green beans",
+        "note": "Same cooking time, same job."
+      }
+    ]
+  },
+  {
+    "id": "paksoi",
+    "en": "Pak choi",
+    "aka": [
+      "bok choy"
+    ],
+    "category": "produce",
+    "role": "core",
+    "note": "One of the few genuinely Asian vegetables that has gone fully mainstream in NL and DE supermarkets.",
+    "defaults": {
+      "nl": {
+        "name": "Paksoi",
+        "package": "krop van ca. 300 g",
+        "size": 300,
+        "unit": "g",
+        "shelf": "Bij de bladgroenten, vaak naast de Chinese kool"
+      },
+      "de": {
+        "name": "Pak Choi",
+        "package": "Stück, ca. 300 g",
+        "size": 300,
+        "unit": "g",
+        "shelf": "Beim Blattgemüse, oft neben dem Chinakohl"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Paksoi",
+        "package": "verpakt, ca. 300 g",
+        "size": 300,
+        "unit": "g",
+        "availability": "varies",
+        "shelf": "Niet altijd op voorraad bij Lidl — spitskool is de vervanger"
+      },
+      "lidl_de": {
+        "name": "Pak Choi",
+        "package": "verpackt, ca. 300 g",
+        "size": 300,
+        "unit": "g",
+        "availability": "varies"
+      }
+    },
+    "substitutes": [
+      {
+        "id": "pointed_cabbage",
+        "note": "Closest everyday swap: shred it, cook it 1 minute longer."
+      },
+      {
+        "text": "Chinese leaf / Chinese kool / Chinakohl",
+        "note": "Milder and wetter — drive off the water on high heat."
+      }
+    ]
+  },
+  {
+    "id": "pointed_cabbage",
+    "en": "Pointed cabbage",
+    "aka": [
+      "sweetheart cabbage",
+      "hispi"
+    ],
+    "category": "produce",
+    "role": "core",
+    "note": "The workhorse substitute for pak choi, Chinese leaf and even cabbage-y kimchi bases. Cheap and in every store, all year.",
+    "defaults": {
+      "nl": {
+        "name": "Spitskool",
+        "package": "stuk van ca. 500 g",
+        "size": 500,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Spitzkohl",
+        "package": "Stück, ca. 500 g",
+        "size": 500,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "bell_pepper_red",
+    "en": "Red bell pepper",
+    "category": "produce",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Rode paprika",
+        "package": "3-pack (rood/geel/groen) of los",
+        "size": 3,
+        "unit": "piece"
+      },
+      "de": {
+        "name": "Rote Paprika",
+        "package": "3er-Pack (rot/gelb/grün) oder lose",
+        "size": 3,
+        "unit": "piece"
+      }
+    }
+  },
+  {
+    "id": "chilli_red",
+    "en": "Fresh red chilli",
+    "category": "produce",
+    "role": "core",
+    "note": "European supermarket chillies are mild — closer to a fresno than a Thai bird's eye. Use two where a Thai recipe says one, or lean on sambal.",
+    "defaults": {
+      "nl": {
+        "name": "Rode peper",
+        "package": "bakje van 2-3 stuks",
+        "size": 3,
+        "unit": "piece",
+        "shelf": "Bij de exotische groenten, in een klein plastic bakje"
+      },
+      "de": {
+        "name": "Rote Chilischoten",
+        "package": "Schale mit 2-3 Stück",
+        "size": 3,
+        "unit": "piece",
+        "shelf": "Bei den exotischen Gemüsen, in kleiner Plastikschale"
+      }
+    },
+    "substitutes": [
+      {
+        "id": "sambal_oelek",
+        "note": "1/2 tsp sambal per chilli. Sharper and saltier, but always in the cupboard."
+      }
+    ]
+  },
+  {
+    "id": "lime",
+    "en": "Lime",
+    "category": "produce",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Limoen",
+        "package": "netje van 4 stuks",
+        "size": 4,
+        "unit": "piece"
+      },
+      "de": {
+        "name": "Limette",
+        "package": "Netz mit 4 Stück",
+        "size": 4,
+        "unit": "piece"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Lemon",
+        "note": "Use 2/3 the amount — lemon is sharper and less floral."
+      }
+    ]
+  },
+  {
+    "id": "cucumber",
+    "en": "Cucumber",
+    "category": "produce",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Komkommer",
+        "package": "stuk",
+        "size": 1,
+        "unit": "piece"
+      },
+      "de": {
+        "name": "Salatgurke",
+        "package": "Stück",
+        "size": 1,
+        "unit": "piece"
+      }
+    }
+  },
+  {
+    "id": "aubergine",
+    "en": "Aubergine",
+    "aka": [
+      "eggplant"
+    ],
+    "category": "produce",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Aubergine",
+        "package": "stuk van ca. 300 g",
+        "size": 300,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Aubergine",
+        "package": "Stück, ca. 300 g",
+        "size": 300,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "mushrooms",
+    "en": "Chestnut mushrooms",
+    "category": "produce",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Kastanjechampignons",
+        "package": "bakje 250 g",
+        "size": 250,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Braune Champignons",
+        "package": "Schale 250 g",
+        "size": 250,
+        "unit": "g"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Dried shiitake",
+        "note": "15 g dried, soaked 20 min in hot water. Keep the soaking liquid — it is free stock."
+      }
+    ]
+  },
+  {
+    "id": "beansprouts",
+    "en": "Beansprouts",
+    "category": "produce",
+    "role": "core",
+    "note": "Cheap, and the single thing that makes home pad thai and bami taste like takeaway. Add in the last 30 seconds so they stay crunchy.",
+    "defaults": {
+      "nl": {
+        "name": "Taugé",
+        "package": "zak 300 g",
+        "size": 300,
+        "unit": "g",
+        "shelf": "Bij de voorgesneden groenten / roerbakmixen"
+      },
+      "de": {
+        "name": "Mungbohnensprossen",
+        "package": "Beutel 300 g",
+        "size": 300,
+        "unit": "g",
+        "shelf": "Bei den geschnittenen Salaten / Wok-Mischungen"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Taugé",
+        "package": "zak 300 g",
+        "size": 300,
+        "unit": "g",
+        "availability": "varies",
+        "shelf": "Wisselend op voorraad — anders de kant-en-klare roerbakmix pakken"
+      },
+      "lidl_de": {
+        "name": "Sojasprossen",
+        "package": "Beutel 300 g",
+        "size": 300,
+        "unit": "g",
+        "availability": "varies"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Shredded pointed cabbage",
+        "note": "Not the same crunch, but it keeps the dish from being all noodle."
+      }
+    ]
+  },
+  {
+    "id": "coriander_fresh",
+    "en": "Fresh coriander",
+    "aka": [
+      "cilantro"
+    ],
+    "category": "produce",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Verse koriander",
+        "package": "potje of bosje",
+        "shelf": "Bij de verse kruiden in potjes"
+      },
+      "de": {
+        "name": "Frischer Koriander",
+        "package": "Topf oder Bund",
+        "shelf": "Bei den frischen Kräutern im Topf"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Flat-leaf parsley",
+        "note": "Different flavour, same fresh green lift. Better than nothing."
+      }
+    ]
+  },
+  {
+    "id": "basil_fresh",
+    "en": "Fresh basil",
+    "category": "produce",
+    "role": "core",
+    "note": "Thai holy basil is not sold in mainstream stores. Italian basil plus a little extra chilli and fish sauce gets surprisingly close in pad krapow.",
+    "defaults": {
+      "nl": {
+        "name": "Verse basilicum",
+        "package": "plantje in pot",
+        "shelf": "Bij de verse kruidenplantjes"
+      },
+      "de": {
+        "name": "Basilikum",
+        "package": "Topfpflanze",
+        "shelf": "Bei den frischen Kräutertöpfen"
+      }
+    }
+  },
+  {
+    "id": "mint_fresh",
+    "en": "Fresh mint",
+    "category": "produce",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Verse munt",
+        "package": "plantje in pot of bosje"
+      },
+      "de": {
+        "name": "Frische Minze",
+        "package": "Topfpflanze oder Bund"
+      }
+    }
+  },
+  {
+    "id": "green_beans",
+    "en": "Green beans",
+    "category": "produce",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Sperziebonen (haricots verts)",
+        "package": "zak 400 g",
+        "size": 400,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Grüne Bohnen",
+        "package": "Beutel 400 g",
+        "size": 400,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "sugar_snap",
+    "en": "Sugar snap peas",
+    "category": "produce",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Peultjes / sugar snaps",
+        "package": "zak 150 g",
+        "size": 150,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Zuckerschoten",
+        "package": "Beutel 150 g",
+        "size": 150,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "potato",
+    "en": "Potatoes",
+    "category": "produce",
+    "role": "core",
+    "pantry_default": true,
+    "defaults": {
+      "nl": {
+        "name": "Vastkokende aardappelen",
+        "package": "zak 2,5 kg",
+        "size": 2500,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Festkochende Kartoffeln",
+        "package": "Beutel 2,5 kg",
+        "size": 2500,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "spinach",
+    "en": "Baby spinach",
+    "category": "produce",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Jonge bladspinazie",
+        "package": "zak 300 g",
+        "size": 300,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Junger Blattspinat",
+        "package": "Beutel 300 g",
+        "size": 300,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "tomato",
+    "en": "Tomatoes",
+    "category": "produce",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Trostomaten",
+        "package": "500 g",
+        "size": 500,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Rispentomaten",
+        "package": "500 g",
+        "size": 500,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "radish_pink",
+    "en": "Pink radishes",
+    "category": "produce",
+    "role": "core",
+    "note": "Stands in for daikon in bánh mì pickles. Daikon is a specialty-shop item; radishes are next to the lettuce.",
+    "defaults": {
+      "nl": {
+        "name": "Radijs",
+        "package": "bosje",
+        "size": 1,
+        "unit": "piece"
+      },
+      "de": {
+        "name": "Radieschen",
+        "package": "Bund",
+        "size": 1,
+        "unit": "piece"
+      }
+    }
+  },
+  {
+    "id": "chicken_thigh",
+    "en": "Chicken thigh fillet",
+    "category": "meat_fish",
+    "role": "core",
+    "note": "Thigh, not breast. It survives a screaming-hot wok without going stringy, and it is cheaper. This is the single biggest upgrade to home stir-fries.",
+    "defaults": {
+      "nl": {
+        "name": "Kipdijfilet",
+        "package": "schaal ca. 500 g",
+        "size": 500,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Hähnchenoberschenkelfilet",
+        "package": "Schale ca. 500 g",
+        "size": 500,
+        "unit": "g"
+      }
+    },
+    "products": {
+      "lidl_de": {
+        "name": "Metzgerfrisch Hähnchen-Oberkeulenfilet",
+        "package": "Schale ca. 500 g",
+        "size": 500,
+        "unit": "g"
+      },
+      "rewe_de": {
+        "name": "Wilhelm Brandenburg Hähnchenschenkelfilet",
+        "package": "Schale ca. 400 g",
+        "size": 400,
+        "unit": "g"
+      },
+      "ah_nl": {
+        "name": "AH Kipdijfilet naturel",
+        "package": "schaal 500 g",
+        "size": 500,
+        "unit": "g"
+      },
+      "jumbo_nl": {
+        "name": "Jumbo Kipdijfilet",
+        "package": "schaal 500 g",
+        "size": 500,
+        "unit": "g"
+      }
+    },
+    "substitutes": [
+      {
+        "id": "chicken_breast",
+        "note": "Works, but slice thin and cook 2 minutes less or it turns to chalk."
+      }
+    ]
+  },
+  {
+    "id": "chicken_breast",
+    "en": "Chicken breast",
+    "category": "meat_fish",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Kipfilet",
+        "package": "schaal ca. 500 g",
+        "size": 500,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Hähnchenbrustfilet",
+        "package": "Schale ca. 500 g",
+        "size": 500,
+        "unit": "g"
+      }
+    },
+    "products": {
+      "lidl_de": {
+        "name": "Metzgerfrisch Hähnchenbrustfilet",
+        "package": "Schale ca. 500 g",
+        "size": 500,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "pork_mince",
+    "en": "Minced pork",
+    "category": "meat_fish",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Gehakt (varken) / half-om-half",
+        "package": "schaal 500 g",
+        "size": 500,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Schweinehackfleisch",
+        "package": "Schale 500 g",
+        "size": 500,
+        "unit": "g"
+      }
+    },
+    "products": {
+      "lidl_de": {
+        "name": "Metzgerfrisch Hackfleisch gemischt",
+        "package": "Schale 500 g",
+        "size": 500,
+        "unit": "g"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Minced chicken or turkey",
+        "note": "Leaner, so add an extra teaspoon of oil to the pan."
+      }
+    ]
+  },
+  {
+    "id": "beef_steak",
+    "en": "Beef frying steak",
+    "category": "meat_fish",
+    "role": "core",
+    "note": "Cheap flat cuts work best for stir-fry — slice across the grain into 3 mm strips while the meat is fridge-cold.",
+    "defaults": {
+      "nl": {
+        "name": "Sucadelappen of biefstukpuntjes",
+        "package": "schaal ca. 300 g",
+        "size": 300,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Rindergeschnetzeltes",
+        "package": "Schale ca. 300 g",
+        "size": 300,
+        "unit": "g"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "AH Biefstukpuntjes",
+        "package": "schaal 300 g",
+        "size": 300,
+        "unit": "g"
+      },
+      "lidl_nl": {
+        "name": "Rundvlees reepjes (roerbak)",
+        "package": "schaal ca. 300 g",
+        "size": 300,
+        "unit": "g"
+      },
+      "lidl_de": {
+        "name": "Metzgerfrisch Rindergeschnetzeltes",
+        "package": "Schale ca. 300 g",
+        "size": 300,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "pork_shoulder",
+    "en": "Pork shoulder / neck",
+    "category": "meat_fish",
+    "role": "core",
+    "note": "The right cut for char siu: enough fat to stay juicy through a 200 °C oven.",
+    "defaults": {
+      "nl": {
+        "name": "Procureur / schouderkarbonade zonder been",
+        "package": "ca. 600 g",
+        "size": 600,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Schweinenacken ohne Knochen",
+        "package": "ca. 600 g",
+        "size": 600,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "prawns_frozen",
+    "en": "Raw prawns (frozen)",
+    "category": "frozen",
+    "role": "core",
+    "note": "Frozen raw is better value and better texture than the cooked pink ones. Defrost in cold water for 10 minutes, pat very dry.",
+    "defaults": {
+      "nl": {
+        "name": "Rauwe garnalen, gepeld (diepvries)",
+        "package": "zak 200-250 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "frozen"
+      },
+      "de": {
+        "name": "Rohe Garnelen, geschält (TK)",
+        "package": "Beutel 200-250 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "frozen"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Ocean Sea Garnalen rauw gepeld",
+        "package": "diepvrieszak 200 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "frozen"
+      },
+      "lidl_de": {
+        "name": "Ocean Sea Garnelen roh geschält",
+        "package": "TK-Beutel 200 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "frozen"
+      }
+    }
+  },
+  {
+    "id": "salmon_fillet",
+    "en": "Salmon fillet",
+    "category": "meat_fish",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Zalmfilet zonder huid",
+        "package": "2 stuks, ca. 250 g",
+        "size": 250,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Lachsfilet ohne Haut",
+        "package": "2 Stück, ca. 250 g",
+        "size": 250,
+        "unit": "g"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Cod or pollock fillet",
+        "note": "Leaner — add it later and stir less, or it falls apart in the curry."
+      }
+    ]
+  },
+  {
+    "id": "tofu_firm",
+    "en": "Firm tofu",
+    "category": "world_food",
+    "role": "core",
+    "note": "Press it: wrap in kitchen paper under a heavy pan for 15 minutes. Untreated tofu steams instead of frying and never browns.",
+    "defaults": {
+      "nl": {
+        "name": "Tofu naturel (stevig)",
+        "package": "blok 200-400 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "dairy_eggs",
+        "shelf": "Bij de vegetarische koelvakken, naast de vleesvervangers"
+      },
+      "de": {
+        "name": "Tofu natur (fest)",
+        "package": "Block 200-400 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "dairy_eggs",
+        "shelf": "Im Kühlregal bei den Fleischalternativen"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vemondo Tofu naturel",
+        "package": "blok 200 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "dairy_eggs"
+      },
+      "lidl_de": {
+        "name": "Vemondo Tofu natur",
+        "package": "Block 200 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "dairy_eggs"
+      },
+      "ah_nl": {
+        "name": "AH Tofu naturel",
+        "package": "blok 400 g",
+        "size": 400,
+        "unit": "g",
+        "aisle": "dairy_eggs"
+      }
+    }
+  },
+  {
+    "id": "eggs",
+    "en": "Eggs",
+    "category": "dairy_eggs",
+    "role": "core",
+    "pantry_default": true,
+    "defaults": {
+      "nl": {
+        "name": "Eieren (vrije uitloop)",
+        "package": "doos van 10",
+        "size": 10,
+        "unit": "piece"
+      },
+      "de": {
+        "name": "Eier (Freilandhaltung)",
+        "package": "10er-Packung",
+        "size": 10,
+        "unit": "piece"
+      }
+    }
+  },
+  {
+    "id": "butter",
+    "en": "Butter",
+    "category": "dairy_eggs",
+    "role": "core",
+    "pantry_default": true,
+    "defaults": {
+      "nl": {
+        "name": "Roomboter ongezouten",
+        "package": "pak 250 g",
+        "size": 250,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Butter ungesalzen",
+        "package": "Stück 250 g",
+        "size": 250,
+        "unit": "g"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Milbona Roomboter",
+        "package": "pak 250 g",
+        "size": 250,
+        "unit": "g"
+      },
+      "lidl_de": {
+        "name": "Milbona Deutsche Markenbutter",
+        "package": "Stück 250 g",
+        "size": 250,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "cream_cooking",
+    "en": "Cooking cream",
+    "category": "dairy_eggs",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Kookroom",
+        "package": "pak 250 ml",
+        "size": 250,
+        "unit": "ml"
+      },
+      "de": {
+        "name": "Kochsahne / Schlagsahne",
+        "package": "Becher 200 ml",
+        "size": 200,
+        "unit": "ml"
+      }
+    },
+    "substitutes": [
+      {
+        "id": "coconut_milk",
+        "note": "In curries, coconut milk does the same job and tastes more of the region."
+      }
+    ]
+  },
+  {
+    "id": "yoghurt_greek",
+    "en": "Greek yoghurt",
+    "category": "dairy_eggs",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Griekse yoghurt 10%",
+        "package": "kuipje 500 g",
+        "size": 500,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Griechischer Joghurt 10%",
+        "package": "Becher 500 g",
+        "size": 500,
+        "unit": "g"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Milbona Griekse yoghurt",
+        "package": "kuipje 500 g",
+        "size": 500,
+        "unit": "g"
+      },
+      "lidl_de": {
+        "name": "Milbona Griechischer Joghurt",
+        "package": "Becher 500 g",
+        "size": 500,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "rice_jasmine",
+    "en": "Jasmine rice",
+    "category": "dry_goods",
+    "role": "core",
+    "pantry_default": true,
+    "note": "Rinse until the water runs clear, then 1 part rice to 1.25 parts water, lid on, 12 minutes, 10 minutes off the heat. That ratio is the whole trick.",
+    "defaults": {
+      "nl": {
+        "name": "Jasmijnrijst",
+        "package": "pak 1 kg",
+        "size": 1000,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Jasminreis",
+        "package": "Packung 1 kg",
+        "size": 1000,
+        "unit": "g"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Jasmijnrijst",
+        "package": "pak 1 kg",
+        "size": 1000,
+        "unit": "g",
+        "shelf": "Wereldkeuken-schap, niet bij de gewone rijst"
+      },
+      "lidl_de": {
+        "name": "Vitasia Jasminreis",
+        "package": "Packung 1 kg",
+        "size": 1000,
+        "unit": "g",
+        "shelf": "Weltküche-Regal, nicht beim normalen Reis"
+      },
+      "ah_nl": {
+        "name": "AH Jasmijnrijst",
+        "package": "pak 1 kg",
+        "size": 1000,
+        "unit": "g"
+      },
+      "rewe_de": {
+        "name": "ja! Jasminreis",
+        "package": "Packung 500 g",
+        "size": 500,
+        "unit": "g"
+      }
+    },
+    "substitutes": [
+      {
+        "id": "rice_basmati",
+        "note": "Fine, but drier and more perfumed. Use 1:1.2 water instead."
+      }
+    ]
+  },
+  {
+    "id": "rice_basmati",
+    "en": "Basmati rice",
+    "category": "dry_goods",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Basmatirijst",
+        "package": "pak 1 kg",
+        "size": 1000,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Basmatireis",
+        "package": "Packung 1 kg",
+        "size": 1000,
+        "unit": "g"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Golden Sun Basmatirijst",
+        "package": "pak 1 kg",
+        "size": 1000,
+        "unit": "g"
+      },
+      "lidl_de": {
+        "name": "Golden Sun Basmatireis",
+        "package": "Packung 1 kg",
+        "size": 1000,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "noodles_egg",
+    "en": "Dried egg noodles",
+    "aka": [
+      "mie",
+      "bami"
+    ],
+    "category": "world_food",
+    "role": "core",
+    "note": "Sold as flat nests. Boil 3-4 minutes, drain, rinse cold, toss with a teaspoon of oil or they weld together.",
+    "defaults": {
+      "nl": {
+        "name": "Mie / eiernoedels",
+        "package": "pak 250 g (3 nesten)",
+        "size": 250,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Eiernudeln (Mie)",
+        "package": "Packung 250 g",
+        "size": 250,
+        "unit": "g"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Mie noedels",
+        "package": "pak 250 g",
+        "size": 250,
+        "unit": "g",
+        "shelf": "Wereldkeuken, onderste plank bij de woksauzen"
+      },
+      "lidl_de": {
+        "name": "Vitasia Mie Nudeln",
+        "package": "Packung 250 g",
+        "size": 250,
+        "unit": "g"
+      },
+      "ah_nl": {
+        "name": "Conimex Mie",
+        "package": "pak 250 g",
+        "size": 250,
+        "unit": "g",
+        "shelf": "Wereldkeuken, blauw Conimex-blok"
+      },
+      "jumbo_nl": {
+        "name": "Conimex Mie",
+        "package": "pak 250 g",
+        "size": 250,
+        "unit": "g"
+      },
+      "rewe_de": {
+        "name": "Suzi Wan Mie Nudeln",
+        "package": "Packung 250 g",
+        "size": 250,
+        "unit": "g"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Dried spaghetti or tagliatelle",
+        "note": "Genuinely fine in bami and lo mein. Boil 1 minute under the packet time."
+      }
+    ]
+  },
+  {
+    "id": "noodles_rice_flat",
+    "en": "Flat rice noodles",
+    "aka": [
+      "pad thai noodles"
+    ],
+    "category": "world_food",
+    "role": "core",
+    "note": "Do not boil them. Soak in just-boiled water off the heat for 6-8 minutes until bendy but still firm — they finish cooking in the pan.",
+    "defaults": {
+      "nl": {
+        "name": "Rijstnoedels (breed)",
+        "package": "pak 250 g",
+        "size": 250,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Reisbandnudeln",
+        "package": "Packung 250 g",
+        "size": 250,
+        "unit": "g"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Rijstnoedels",
+        "package": "pak 250 g",
+        "size": 250,
+        "unit": "g",
+        "availability": "varies"
+      },
+      "lidl_de": {
+        "name": "Vitasia Reisnudeln",
+        "package": "Packung 250 g",
+        "size": 250,
+        "unit": "g",
+        "availability": "varies"
+      },
+      "ah_nl": {
+        "name": "AH Rijstnoedels breed",
+        "package": "pak 250 g",
+        "size": 250,
+        "unit": "g"
+      },
+      "rewe_de": {
+        "name": "Thai Kitchen / Suzi Wan Reisnudeln",
+        "package": "Packung 250 g",
+        "size": 250,
+        "unit": "g"
+      }
+    },
+    "substitutes": [
+      {
+        "id": "vermicelli_mihoen",
+        "note": "Thinner, cooks faster, same idea. Soak 3 minutes only."
+      }
+    ]
+  },
+  {
+    "id": "vermicelli_mihoen",
+    "en": "Rice vermicelli",
+    "aka": [
+      "mihoen",
+      "bee hoon"
+    ],
+    "category": "world_food",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Mihoen",
+        "package": "pak 250 g",
+        "size": 250,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Reisnudeln dünn (Vermicelli)",
+        "package": "Packung 250 g",
+        "size": 250,
+        "unit": "g"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "Conimex Mihoen",
+        "package": "pak 250 g",
+        "size": 250,
+        "unit": "g"
+      },
+      "jumbo_nl": {
+        "name": "Conimex Mihoen",
+        "package": "pak 250 g",
+        "size": 250,
+        "unit": "g"
+      },
+      "lidl_nl": {
+        "name": "Vitasia Mihoen",
+        "package": "pak 250 g",
+        "size": 250,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "noodles_instant",
+    "en": "Instant ramen noodles",
+    "category": "world_food",
+    "role": "core",
+    "note": "Buy them for the noodle block and bin the flavour sachet — the broth you build yourself is the whole point.",
+    "defaults": {
+      "nl": {
+        "name": "Instant noedels (naturel of kip)",
+        "package": "5-pack à 70 g",
+        "size": 5,
+        "unit": "piece"
+      },
+      "de": {
+        "name": "Instant-Nudeln",
+        "package": "5er-Pack à 70 g",
+        "size": 5,
+        "unit": "piece"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Instant noodles",
+        "package": "5-pack",
+        "size": 5,
+        "unit": "piece"
+      },
+      "lidl_de": {
+        "name": "Vitasia Instant Nudeln",
+        "package": "5er-Pack",
+        "size": 5,
+        "unit": "piece"
+      }
+    }
+  },
+  {
+    "id": "cornstarch",
+    "en": "Cornflour",
+    "aka": [
+      "cornstarch",
+      "maizena"
+    ],
+    "category": "baking",
+    "role": "core",
+    "pantry_default": true,
+    "note": "Does two jobs: velveting the meat (toss raw strips with 1 tsp cornflour + 1 tbsp soy) and thickening the sauce at the end. Both matter.",
+    "defaults": {
+      "nl": {
+        "name": "Maizena",
+        "package": "pak 250 g",
+        "size": 250,
+        "unit": "g",
+        "aisle": "baking"
+      },
+      "de": {
+        "name": "Speisestärke",
+        "package": "Packung 400 g",
+        "size": 400,
+        "unit": "g",
+        "aisle": "baking"
+      }
+    },
+    "products": {
+      "lidl_de": {
+        "name": "Belbake Speisestärke",
+        "package": "Packung 400 g",
+        "size": 400,
+        "unit": "g",
+        "aisle": "baking"
+      },
+      "rewe_de": {
+        "name": "Mondamin Speisestärke",
+        "package": "Packung 400 g",
+        "size": 400,
+        "unit": "g",
+        "aisle": "baking"
+      }
+    }
+  },
+  {
+    "id": "flour_plain",
+    "en": "Plain flour",
+    "category": "baking",
+    "role": "core",
+    "pantry_default": true,
+    "defaults": {
+      "nl": {
+        "name": "Patentbloem / tarwebloem",
+        "package": "pak 1 kg",
+        "size": 1000,
+        "unit": "g",
+        "aisle": "baking"
+      },
+      "de": {
+        "name": "Weizenmehl Type 405",
+        "package": "Packung 1 kg",
+        "size": 1000,
+        "unit": "g",
+        "aisle": "baking"
+      }
+    },
+    "products": {
+      "lidl_de": {
+        "name": "Belbake Weizenmehl Type 405",
+        "package": "Packung 1 kg",
+        "size": 1000,
+        "unit": "g",
+        "aisle": "baking"
+      }
+    }
+  },
+  {
+    "id": "panko",
+    "en": "Panko breadcrumbs",
+    "category": "world_food",
+    "role": "specialty",
+    "note": "Shard-shaped rather than sandy, so katsu stays crisp. Ordinary breadcrumbs work but go soft within minutes.",
+    "defaults": {
+      "nl": {
+        "name": "Panko paneermeel",
+        "package": "pak 200 g",
+        "size": 200,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Panko Paniermehl",
+        "package": "Packung 200 g",
+        "size": 200,
+        "unit": "g"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Panko paneermeel",
+        "package": "pak 200 g",
+        "size": 200,
+        "unit": "g",
+        "availability": "seasonal",
+        "shelf": "Vaak alleen tijdens de Aziatische themaweek"
+      },
+      "lidl_de": {
+        "name": "Vitasia Panko Paniermehl",
+        "package": "Packung 200 g",
+        "size": 200,
+        "unit": "g",
+        "availability": "seasonal",
+        "shelf": "Meist nur während der Asia-Wochen"
+      },
+      "ah_nl": {
+        "name": "Go-Tan Panko",
+        "package": "pak 200 g",
+        "size": 200,
+        "unit": "g"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Ordinary breadcrumbs (paneermeel / Paniermehl)",
+        "note": "Or blitz 3 slices of stale white bread, crusts off — closer to panko than the fine stuff."
+      }
+    ]
+  },
+  {
+    "id": "sesame_seeds",
+    "en": "Sesame seeds",
+    "category": "spices",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Sesamzaad",
+        "package": "potje 60 g",
+        "size": 60,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "de": {
+        "name": "Sesamsaat",
+        "package": "Streuer 60 g",
+        "size": 60,
+        "unit": "g",
+        "aisle": "spices"
+      }
+    }
+  },
+  {
+    "id": "peanuts_roasted",
+    "en": "Roasted peanuts",
+    "category": "snacks",
+    "role": "core",
+    "note": "Unsalted if you can, salted if you must — just cut the added salt in the dish.",
+    "defaults": {
+      "nl": {
+        "name": "Ongezouten pinda's",
+        "package": "zak 200 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "snacks"
+      },
+      "de": {
+        "name": "Erdnüsse ungesalzen",
+        "package": "Beutel 200 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "snacks"
+      }
+    },
+    "products": {
+      "lidl_de": {
+        "name": "Alesto Erdnüsse geröstet",
+        "package": "Beutel 200 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "snacks"
+      },
+      "lidl_nl": {
+        "name": "Alesto Pinda's geroosterd",
+        "package": "zak 200 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "snacks"
+      }
+    }
+  },
+  {
+    "id": "cashews",
+    "en": "Cashew nuts",
+    "category": "snacks",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Cashewnoten ongezouten",
+        "package": "zak 200 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "snacks"
+      },
+      "de": {
+        "name": "Cashewkerne ungesalzen",
+        "package": "Beutel 200 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "snacks"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Alesto Cashewnoten",
+        "package": "zak 200 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "snacks"
+      },
+      "lidl_de": {
+        "name": "Alesto Cashewkerne",
+        "package": "Beutel 200 g",
+        "size": 200,
+        "unit": "g",
+        "aisle": "snacks"
+      }
+    },
+    "substitutes": [
+      {
+        "id": "peanuts_roasted",
+        "note": "Cheaper and works in every dish here except the Thai ones where cashew is the point."
+      }
+    ]
+  },
+  {
+    "id": "red_lentils",
+    "en": "Red lentils",
+    "category": "dry_goods",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Rode linzen",
+        "package": "pak 500 g",
+        "size": 500,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Rote Linsen",
+        "package": "Packung 500 g",
+        "size": 500,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "baguette",
+    "en": "Baguette",
+    "category": "bakery",
+    "role": "core",
+    "note": "The French colonial legacy that makes bánh mì work. The cheap crusty stick from the in-store bakery is exactly right.",
+    "defaults": {
+      "nl": {
+        "name": "Stokbrood wit",
+        "package": "stuk",
+        "size": 1,
+        "unit": "piece",
+        "aisle": "bakery"
+      },
+      "de": {
+        "name": "Baguette",
+        "package": "Stück",
+        "size": 1,
+        "unit": "piece",
+        "aisle": "bakery"
+      }
+    }
+  },
+  {
+    "id": "sugar_white",
+    "en": "White sugar",
+    "category": "baking",
+    "role": "core",
+    "pantry_default": true,
+    "defaults": {
+      "nl": {
+        "name": "Kristalsuiker",
+        "package": "pak 1 kg",
+        "size": 1000,
+        "unit": "g",
+        "aisle": "baking"
+      },
+      "de": {
+        "name": "Zucker",
+        "package": "Packung 1 kg",
+        "size": 1000,
+        "unit": "g",
+        "aisle": "baking"
+      }
+    }
+  },
+  {
+    "id": "brown_sugar",
+    "en": "Brown sugar",
+    "category": "baking",
+    "role": "core",
+    "note": "Stands in for palm sugar everywhere in this app. Dark muscovado is closest; ordinary light brown is fine.",
+    "defaults": {
+      "nl": {
+        "name": "Basterdsuiker bruin",
+        "package": "pak 500 g",
+        "size": 500,
+        "unit": "g",
+        "aisle": "baking"
+      },
+      "de": {
+        "name": "Brauner Zucker",
+        "package": "Packung 500 g",
+        "size": 500,
+        "unit": "g",
+        "aisle": "baking"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Palm sugar (palmsuiker / Palmzucker)",
+        "note": "The authentic one, sold by Go-Tan at AH. Brown sugar is 95% of the way there."
+      }
+    ]
+  },
+  {
+    "id": "honey",
+    "en": "Honey",
+    "category": "baking",
+    "role": "core",
+    "pantry_default": true,
+    "defaults": {
+      "nl": {
+        "name": "Vloeibare honing",
+        "package": "knijpfles 350 g",
+        "size": 350,
+        "unit": "g",
+        "aisle": "baking"
+      },
+      "de": {
+        "name": "Flüssiger Honig",
+        "package": "Spenderflasche 350 g",
+        "size": 350,
+        "unit": "g",
+        "aisle": "baking"
+      }
+    }
+  },
+  {
+    "id": "soy_sauce_light",
+    "en": "Light soy sauce",
+    "aka": [
+      "soja",
+      "soy"
+    ],
+    "category": "world_food",
+    "role": "core",
+    "pantry_default": true,
+    "note": "The everyday salty one — this is what a recipe means by 'soy sauce'. Naturally brewed tastes far better than the hydrolysed kind; check the label for 'gebrouwen' / 'gebraut'.",
+    "defaults": {
+      "nl": {
+        "name": "Sojasaus",
+        "package": "fles 150-250 ml",
+        "size": 150,
+        "unit": "ml"
+      },
+      "de": {
+        "name": "Sojasauce",
+        "package": "Flasche 150-250 ml",
+        "size": 150,
+        "unit": "ml"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Sojasaus",
+        "package": "fles 150 ml",
+        "size": 150,
+        "unit": "ml",
+        "shelf": "Wereldkeuken-schap, kleine glazen fles met rood etiket"
+      },
+      "lidl_de": {
+        "name": "Vitasia Sojasauce",
+        "package": "Flasche 150 ml",
+        "size": 150,
+        "unit": "ml",
+        "shelf": "Weltküche-Regal, kleine Glasflasche mit rotem Etikett"
+      },
+      "ah_nl": {
+        "name": "Kikkoman Sojasaus",
+        "package": "fles 250 ml",
+        "size": 250,
+        "unit": "ml",
+        "shelf": "Wereldkeuken, hoge fles met rode dop"
+      },
+      "jumbo_nl": {
+        "name": "Conimex Ketjap Sojasaus",
+        "package": "fles 175 ml",
+        "size": 175,
+        "unit": "ml"
+      },
+      "rewe_de": {
+        "name": "Kikkoman Sojasauce",
+        "package": "Flasche 250 ml",
+        "size": 250,
+        "unit": "ml",
+        "shelf": "Weltküche, hohe Flasche mit rotem Verschluss"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Tamari (gluten-free)",
+        "note": "Slightly thicker and less salty. Use 1:1."
+      }
+    ]
+  },
+  {
+    "id": "soy_sauce_dark",
+    "en": "Dark soy sauce",
+    "category": "world_food",
+    "role": "specialty",
+    "note": "Not interchangeable with light soy: dark is thicker, less salty, and there for colour. If your store has none, ketjap manis is the everyday European stand-in.",
+    "defaults": {
+      "nl": {
+        "name": "Donkere sojasaus",
+        "package": "fles 150 ml",
+        "size": 150,
+        "unit": "ml",
+        "availability": "varies"
+      },
+      "de": {
+        "name": "Dunkle Sojasauce",
+        "package": "Flasche 150 ml",
+        "size": 150,
+        "unit": "ml",
+        "availability": "varies"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "Go-Tan Donkere sojasaus",
+        "package": "fles 150 ml",
+        "size": 150,
+        "unit": "ml",
+        "availability": "varies"
+      },
+      "lidl_nl": {
+        "name": "Vitasia Donkere sojasaus",
+        "package": "fles 150 ml",
+        "size": 150,
+        "unit": "ml",
+        "availability": "seasonal",
+        "shelf": "Alleen tijdens de Aziatische themaweek"
+      },
+      "lidl_de": {
+        "name": "Vitasia Dunkle Sojasauce",
+        "package": "Flasche 150 ml",
+        "size": 150,
+        "unit": "ml",
+        "availability": "seasonal"
+      }
+    },
+    "substitutes": [
+      {
+        "id": "ketjap_manis",
+        "note": "Use 2/3 the amount and cut the sugar in the recipe — ketjap is sweetened."
+      },
+      {
+        "text": "Light soy + 1/4 tsp brown sugar per tbsp",
+        "note": "Gets the colour and the round edge. This is the workable fix in Germany."
+      }
+    ]
+  },
+  {
+    "id": "ketjap_manis",
+    "en": "Sweet soy sauce",
+    "aka": [
+      "kecap manis",
+      "ketjap"
+    ],
+    "category": "world_food",
+    "role": "core",
+    "note": "The most useful bottle in a Dutch supermarket. Thick, sweet, molasses-dark — it carries nasi goreng, bami and satay. Standard in NL, hard to find in DE.",
+    "defaults": {
+      "nl": {
+        "name": "Ketjap manis",
+        "package": "fles 500 ml",
+        "size": 500,
+        "unit": "ml"
+      },
+      "de": {
+        "name": "Süße Sojasauce (Ketjap Manis)",
+        "package": "Flasche 250 ml",
+        "size": 250,
+        "unit": "ml",
+        "availability": "varies"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "Conimex Ketjap Manis",
+        "package": "fles 500 ml",
+        "size": 500,
+        "unit": "ml",
+        "shelf": "Wereldkeuken, blauw Conimex-blok, hoge donkere fles"
+      },
+      "jumbo_nl": {
+        "name": "Conimex Ketjap Manis",
+        "package": "fles 500 ml",
+        "size": 500,
+        "unit": "ml"
+      },
+      "lidl_nl": {
+        "name": "Vitasia Ketjap Manis",
+        "package": "fles 250 ml",
+        "size": 250,
+        "unit": "ml",
+        "shelf": "Wereldkeuken-schap naast de sojasaus"
+      },
+      "lidl_de": {
+        "name": "Vitasia Ketjap Manis",
+        "package": "Flasche 250 ml",
+        "size": 250,
+        "unit": "ml",
+        "availability": "seasonal"
+      },
+      "rewe_de": {
+        "name": "Kikkoman Sojasauce süß",
+        "package": "Flasche 250 ml",
+        "size": 250,
+        "unit": "ml",
+        "availability": "varies"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "3 tbsp light soy + 2 tbsp brown sugar, warmed until dissolved",
+        "note": "Makes about 5 tbsp of a very close stand-in. This is the German workaround."
+      }
+    ]
+  },
+  {
+    "id": "oyster_sauce",
+    "en": "Oyster sauce",
+    "category": "world_food",
+    "role": "core",
+    "note": "Savoury-sweet and slightly thick — it gives Cantonese stir-fries their glossy coating. Vegetarian mushroom versions exist and taste nearly identical.",
+    "defaults": {
+      "nl": {
+        "name": "Oestersaus",
+        "package": "fles 250 ml",
+        "size": 250,
+        "unit": "ml"
+      },
+      "de": {
+        "name": "Austernsauce",
+        "package": "Flasche 250 ml",
+        "size": 250,
+        "unit": "ml"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Oestersaus",
+        "package": "fles 250 ml",
+        "size": 250,
+        "unit": "ml"
+      },
+      "lidl_de": {
+        "name": "Vitasia Austernsauce",
+        "package": "Flasche 250 ml",
+        "size": 250,
+        "unit": "ml"
+      },
+      "ah_nl": {
+        "name": "Go-Tan Oestersaus",
+        "package": "fles 250 ml",
+        "size": 250,
+        "unit": "ml"
+      },
+      "rewe_de": {
+        "name": "Suzi Wan Austernsauce",
+        "package": "Flasche 200 ml",
+        "size": 200,
+        "unit": "ml"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Hoisin thinned with a splash of water, or soy + 1/2 tsp sugar",
+        "note": "For a vegetarian dish, mushroom stir-fry sauce is the direct swap."
+      }
+    ]
+  },
+  {
+    "id": "fish_sauce",
+    "en": "Fish sauce",
+    "aka": [
+      "nam pla"
+    ],
+    "category": "world_food",
+    "role": "core",
+    "note": "Smells alarming in the bottle, tastes of nothing but savoury depth in the pan. Thai and Vietnamese food does not work without it.",
+    "defaults": {
+      "nl": {
+        "name": "Vissaus",
+        "package": "fles 200-300 ml",
+        "size": 200,
+        "unit": "ml"
+      },
+      "de": {
+        "name": "Fischsauce",
+        "package": "Flasche 200-300 ml",
+        "size": 200,
+        "unit": "ml"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Vissaus",
+        "package": "fles 200 ml",
+        "size": 200,
+        "unit": "ml",
+        "availability": "varies"
+      },
+      "lidl_de": {
+        "name": "Vitasia Fischsauce",
+        "package": "Flasche 200 ml",
+        "size": 200,
+        "unit": "ml",
+        "availability": "varies"
+      },
+      "ah_nl": {
+        "name": "Go-Tan Vissaus",
+        "package": "fles 200 ml",
+        "size": 200,
+        "unit": "ml"
+      },
+      "rewe_de": {
+        "name": "Suzi Wan Fischsauce",
+        "package": "Flasche 200 ml",
+        "size": 200,
+        "unit": "ml"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Light soy sauce + a mashed anchovy fillet",
+        "note": "Per tbsp of fish sauce. Vegetarian: soy + a few drops of vinegar and a pinch of sugar."
+      }
+    ]
+  },
+  {
+    "id": "sesame_oil",
+    "en": "Toasted sesame oil",
+    "category": "world_food",
+    "role": "core",
+    "note": "A finishing oil, not a frying oil — it burns. Half a teaspoon off the heat at the end does more than a tablespoon in the wok.",
+    "defaults": {
+      "nl": {
+        "name": "Sesamolie (geroosterd)",
+        "package": "flesje 100-250 ml",
+        "size": 100,
+        "unit": "ml"
+      },
+      "de": {
+        "name": "Sesamöl (geröstet)",
+        "package": "Flasche 100-250 ml",
+        "size": 100,
+        "unit": "ml"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Sesamolie",
+        "package": "flesje 100 ml",
+        "size": 100,
+        "unit": "ml"
+      },
+      "lidl_de": {
+        "name": "Vitasia Sesamöl",
+        "package": "Flasche 100 ml",
+        "size": 100,
+        "unit": "ml"
+      },
+      "ah_nl": {
+        "name": "Go-Tan Sesamolie",
+        "package": "flesje 150 ml",
+        "size": 150,
+        "unit": "ml"
+      },
+      "rewe_de": {
+        "name": "Kikkoman Sesamöl",
+        "package": "Flasche 250 ml",
+        "size": 250,
+        "unit": "ml"
+      }
+    }
+  },
+  {
+    "id": "rice_vinegar",
+    "en": "Rice vinegar",
+    "category": "world_food",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Rijstazijn",
+        "package": "fles 250-500 ml",
+        "size": 250,
+        "unit": "ml"
+      },
+      "de": {
+        "name": "Reisessig",
+        "package": "Flasche 250-500 ml",
+        "size": 250,
+        "unit": "ml"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Rijstazijn",
+        "package": "fles 250 ml",
+        "size": 250,
+        "unit": "ml",
+        "availability": "varies"
+      },
+      "ah_nl": {
+        "name": "Go-Tan Rijstazijn",
+        "package": "fles 250 ml",
+        "size": 250,
+        "unit": "ml"
+      },
+      "rewe_de": {
+        "name": "Kikkoman Reisessig",
+        "package": "Flasche 250 ml",
+        "size": 250,
+        "unit": "ml"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "White wine vinegar cut with a little water",
+        "note": "3 parts vinegar to 1 part water plus a pinch of sugar. Apple vinegar also works."
+      }
+    ]
+  },
+  {
+    "id": "mirin",
+    "en": "Mirin",
+    "category": "world_food",
+    "role": "specialty",
+    "note": "Sweet Japanese cooking wine. Only reliably stocked at the bigger full-range stores — the substitute below is genuinely good, so don't hunt for it.",
+    "defaults": {
+      "nl": {
+        "name": "Mirin",
+        "package": "fles 150 ml",
+        "size": 150,
+        "unit": "ml",
+        "availability": "varies"
+      },
+      "de": {
+        "name": "Mirin",
+        "package": "Flasche 150 ml",
+        "size": 150,
+        "unit": "ml",
+        "availability": "varies"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "Go-Tan Mirin",
+        "package": "fles 150 ml",
+        "size": 150,
+        "unit": "ml",
+        "availability": "varies"
+      },
+      "rewe_de": {
+        "name": "Kikkoman Mirin",
+        "package": "Flasche 150 ml",
+        "size": 150,
+        "unit": "ml",
+        "availability": "varies"
+      },
+      "lidl_nl": {
+        "name": "Vitasia Mirin",
+        "package": "fles 150 ml",
+        "size": 150,
+        "unit": "ml",
+        "availability": "seasonal"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "2 tbsp dry sherry or white wine + 1 tsp sugar",
+        "note": "Per 2 tbsp mirin. Non-alcoholic: rice vinegar + sugar in the same ratio."
+      }
+    ]
+  },
+  {
+    "id": "sriracha",
+    "en": "Sriracha",
+    "category": "world_food",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Sriracha chilisaus",
+        "package": "knijpfles 455 ml",
+        "size": 455,
+        "unit": "ml"
+      },
+      "de": {
+        "name": "Sriracha Chilisauce",
+        "package": "Quetschflasche 455 ml",
+        "size": 455,
+        "unit": "ml"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "Flying Goose Sriracha",
+        "package": "fles 455 ml",
+        "size": 455,
+        "unit": "ml"
+      },
+      "lidl_nl": {
+        "name": "Vitasia Sriracha saus",
+        "package": "fles 200 ml",
+        "size": 200,
+        "unit": "ml",
+        "availability": "varies"
+      },
+      "lidl_de": {
+        "name": "Vitasia Sriracha Sauce",
+        "package": "Flasche 200 ml",
+        "size": 200,
+        "unit": "ml",
+        "availability": "varies"
+      },
+      "rewe_de": {
+        "name": "Flying Goose Sriracha",
+        "package": "Flasche 455 ml",
+        "size": 455,
+        "unit": "ml"
+      }
+    },
+    "substitutes": [
+      {
+        "id": "sambal_oelek",
+        "note": "Hotter and not sweet — add a pinch of sugar and a drop of vinegar."
+      }
+    ]
+  },
+  {
+    "id": "sambal_oelek",
+    "en": "Sambal oelek",
+    "category": "world_food",
+    "role": "core",
+    "pantry_default": true,
+    "note": "Crushed raw chilli and salt, nothing else. In the Netherlands it is in every supermarket and most kitchens; treat it as your default chilli source.",
+    "defaults": {
+      "nl": {
+        "name": "Sambal oelek",
+        "package": "potje 200 g",
+        "size": 200,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Sambal Oelek",
+        "package": "Glas 200 g",
+        "size": 200,
+        "unit": "g",
+        "availability": "varies"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "Conimex Sambal Oelek",
+        "package": "potje 200 g",
+        "size": 200,
+        "unit": "g",
+        "shelf": "Wereldkeuken, klein glazen potje met rode inhoud"
+      },
+      "jumbo_nl": {
+        "name": "Conimex Sambal Oelek",
+        "package": "potje 200 g",
+        "size": 200,
+        "unit": "g"
+      },
+      "lidl_nl": {
+        "name": "Vitasia Sambal Oelek",
+        "package": "potje 200 g",
+        "size": 200,
+        "unit": "g"
+      },
+      "lidl_de": {
+        "name": "Vitasia Sambal Oelek",
+        "package": "Glas 200 g",
+        "size": 200,
+        "unit": "g",
+        "availability": "seasonal"
+      },
+      "rewe_de": {
+        "name": "Suzi Wan Sambal Oelek",
+        "package": "Glas 200 g",
+        "size": 200,
+        "unit": "g",
+        "availability": "varies"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Chilli flakes or a fresh red chilli",
+        "note": "1/2 tsp flakes per tsp sambal, plus a pinch of salt."
+      }
+    ]
+  },
+  {
+    "id": "gochujang",
+    "en": "Gochujang",
+    "aka": [
+      "Korean chilli paste"
+    ],
+    "category": "world_food",
+    "role": "specialty",
+    "note": "Fermented chilli paste — sweet, deep, only moderately hot. It has gone mainstream in the last few years and most full-range stores now carry a tub.",
+    "defaults": {
+      "nl": {
+        "name": "Gochujang (Koreaanse chilipasta)",
+        "package": "kuipje 200-500 g",
+        "size": 200,
+        "unit": "g",
+        "availability": "varies"
+      },
+      "de": {
+        "name": "Gochujang (koreanische Chilipaste)",
+        "package": "Becher 200-500 g",
+        "size": 200,
+        "unit": "g",
+        "availability": "varies"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "Bibigo Gochujang",
+        "package": "kuipje 500 g",
+        "size": 500,
+        "unit": "g",
+        "shelf": "Wereldkeuken, rode kunststof kuip"
+      },
+      "rewe_de": {
+        "name": "Bibigo Gochujang",
+        "package": "Becher 500 g",
+        "size": 500,
+        "unit": "g"
+      },
+      "lidl_nl": {
+        "name": "Vitasia Gochujang",
+        "package": "kuipje 200 g",
+        "size": 200,
+        "unit": "g",
+        "availability": "seasonal"
+      },
+      "lidl_de": {
+        "name": "Vitasia Gochujang",
+        "package": "Becher 200 g",
+        "size": 200,
+        "unit": "g",
+        "availability": "seasonal"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "1 tbsp sambal oelek + 1 tsp miso + 1 tsp honey",
+        "note": "Per tbsp of gochujang. Not identical, but it hits sweet-fermented-hot in the same place."
+      }
+    ]
+  },
+  {
+    "id": "miso_paste",
+    "en": "Miso paste",
+    "category": "world_food",
+    "role": "specialty",
+    "note": "Buy white (shiro) miso if there is a choice — it is the mild, sweet one that suits everything here. Keeps for months in the fridge.",
+    "defaults": {
+      "nl": {
+        "name": "Misopasta (wit)",
+        "package": "kuipje 300 g",
+        "size": 300,
+        "unit": "g",
+        "availability": "varies"
+      },
+      "de": {
+        "name": "Miso Paste (hell)",
+        "package": "Becher 300 g",
+        "size": 300,
+        "unit": "g",
+        "availability": "varies"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "AH Miso pasta",
+        "package": "kuipje 300 g",
+        "size": 300,
+        "unit": "g",
+        "availability": "varies"
+      },
+      "rewe_de": {
+        "name": "Miso Paste hell (Weltküche-Regal)",
+        "package": "Becher 300 g",
+        "size": 300,
+        "unit": "g",
+        "availability": "varies"
+      },
+      "lidl_nl": {
+        "name": "Vitasia Miso pasta",
+        "package": "kuipje 300 g",
+        "size": 300,
+        "unit": "g",
+        "availability": "seasonal"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Tahini + light soy sauce, 2:1",
+        "note": "For glazes and dressings only — it will not make miso soup taste like miso soup."
+      }
+    ]
+  },
+  {
+    "id": "curry_paste_red",
+    "en": "Thai red curry paste",
+    "category": "world_food",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Rode currypasta",
+        "package": "potje 100-200 g",
+        "size": 100,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Rote Currypaste",
+        "package": "Glas 100-200 g",
+        "size": 100,
+        "unit": "g"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Rode currypasta",
+        "package": "potje 100 g",
+        "size": 100,
+        "unit": "g"
+      },
+      "lidl_de": {
+        "name": "Vitasia Rote Currypaste",
+        "package": "Glas 100 g",
+        "size": 100,
+        "unit": "g"
+      },
+      "ah_nl": {
+        "name": "Go-Tan Rode currypasta",
+        "package": "potje 100 g",
+        "size": 100,
+        "unit": "g"
+      },
+      "rewe_de": {
+        "name": "Thai Kitchen Rote Currypaste",
+        "package": "Glas 100 g",
+        "size": 100,
+        "unit": "g"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Green curry paste",
+        "note": "Different herb profile, same heat and salt. Use the same amount."
+      }
+    ]
+  },
+  {
+    "id": "curry_paste_green",
+    "en": "Thai green curry paste",
+    "category": "world_food",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Groene currypasta",
+        "package": "potje 100-200 g",
+        "size": 100,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Grüne Currypaste",
+        "package": "Glas 100-200 g",
+        "size": 100,
+        "unit": "g"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Groene currypasta",
+        "package": "potje 100 g",
+        "size": 100,
+        "unit": "g"
+      },
+      "lidl_de": {
+        "name": "Vitasia Grüne Currypaste",
+        "package": "Glas 100 g",
+        "size": 100,
+        "unit": "g"
+      },
+      "ah_nl": {
+        "name": "Go-Tan Groene currypasta",
+        "package": "potje 100 g",
+        "size": 100,
+        "unit": "g"
+      },
+      "rewe_de": {
+        "name": "Thai Kitchen Grüne Currypaste",
+        "package": "Glas 100 g",
+        "size": 100,
+        "unit": "g"
+      }
+    }
+  },
+  {
+    "id": "coconut_milk",
+    "en": "Coconut milk",
+    "category": "world_food",
+    "role": "core",
+    "pantry_default": true,
+    "note": "Full-fat, not 'light'. Don't shake the tin: the thick cream on top is what you fry the curry paste in.",
+    "defaults": {
+      "nl": {
+        "name": "Kokosmelk",
+        "package": "blik 400 ml",
+        "size": 400,
+        "unit": "ml"
+      },
+      "de": {
+        "name": "Kokosmilch",
+        "package": "Dose 400 ml",
+        "size": 400,
+        "unit": "ml"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Kokosmelk",
+        "package": "blik 400 ml",
+        "size": 400,
+        "unit": "ml"
+      },
+      "lidl_de": {
+        "name": "Vitasia Kokosmilch",
+        "package": "Dose 400 ml",
+        "size": 400,
+        "unit": "ml"
+      },
+      "ah_nl": {
+        "name": "AH Kokosmelk",
+        "package": "blik 400 ml",
+        "size": 400,
+        "unit": "ml"
+      },
+      "jumbo_nl": {
+        "name": "Jumbo Kokosmelk",
+        "package": "blik 400 ml",
+        "size": 400,
+        "unit": "ml"
+      },
+      "rewe_de": {
+        "name": "ja! Kokosmilch",
+        "package": "Dose 400 ml",
+        "size": 400,
+        "unit": "ml"
+      }
+    }
+  },
+  {
+    "id": "peanut_butter",
+    "en": "Peanut butter",
+    "category": "condiments",
+    "role": "core",
+    "pantry_default": true,
+    "note": "Use the plain, unsweetened kind if you can. In the Netherlands, 100% pinda pindakaas is on every shelf and makes excellent satay sauce.",
+    "defaults": {
+      "nl": {
+        "name": "Pindakaas naturel (100% pinda)",
+        "package": "pot 350 g",
+        "size": 350,
+        "unit": "g",
+        "aisle": "condiments"
+      },
+      "de": {
+        "name": "Erdnussmus / Erdnussbutter natur",
+        "package": "Glas 350 g",
+        "size": 350,
+        "unit": "g",
+        "aisle": "condiments"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "AH Pindakaas 100% pinda",
+        "package": "pot 350 g",
+        "size": 350,
+        "unit": "g",
+        "aisle": "condiments"
+      },
+      "lidl_nl": {
+        "name": "Maribel Pindakaas",
+        "package": "pot 350 g",
+        "size": 350,
+        "unit": "g",
+        "aisle": "condiments"
+      }
+    }
+  },
+  {
+    "id": "hoisin_sauce",
+    "en": "Hoisin sauce",
+    "category": "world_food",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Hoisinsaus",
+        "package": "fles 250 ml",
+        "size": 250,
+        "unit": "ml"
+      },
+      "de": {
+        "name": "Hoisin Sauce",
+        "package": "Flasche 250 ml",
+        "size": 250,
+        "unit": "ml"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Hoisinsaus",
+        "package": "fles 250 ml",
+        "size": 250,
+        "unit": "ml"
+      },
+      "lidl_de": {
+        "name": "Vitasia Hoisin Sauce",
+        "package": "Flasche 250 ml",
+        "size": 250,
+        "unit": "ml"
+      },
+      "ah_nl": {
+        "name": "Go-Tan Hoisinsaus",
+        "package": "fles 250 ml",
+        "size": 250,
+        "unit": "ml"
+      },
+      "rewe_de": {
+        "name": "Suzi Wan Hoisin Sauce",
+        "package": "Flasche 200 ml",
+        "size": 200,
+        "unit": "ml"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "2 tbsp ketjap manis + 1 tsp peanut butter + a drop of vinegar",
+        "note": "Per 2 tbsp hoisin. Close enough for char siu."
+      }
+    ]
+  },
+  {
+    "id": "sweet_chilli",
+    "en": "Sweet chilli sauce",
+    "category": "world_food",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Zoete chilisaus",
+        "package": "fles 250-700 ml",
+        "size": 250,
+        "unit": "ml"
+      },
+      "de": {
+        "name": "Süße Chilisauce",
+        "package": "Flasche 250-700 ml",
+        "size": 250,
+        "unit": "ml"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vitasia Zoete chilisaus",
+        "package": "fles 250 ml",
+        "size": 250,
+        "unit": "ml"
+      },
+      "lidl_de": {
+        "name": "Vitasia Süße Chilisauce",
+        "package": "Flasche 250 ml",
+        "size": 250,
+        "unit": "ml"
+      },
+      "ah_nl": {
+        "name": "Go-Tan Sweet chilli saus",
+        "package": "fles 270 ml",
+        "size": 270,
+        "unit": "ml"
+      }
+    }
+  },
+  {
+    "id": "kimchi",
+    "en": "Kimchi",
+    "category": "world_food",
+    "role": "specialty",
+    "note": "In the chilled section, not the world food aisle — look near the sauerkraut or the vegetarian fridge.",
+    "defaults": {
+      "nl": {
+        "name": "Kimchi",
+        "package": "pot 300-500 g",
+        "size": 300,
+        "unit": "g",
+        "aisle": "dairy_eggs",
+        "availability": "varies"
+      },
+      "de": {
+        "name": "Kimchi",
+        "package": "Glas 300-500 g",
+        "size": 300,
+        "unit": "g",
+        "aisle": "dairy_eggs",
+        "availability": "varies"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "AH Kimchi",
+        "package": "pot 300 g",
+        "size": 300,
+        "unit": "g",
+        "aisle": "dairy_eggs"
+      },
+      "rewe_de": {
+        "name": "Kimchi (Kühlregal)",
+        "package": "Glas 300 g",
+        "size": 300,
+        "unit": "g",
+        "aisle": "dairy_eggs",
+        "availability": "varies"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Sauerkraut + 1 tsp gochujang + 1/2 tsp sugar per 100 g",
+        "note": "Drain the sauerkraut first. Surprisingly convincing in fried rice and stews."
+      }
+    ]
+  },
+  {
+    "id": "nori",
+    "en": "Nori sheets",
+    "category": "world_food",
+    "role": "specialty",
+    "defaults": {
+      "nl": {
+        "name": "Nori vellen",
+        "package": "pak 10 vellen",
+        "size": 10,
+        "unit": "piece",
+        "availability": "varies"
+      },
+      "de": {
+        "name": "Noriblätter",
+        "package": "Packung 10 Blatt",
+        "size": 10,
+        "unit": "piece",
+        "availability": "varies"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "AH Nori vellen",
+        "package": "pak 10 vellen",
+        "size": 10,
+        "unit": "piece"
+      },
+      "lidl_nl": {
+        "name": "Vitasia Nori vellen",
+        "package": "pak 10 vellen",
+        "size": 10,
+        "unit": "piece",
+        "availability": "seasonal"
+      },
+      "lidl_de": {
+        "name": "Vitasia Noriblätter",
+        "package": "Packung 10 Blatt",
+        "size": 10,
+        "unit": "piece",
+        "availability": "seasonal"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Leave it out",
+        "note": "It is a garnish. A ramen bowl without nori is still a ramen bowl."
+      }
+    ]
+  },
+  {
+    "id": "sunflower_oil",
+    "en": "Neutral frying oil",
+    "category": "condiments",
+    "role": "core",
+    "pantry_default": true,
+    "note": "Sunflower or rapeseed. Olive oil burns and tastes wrong in a wok.",
+    "defaults": {
+      "nl": {
+        "name": "Zonnebloemolie",
+        "package": "fles 1 l",
+        "size": 1000,
+        "unit": "ml",
+        "aisle": "condiments"
+      },
+      "de": {
+        "name": "Sonnenblumenöl",
+        "package": "Flasche 1 l",
+        "size": 1000,
+        "unit": "ml",
+        "aisle": "condiments"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Vita D'or Zonnebloemolie",
+        "package": "fles 1 l",
+        "size": 1000,
+        "unit": "ml",
+        "aisle": "condiments"
+      },
+      "lidl_de": {
+        "name": "Vita D'or Sonnenblumenöl",
+        "package": "Flasche 1 l",
+        "size": 1000,
+        "unit": "ml",
+        "aisle": "condiments"
+      }
+    }
+  },
+  {
+    "id": "salt",
+    "en": "Salt",
+    "category": "spices",
+    "role": "core",
+    "pantry_default": true,
+    "defaults": {
+      "nl": {
+        "name": "Keukenzout",
+        "package": "pak 1 kg",
+        "size": 1000,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "de": {
+        "name": "Speisesalz",
+        "package": "Packung 500 g",
+        "size": 500,
+        "unit": "g",
+        "aisle": "spices"
+      }
+    }
+  },
+  {
+    "id": "black_pepper",
+    "en": "Black pepper",
+    "category": "spices",
+    "role": "core",
+    "pantry_default": true,
+    "defaults": {
+      "nl": {
+        "name": "Zwarte peper (molen)",
+        "package": "molen 50 g",
+        "size": 50,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "de": {
+        "name": "Schwarzer Pfeffer (Mühle)",
+        "package": "Mühle 50 g",
+        "size": 50,
+        "unit": "g",
+        "aisle": "spices"
+      }
+    }
+  },
+  {
+    "id": "chilli_flakes",
+    "en": "Chilli flakes",
+    "category": "spices",
+    "role": "core",
+    "pantry_default": true,
+    "defaults": {
+      "nl": {
+        "name": "Chilivlokken / gedroogde chilipeper",
+        "package": "potje 30 g",
+        "size": 30,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "de": {
+        "name": "Chiliflocken",
+        "package": "Streuer 30 g",
+        "size": 30,
+        "unit": "g",
+        "aisle": "spices"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Kania Chilivlokken",
+        "package": "potje 30 g",
+        "size": 30,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "lidl_de": {
+        "name": "Kania Chiliflocken",
+        "package": "Streuer 30 g",
+        "size": 30,
+        "unit": "g",
+        "aisle": "spices"
+      }
+    }
+  },
+  {
+    "id": "five_spice",
+    "en": "Chinese five-spice",
+    "category": "spices",
+    "role": "specialty",
+    "note": "Star anise, cinnamon, clove, fennel, pepper. One teaspoon is the difference between 'pork in soy sauce' and char siu.",
+    "defaults": {
+      "nl": {
+        "name": "Vijfkruidenpoeder",
+        "package": "potje 30-40 g",
+        "size": 30,
+        "unit": "g",
+        "aisle": "spices",
+        "availability": "varies"
+      },
+      "de": {
+        "name": "Fünf-Gewürze-Pulver",
+        "package": "Streuer 30-40 g",
+        "size": 30,
+        "unit": "g",
+        "aisle": "spices",
+        "availability": "varies"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "Conimex Vijfkruidenpoeder",
+        "package": "potje 33 g",
+        "size": 33,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "jumbo_nl": {
+        "name": "Verstegen Chinese vijfkruidenpoeder",
+        "package": "potje 20 g",
+        "size": 20,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "lidl_nl": {
+        "name": "Kania Vijfkruidenpoeder",
+        "package": "potje 30 g",
+        "size": 30,
+        "unit": "g",
+        "aisle": "spices",
+        "availability": "seasonal"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "1/2 tsp cinnamon + 1/4 tsp ground fennel + a pinch of ground clove and pepper",
+        "note": "Per tsp. Or crush one star anise with 1/2 tsp cinnamon."
+      }
+    ]
+  },
+  {
+    "id": "star_anise",
+    "en": "Star anise",
+    "category": "spices",
+    "role": "specialty",
+    "defaults": {
+      "nl": {
+        "name": "Steranijs",
+        "package": "potje 15 g",
+        "size": 15,
+        "unit": "g",
+        "aisle": "spices",
+        "availability": "varies"
+      },
+      "de": {
+        "name": "Sternanis",
+        "package": "Glas 15 g",
+        "size": 15,
+        "unit": "g",
+        "aisle": "spices",
+        "availability": "varies"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "1/4 tsp five-spice powder",
+        "note": "Per star. Or a pinch of fennel seed plus a small piece of cinnamon."
+      }
+    ]
+  },
+  {
+    "id": "cinnamon_stick",
+    "en": "Cinnamon stick",
+    "category": "spices",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Kaneelstokjes",
+        "package": "potje 15 g",
+        "size": 15,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "de": {
+        "name": "Zimtstangen",
+        "package": "Glas 15 g",
+        "size": 15,
+        "unit": "g",
+        "aisle": "spices"
+      }
+    }
+  },
+  {
+    "id": "curry_powder",
+    "en": "Curry powder",
+    "category": "spices",
+    "role": "core",
+    "pantry_default": true,
+    "note": "The mild European blend. It is the backbone of Singapore noodles and of Japanese curry made from scratch.",
+    "defaults": {
+      "nl": {
+        "name": "Kerriepoeder",
+        "package": "potje 50 g",
+        "size": 50,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "de": {
+        "name": "Curry Pulver",
+        "package": "Streuer 50 g",
+        "size": 50,
+        "unit": "g",
+        "aisle": "spices"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Kania Kerrie",
+        "package": "potje 50 g",
+        "size": 50,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "lidl_de": {
+        "name": "Kania Curry",
+        "package": "Streuer 50 g",
+        "size": 50,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "ah_nl": {
+        "name": "AH Kerriepoeder",
+        "package": "potje 45 g",
+        "size": 45,
+        "unit": "g",
+        "aisle": "spices"
+      }
+    }
+  },
+  {
+    "id": "turmeric",
+    "en": "Ground turmeric",
+    "category": "spices",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Kurkuma (geelwortel)",
+        "package": "potje 40 g",
+        "size": 40,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "de": {
+        "name": "Kurkuma gemahlen",
+        "package": "Streuer 40 g",
+        "size": 40,
+        "unit": "g",
+        "aisle": "spices"
+      }
+    }
+  },
+  {
+    "id": "cumin_ground",
+    "en": "Ground cumin",
+    "category": "spices",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Komijnpoeder (djinten)",
+        "package": "potje 40 g",
+        "size": 40,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "de": {
+        "name": "Kreuzkümmel gemahlen",
+        "package": "Streuer 40 g",
+        "size": 40,
+        "unit": "g",
+        "aisle": "spices"
+      }
+    }
+  },
+  {
+    "id": "coriander_ground",
+    "en": "Ground coriander",
+    "category": "spices",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Korianderpoeder (ketoembar)",
+        "package": "potje 30 g",
+        "size": 30,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "de": {
+        "name": "Koriander gemahlen",
+        "package": "Streuer 30 g",
+        "size": 30,
+        "unit": "g",
+        "aisle": "spices"
+      }
+    }
+  },
+  {
+    "id": "garam_masala",
+    "en": "Garam masala",
+    "category": "spices",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Garam masala",
+        "package": "potje 40 g",
+        "size": 40,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "de": {
+        "name": "Garam Masala",
+        "package": "Streuer 40 g",
+        "size": 40,
+        "unit": "g",
+        "aisle": "spices"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Curry powder + a pinch of cinnamon and ground clove",
+        "note": "Not the same, but it lands in the right family."
+      }
+    ]
+  },
+  {
+    "id": "paprika_powder",
+    "en": "Sweet paprika",
+    "category": "spices",
+    "role": "core",
+    "pantry_default": true,
+    "note": "Doing the job of Korean gochugaru in a pinch: paprika for the colour, chilli flakes for the heat.",
+    "defaults": {
+      "nl": {
+        "name": "Paprikapoeder zoet",
+        "package": "potje 50 g",
+        "size": 50,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "de": {
+        "name": "Paprika edelsüß",
+        "package": "Streuer 50 g",
+        "size": 50,
+        "unit": "g",
+        "aisle": "spices"
+      }
+    }
+  },
+  {
+    "id": "sichuan_pepper",
+    "en": "Sichuan pepper",
+    "category": "spices",
+    "role": "specialty",
+    "note": "Honest answer: no mainstream European supermarket reliably stocks this, and nothing tastes like it. The numbing tingle is optional — the dish still works without it.",
+    "defaults": {
+      "nl": {
+        "name": "Szechuanpeper",
+        "package": "potje 20 g",
+        "size": 20,
+        "unit": "g",
+        "aisle": "spices",
+        "availability": "varies"
+      },
+      "de": {
+        "name": "Szechuanpfeffer",
+        "package": "Glas 20 g",
+        "size": 20,
+        "unit": "g",
+        "aisle": "spices",
+        "availability": "varies"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Extra black pepper + a strip of lemon zest",
+        "note": "Gets the aroma, not the tingle. Order the real thing online if you fall for mapo tofu."
+      }
+    ]
+  },
+  {
+    "id": "laos_galangal",
+    "en": "Ground galangal",
+    "aka": [
+      "laos"
+    ],
+    "category": "spices",
+    "role": "specialty",
+    "note": "A Dutch supermarket quirk: because of the Indonesian connection, ground laos sits in the ordinary spice rack in NL. German stores rarely have it.",
+    "defaults": {
+      "nl": {
+        "name": "Laos (galangapoeder)",
+        "package": "potje 20 g",
+        "size": 20,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "de": {
+        "name": "Galgant gemahlen",
+        "package": "Glas 20 g",
+        "size": 20,
+        "unit": "g",
+        "aisle": "spices",
+        "availability": "varies"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "Verstegen Laos",
+        "package": "potje 20 g",
+        "size": 20,
+        "unit": "g",
+        "aisle": "spices"
+      },
+      "jumbo_nl": {
+        "name": "Verstegen Laos",
+        "package": "potje 20 g",
+        "size": 20,
+        "unit": "g",
+        "aisle": "spices"
+      }
+    },
+    "substitutes": [
+      {
+        "id": "ginger",
+        "note": "Use fresh ginger plus a squeeze of lime. Sharper and less piney, but it works."
+      }
+    ]
+  },
+  {
+    "id": "lemongrass",
+    "en": "Lemongrass",
+    "category": "produce",
+    "role": "specialty",
+    "defaults": {
+      "nl": {
+        "name": "Citroengras (sereh)",
+        "package": "2 stengels",
+        "size": 2,
+        "unit": "piece",
+        "availability": "varies",
+        "shelf": "Bij de exotische groenten, of als pasta in een tube bij de verse kruiden"
+      },
+      "de": {
+        "name": "Zitronengras",
+        "package": "2 Stängel",
+        "size": 2,
+        "unit": "piece",
+        "availability": "varies"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Zest of half a lime + a strip of lemon peel",
+        "note": "Bruise it into the pan the same way. Lemongrass paste in a tube is the other easy option."
+      }
+    ]
+  },
+  {
+    "id": "dry_sherry",
+    "en": "Dry sherry",
+    "category": "drinks",
+    "role": "core",
+    "note": "The standing substitute for Shaoxing rice wine, which mainstream stores do not carry. Dry sherry is genuinely close — this is the one swap Chinese cooks abroad agree on.",
+    "defaults": {
+      "nl": {
+        "name": "Dry sherry (fino)",
+        "package": "fles 750 ml",
+        "size": 750,
+        "unit": "ml",
+        "aisle": "drinks"
+      },
+      "de": {
+        "name": "Sherry trocken (Fino)",
+        "package": "Flasche 750 ml",
+        "size": 750,
+        "unit": "ml",
+        "aisle": "drinks"
+      }
+    },
+    "substitutes": [
+      {
+        "text": "Dry white wine, or leave it out",
+        "note": "Non-alcoholic: 1 tbsp stock + 1/2 tsp rice vinegar per tbsp."
+      }
+    ]
+  },
+  {
+    "id": "stock_cube_chicken",
+    "en": "Chicken stock cube",
+    "category": "dry_goods",
+    "role": "core",
+    "pantry_default": true,
+    "defaults": {
+      "nl": {
+        "name": "Kippenbouillonblokjes",
+        "package": "doos 8-12 blokjes",
+        "size": 10,
+        "unit": "piece"
+      },
+      "de": {
+        "name": "Hühnerbrühwürfel",
+        "package": "Packung 8-12 Würfel",
+        "size": 10,
+        "unit": "piece"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Kania Kippenbouillonblokjes",
+        "package": "doos 12 blokjes",
+        "size": 12,
+        "unit": "piece"
+      },
+      "lidl_de": {
+        "name": "Kania Hühnerbrühwürfel",
+        "package": "Packung 12 Würfel",
+        "size": 12,
+        "unit": "piece"
+      }
+    }
+  },
+  {
+    "id": "stock_cube_veg",
+    "en": "Vegetable stock cube",
+    "category": "dry_goods",
+    "role": "core",
+    "pantry_default": true,
+    "defaults": {
+      "nl": {
+        "name": "Groentebouillonblokjes",
+        "package": "doos 8-12 blokjes",
+        "size": 10,
+        "unit": "piece"
+      },
+      "de": {
+        "name": "Gemüsebrühwürfel",
+        "package": "Packung 8-12 Würfel",
+        "size": 10,
+        "unit": "piece"
+      }
+    }
+  },
+  {
+    "id": "tomato_puree",
+    "en": "Tomato purée",
+    "category": "canned",
+    "role": "core",
+    "pantry_default": true,
+    "defaults": {
+      "nl": {
+        "name": "Tomatenpuree",
+        "package": "blikje 70 g",
+        "size": 70,
+        "unit": "g",
+        "aisle": "canned"
+      },
+      "de": {
+        "name": "Tomatenmark",
+        "package": "Dose 70 g",
+        "size": 70,
+        "unit": "g",
+        "aisle": "canned"
+      }
+    }
+  },
+  {
+    "id": "tomatoes_tinned",
+    "en": "Chopped tomatoes",
+    "category": "canned",
+    "role": "core",
+    "pantry_default": true,
+    "defaults": {
+      "nl": {
+        "name": "Tomatenblokjes",
+        "package": "blik 400 g",
+        "size": 400,
+        "unit": "g",
+        "aisle": "canned"
+      },
+      "de": {
+        "name": "Gehackte Tomaten",
+        "package": "Dose 400 g",
+        "size": 400,
+        "unit": "g",
+        "aisle": "canned"
+      }
+    },
+    "products": {
+      "lidl_nl": {
+        "name": "Freshona Tomatenblokjes",
+        "package": "blik 400 g",
+        "size": 400,
+        "unit": "g",
+        "aisle": "canned"
+      },
+      "lidl_de": {
+        "name": "Freshona Gehackte Tomaten",
+        "package": "Dose 400 g",
+        "size": 400,
+        "unit": "g",
+        "aisle": "canned"
+      }
+    }
+  },
+  {
+    "id": "pineapple_tinned",
+    "en": "Pineapple chunks in juice",
+    "category": "canned",
+    "role": "core",
+    "defaults": {
+      "nl": {
+        "name": "Ananasstukjes op sap",
+        "package": "blik 425 g",
+        "size": 425,
+        "unit": "g",
+        "aisle": "canned"
+      },
+      "de": {
+        "name": "Ananasstücke in Saft",
+        "package": "Dose 425 g",
+        "size": 425,
+        "unit": "g",
+        "aisle": "canned"
+      }
+    }
+  },
+  {
+    "id": "ketchup",
+    "en": "Tomato ketchup",
+    "category": "condiments",
+    "role": "core",
+    "pantry_default": true,
+    "note": "Yes, really. Ketchup is the shortcut base for sweet-and-sour sauce and no one will guess.",
+    "defaults": {
+      "nl": {
+        "name": "Tomatenketchup",
+        "package": "fles 500 ml",
+        "size": 500,
+        "unit": "ml",
+        "aisle": "condiments"
+      },
+      "de": {
+        "name": "Tomatenketchup",
+        "package": "Flasche 500 ml",
+        "size": 500,
+        "unit": "ml",
+        "aisle": "condiments"
+      }
+    }
+  },
+  {
+    "id": "satay_mix",
+    "en": "Satay sauce mix",
+    "category": "world_food",
+    "role": "specialty",
+    "note": "A Dutch shortcut worth knowing: Conimex sells a satay sauce mix you whisk with water. Not as good as making it from peanut butter, but it is 90 seconds.",
+    "defaults": {
+      "nl": {
+        "name": "Sausmix voor sate",
+        "package": "zakje 44 g",
+        "size": 44,
+        "unit": "g"
+      },
+      "de": {
+        "name": "Erdnusssauce (Fertigmischung)",
+        "package": "Beutel 40 g",
+        "size": 40,
+        "unit": "g",
+        "availability": "varies"
+      }
+    },
+    "products": {
+      "ah_nl": {
+        "name": "Conimex Sausmix voor Sate",
+        "package": "zakje 44 g",
+        "size": 44,
+        "unit": "g",
+        "shelf": "Wereldkeuken, blauwe Conimex-zakjes"
+      },
+      "jumbo_nl": {
+        "name": "Conimex Sausmix voor Sate",
+        "package": "zakje 44 g",
+        "size": 44,
+        "unit": "g"
+      }
+    },
+    "substitutes": [
+      {
+        "id": "peanut_butter",
+        "note": "The from-scratch route in this app uses peanut butter, ketjap and sambal. It is better."
+      }
+    ]
+  }
+]

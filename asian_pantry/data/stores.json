@@ -1,0 +1,110 @@
+{
+  "aisle_labels": {
+    "en": {
+      "produce": "Fruit & Vegetables",
+      "bakery": "Bakery",
+      "meat_fish": "Meat & Fish",
+      "dairy_eggs": "Dairy & Eggs",
+      "frozen": "Frozen",
+      "dry_goods": "Rice, Pasta & Noodles",
+      "canned": "Tins & Jars",
+      "world_food": "World Food / Asian aisle",
+      "condiments": "Sauces & Oils",
+      "spices": "Herbs & Spices",
+      "baking": "Baking & Sugar",
+      "snacks": "Nuts & Snacks",
+      "drinks": "Drinks"
+    },
+    "nl": {
+      "produce": "Groente & Fruit",
+      "bakery": "Brood & Banket",
+      "meat_fish": "Vlees & Vis",
+      "dairy_eggs": "Zuivel & Eieren",
+      "frozen": "Diepvries",
+      "dry_goods": "Rijst, Pasta & Noedels",
+      "canned": "Conserven",
+      "world_food": "Wereldkeuken",
+      "condiments": "Sauzen & Olie",
+      "spices": "Kruiden & Specerijen",
+      "baking": "Bakproducten & Suiker",
+      "snacks": "Noten & Snacks",
+      "drinks": "Dranken"
+    },
+    "de": {
+      "produce": "Obst & Gemüse",
+      "bakery": "Backwaren",
+      "meat_fish": "Fleisch & Fisch",
+      "dairy_eggs": "Kühlregal (Milch & Eier)",
+      "frozen": "Tiefkühl",
+      "dry_goods": "Reis, Nudeln & Pasta",
+      "canned": "Konserven",
+      "world_food": "Weltküche / Asien-Regal",
+      "condiments": "Saucen & Öle",
+      "spices": "Gewürze",
+      "baking": "Backzutaten & Zucker",
+      "snacks": "Nüsse & Snacks",
+      "drinks": "Getränke"
+    }
+  },
+  "default_aisle_order": [
+    "produce", "bakery", "meat_fish", "dairy_eggs", "frozen",
+    "dry_goods", "canned", "world_food", "condiments", "spices",
+    "baking", "snacks", "drinks"
+  ],
+  "regions": [
+    { "code": "NL", "name": "Netherlands", "language": "nl", "language_name": "Dutch" },
+    { "code": "DE", "name": "Germany", "language": "de", "language_name": "German" }
+  ],
+  "stores": [
+    {
+      "id": "lidl_nl",
+      "name": "Lidl",
+      "region": "NL",
+      "language": "nl",
+      "kind": "Discounter",
+      "asian_range": "Vitasia",
+      "note": "The Asian range is almost entirely the Vitasia house brand, on one shelf in the Wereldkeuken block. A few items only appear during the twice-yearly Asia theme week — those are flagged as seasonal.",
+      "aisle_order": ["produce", "bakery", "dairy_eggs", "meat_fish", "frozen", "dry_goods", "canned", "world_food", "condiments", "spices", "baking", "snacks", "drinks"]
+    },
+    {
+      "id": "ah_nl",
+      "name": "Albert Heijn",
+      "region": "NL",
+      "language": "nl",
+      "kind": "Full-range supermarket",
+      "asian_range": "AH huismerk, Conimex, Go-Tan",
+      "note": "The widest Asian selection of the Dutch chains. Conimex and Go-Tan cover Indonesian and Chinese basics; larger stores carry a separate Aziatisch/Oosters shelf.",
+      "aisle_order": ["produce", "bakery", "meat_fish", "dairy_eggs", "frozen", "dry_goods", "canned", "world_food", "condiments", "spices", "baking", "snacks", "drinks"]
+    },
+    {
+      "id": "jumbo_nl",
+      "name": "Jumbo",
+      "region": "NL",
+      "language": "nl",
+      "kind": "Full-range supermarket",
+      "asian_range": "Jumbo huismerk, Conimex, Go-Tan",
+      "note": "Very close to Albert Heijn in range. Where a Jumbo own-brand item is missing, the Conimex or Go-Tan equivalent is nearly always on the same shelf.",
+      "aisle_order": ["produce", "bakery", "meat_fish", "dairy_eggs", "frozen", "dry_goods", "canned", "world_food", "condiments", "spices", "baking", "snacks", "drinks"]
+    },
+    {
+      "id": "lidl_de",
+      "name": "Lidl",
+      "region": "DE",
+      "language": "de",
+      "kind": "Discounter",
+      "asian_range": "Vitasia",
+      "note": "Same Vitasia range as the Dutch stores, German labelling. The Asia-Wochen theme weeks add fresh noodles, gyoza and specialty sauces for a couple of weeks at a time.",
+      "aisle_order": ["produce", "bakery", "dairy_eggs", "meat_fish", "frozen", "dry_goods", "canned", "world_food", "condiments", "spices", "baking", "snacks", "drinks"]
+    },
+    {
+      "id": "rewe_de",
+      "name": "REWE",
+      "region": "DE",
+      "language": "de",
+      "kind": "Full-range supermarket",
+      "asian_range": "ja!, REWE Beste Wahl, Kikkoman, Suzi Wan",
+      "note": "Carries branded Asian staples (Kikkoman, Suzi Wan, Thai Kitchen) alongside the ja! budget line, usually in a dedicated Weltküche block.",
+      "aisle_order": ["produce", "bakery", "meat_fish", "dairy_eggs", "frozen", "dry_goods", "canned", "world_food", "condiments", "spices", "baking", "snacks", "drinks"]
+    }
+  ]
+}

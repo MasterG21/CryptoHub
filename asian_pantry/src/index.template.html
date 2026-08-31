@@ -1,0 +1,26 @@
+<title>Asian Pantry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Fira+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Fira+Mono:wght@400&display=swap">
+<style>
+{{STYLES}}
+</style>
+<!-- head above / body below -->
+
+<div class="app">
+  <header class="topbar">
+    <div class="topbar__brand">
+      <span class="topbar__title">Asian Pantry</span>
+      <button class="topbar__store" id="store-btn" data-go="#/store"></button>
+    </div>
+  </header>
+  <main class="main" id="main"></main>
+</div>
+<nav class="tabs" id="tabs" aria-label="Sections"></nav>
+<div id="sheet"></div>
+<div id="toast" aria-live="polite"></div>
+
+<script>window.__DATA__ = {{DATA}};</script>
+<script>
+{{APP}}
+</script>

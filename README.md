@@ -1,5 +1,30 @@
 # CryptoHub
 
+A repository of small, self-contained tools. Each lives in its own directory and
+has no dependency on the others.
+
+| Tool | What it is |
+|---|---|
+| [`asian_pantry`](asian_pantry/) | Mobile web app for cooking Asian food from European supermarkets |
+| [`robinhood_meme_scan`](#robinhood_meme_scan) | CLI heuristic health-check for meme coins on Robinhood Chain |
+
+## asian_pantry
+
+A mobile web app that maps Asian recipe ingredients onto products you can
+actually buy at Lidl, Albert Heijn, Jumbo or REWE — local product name, package
+size, aisle, and a substitute for everything that is not always on the shelf.
+Includes 25 recipes, an aisle-sorted shopping list, and a reverse search that
+ranks recipes by how little you still need to buy.
+
+```bash
+python3 asian_pantry/build.py     # writes pantry.html; open it in any browser
+```
+
+The build inlines the CSS, JS and data into a single offline HTML file — no
+server, no toolchain, no runtime network. See
+[asian_pantry/README.md](asian_pantry/README.md) for the data model and how to
+add a supermarket chain.
+
 ## robinhood_meme_scan
 
 A CLI heuristic health-check for ERC-20 meme coins on [Robinhood Chain](https://chain.robinhood.com)
@@ -84,7 +109,8 @@ python -m robinhood_meme_scan 0xTokenContractAddress \
 
 ### Tests
 
-The scoring logic is unit-tested with mocked data (no network needed):
+The scoring logic is unit-tested with mocked data (no network needed). The same
+command also runs the Asian Pantry data-integrity checks:
 
 ```bash
 python -m pytest tests/

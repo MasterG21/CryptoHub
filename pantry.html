@@ -1,0 +1,1319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Cook Asian food from a European supermarket: every recipe ingredient mapped to a real product at Lidl, Albert Heijn, Jumbo or REWE.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#e7eae1">
+<title>Asian Pantry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Fira+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Fira+Mono:wght@400&display=swap">
+<style>
+/* ---- tokens ------------------------------------------------------------ */
+:root {
+  --ground: #e7eae1;
+  --surface: #fbfbf7;
+  --surface-2: #f1f3ea;
+  --ink: #16190f;
+  --ink-soft: #5b6151;
+  --ink-faint: #868c79;
+  --line: #d3d8c6;
+  --line-soft: #e2e6d8;
+  --accent: #c2381c;
+  --accent-ink: #ffffff;
+  --accent-wash: #f6e2dc;
+  --good: #2b6a4c;
+  --good-wash: #dfeee5;
+  --warn: #96580a;
+  --warn-wash: #f6e8d3;
+  --shadow: 0 1px 2px rgba(22, 25, 15, .07), 0 6px 16px -8px rgba(22, 25, 15, .18);
+  --radius: 6px;
+  --tap: 44px;
+  --font-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Fira Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Fira Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #101208;
+    --surface: #1b1e15;
+    --surface-2: #23271c;
+    --ink: #eceee2;
+    --ink-soft: #a1a892;
+    --ink-faint: #7b8270;
+    --line: #2f3427;
+    --line-soft: #262b1f;
+    --accent: #ff6a45;
+    --accent-ink: #1b0d08;
+    --accent-wash: #38180f;
+    --good: #74c39a;
+    --good-wash: #16301f;
+    --warn: #d9a441;
+    --warn-wash: #322512;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 20px -10px rgba(0, 0, 0, .6);
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #101208;
+  --surface: #1b1e15;
+  --surface-2: #23271c;
+  --ink: #eceee2;
+  --ink-soft: #a1a892;
+  --ink-faint: #7b8270;
+  --line: #2f3427;
+  --line-soft: #262b1f;
+  --accent: #ff6a45;
+  --accent-ink: #1b0d08;
+  --accent-wash: #38180f;
+  --good: #74c39a;
+  --good-wash: #16301f;
+  --warn: #d9a441;
+  --warn-wash: #322512;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 20px -10px rgba(0, 0, 0, .6);
+}
+
+/* ---- base -------------------------------------------------------------- */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  overflow-wrap: break-word;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; border: none; background: none; padding: 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.1; margin: 0; text-wrap: balance; letter-spacing: .005em; }
+p { margin: 0; }
+ol, ul { margin: 0; padding: 0; }
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: 12px; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.mono { font-family: var(--font-mono); font-size: .86em; font-variant-numeric: tabular-nums; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---- app frame --------------------------------------------------------- */
+.app {
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--ground);
+  display: flex;
+  flex-direction: column;
+  border-inline: 1px solid var(--line-soft);
+}
+.topbar {
+  position: sticky; top: 0; z-index: 30;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.topbar__brand { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+.topbar__title { font-family: var(--font-display); font-size: 21px; font-weight: 700; letter-spacing: .01em; }
+.topbar__store {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--ink-soft);
+  background: none; text-align: left;
+}
+.topbar__store b { color: var(--ink); font-weight: 600; }
+.topbar__store::after { content: "change"; color: var(--accent); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-family: var(--font-display); }
+
+.main { flex: 1; padding: 16px 16px 96px; display: flex; flex-direction: column; gap: 16px; }
+.view { display: flex; flex-direction: column; gap: 16px; }
+
+/* ---- tab bar ----------------------------------------------------------- */
+.tabs {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+  max-width: 520px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.tab {
+  min-height: 56px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  color: var(--ink-faint);
+  font-family: var(--font-display); font-size: 12px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+  border-top: 2px solid transparent;
+  position: relative;
+}
+.tab svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.tab[aria-current="page"] { color: var(--ink); border-top-color: var(--accent); }
+.tab__count {
+  position: absolute; top: 7px; left: 50%; margin-left: 4px;
+  min-width: 17px; height: 17px; padding: 0 4px;
+  background: var(--accent); color: var(--accent-ink);
+  border-radius: 9px;
+  font-size: 10px; line-height: 17px; text-align: center; letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- cards ------------------------------------------------------------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.section-head h2 { font-size: 20px; }
+
+/* ---- search + filters -------------------------------------------------- */
+.search {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 0 12px; min-height: var(--tap);
+}
+.search input { flex: 1; border: none; background: none; min-width: 0; padding: 11px 0; }
+.search input::placeholder { color: var(--ink-faint); }
+.search svg { width: 17px; height: 17px; flex: none; fill: none; stroke: var(--ink-faint); stroke-width: 1.8; }
+
+.chips { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  background: var(--surface);
+  font-family: var(--font-display); font-size: 13px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+.chip--clear { color: var(--accent); border-style: dashed; }
+
+/* ---- recipe cards ------------------------------------------------------ */
+.recipes { display: flex; flex-direction: column; gap: 10px; }
+.rcard {
+  display: grid; grid-template-columns: 62px 1fr; align-items: stretch;
+  text-align: left; width: 100%;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.rcard__mark {
+  background: var(--surface-2);
+  border-right: 1px solid var(--line-soft);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  padding: 10px 4px;
+}
+.rcard__time { font-family: var(--font-display); font-size: 25px; font-weight: 700; line-height: 1; }
+.rcard__unit { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); font-family: var(--font-display); }
+.rcard__body { padding: 11px 13px 12px; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.rcard__title { font-family: var(--font-display); font-size: 20px; font-weight: 600; }
+.rcard__cuisine { font-size: 12px; color: var(--ink-faint); letter-spacing: .01em; }
+.rcard__blurb { font-size: 13px; color: var(--ink-soft); line-height: 1.4; }
+.rcard__foot { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+
+.tag {
+  font-family: var(--font-display); font-size: 11px; font-weight: 600;
+  letter-spacing: .09em; text-transform: uppercase;
+  padding: 3px 7px; border-radius: 3px;
+  background: var(--surface-2); color: var(--ink-soft);
+  border: 1px solid var(--line-soft);
+}
+.tag--have { background: var(--good-wash); color: var(--good); border-color: transparent; }
+.tag--need { background: var(--accent-wash); color: var(--accent); border-color: transparent; }
+.tag--warn { background: var(--warn-wash); color: var(--warn); border-color: transparent; }
+.heat { color: var(--accent); letter-spacing: .05em; font-size: 12px; }
+.heat span { opacity: .25; }
+
+.empty {
+  text-align: center; padding: 34px 20px; color: var(--ink-soft);
+  border: 1px dashed var(--line); border-radius: var(--radius);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.empty strong { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--ink); }
+
+/* ---- recipe detail ----------------------------------------------------- */
+.back {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-display); font-size: 13px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft);
+  min-height: 32px;
+}
+.detail__head { display: flex; flex-direction: column; gap: 7px; }
+.detail__title { font-size: 30px; }
+.detail__blurb { color: var(--ink-soft); font-size: 14px; }
+.detail__meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+.servings {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 11px 14px;
+}
+.servings__label { font-family: var(--font-display); font-size: 14px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft); }
+.stepper { display: flex; align-items: center; gap: 4px; }
+.stepper button {
+  width: 34px; height: 34px; border-radius: 4px;
+  border: 1px solid var(--line); background: var(--surface-2);
+  font-size: 19px; line-height: 1; color: var(--ink);
+}
+.stepper button:disabled { opacity: .35; cursor: not-allowed; }
+.stepper output { min-width: 34px; text-align: center; font-family: var(--font-display); font-size: 21px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ---- ingredient rows (the shelf label) --------------------------------- */
+.ilist { display: flex; flex-direction: column; }
+.irow {
+  display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;
+  width: 100%; text-align: left;
+  padding: 11px 13px 11px 16px;
+  border-bottom: 1px solid var(--line-soft);
+  position: relative;
+  background: none;
+}
+.irow:last-child { border-bottom: none; }
+.irow::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: var(--line);
+}
+.irow--specialty::before { background: var(--warn); }
+.irow--seasonal::before { background: repeating-linear-gradient(135deg, var(--warn) 0 4px, transparent 4px 8px); }
+.irow--have::before { background: var(--good); }
+.irow__main { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.irow__en { font-weight: 500; }
+.irow__en s { color: var(--ink-faint); font-weight: 400; }
+.irow__local {
+  font-family: var(--font-display); font-size: 14px; font-weight: 600;
+  letter-spacing: .03em; color: var(--ink-soft);
+}
+.irow__pack { color: var(--ink-faint); }
+.irow__qty {
+  font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums;
+  color: var(--ink); text-align: right; white-space: nowrap;
+}
+.irow__prep { font-size: 12px; color: var(--ink-faint); font-style: italic; }
+.swatch { width: 26px; height: 26px; flex: none; }
+
+.steps { display: flex; flex-direction: column; gap: 14px; counter-reset: step; padding: 4px 0; }
+.step { display: grid; grid-template-columns: 30px 1fr; gap: 11px; align-items: start; }
+.step__n {
+  counter-increment: step;
+  font-family: var(--font-display); font-size: 19px; font-weight: 700;
+  color: var(--accent); line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+.step__n::before { content: counter(step, decimal-leading-zero); }
+.step p { line-height: 1.55; }
+
+.tips { display: flex; flex-direction: column; gap: 9px; padding: 13px 15px; }
+.tips li { list-style: none; display: grid; grid-template-columns: 12px 1fr; gap: 9px; font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; }
+.tips li::before { content: "—"; color: var(--accent); }
+
+/* ---- buttons ----------------------------------------------------------- */
+.btn {
+  min-height: var(--tap);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 0 16px; border-radius: var(--radius);
+  font-family: var(--font-display); font-size: 15px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase;
+  border: 1px solid var(--ink); background: var(--ink); color: var(--ground);
+  width: 100%;
+}
+.btn--ghost { background: var(--surface); color: var(--ink); border-color: var(--line); }
+.btn--accent { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn--sm { min-height: 36px; width: auto; font-size: 13px; padding: 0 12px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btnrow { display: flex; gap: 9px; }
+
+/* ---- shopping list ----------------------------------------------------- */
+.aisle { display: grid; grid-template-columns: 34px 1fr; }
+.aisle__rail {
+  border-right: 1px solid var(--line-soft);
+  background: var(--surface-2);
+  display: flex; justify-content: center; padding-top: 12px;
+}
+.aisle__n {
+  font-family: var(--font-display); font-size: 17px; font-weight: 700;
+  color: var(--ink-faint); font-variant-numeric: tabular-nums;
+}
+.aisle__body { min-width: 0; }
+.aisle__name {
+  padding: 11px 13px 9px;
+  font-family: var(--font-display); font-size: 16px; font-weight: 600;
+  letter-spacing: .09em; text-transform: uppercase;
+  border-bottom: 1px solid var(--line-soft);
+  display: flex; flex-direction: column; gap: 1px;
+}
+.aisle__name em {
+  font-style: normal; color: var(--ink-faint);
+  font-size: 11px; letter-spacing: .1em; font-weight: 600;
+}
+
+.litem {
+  display: grid; grid-template-columns: 24px 1fr auto; gap: 11px; align-items: start;
+  padding: 10px 13px; border-bottom: 1px solid var(--line-soft); width: 100%; text-align: left;
+}
+.litem:last-child { border-bottom: none; }
+.litem__box {
+  width: 22px; height: 22px; margin-top: 1px; border-radius: 4px;
+  border: 1.8px solid var(--ink-faint); flex: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.litem__box svg { width: 14px; height: 14px; stroke: var(--accent-ink); stroke-width: 2.6; fill: none; opacity: 0; }
+.litem--done .litem__box { background: var(--good); border-color: var(--good); }
+.litem--done .litem__box svg { opacity: 1; stroke: var(--surface); }
+.litem--done .litem__main { opacity: .45; text-decoration: line-through; text-decoration-thickness: 1px; }
+.litem__main { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.litem__why { font-size: 11.5px; color: var(--ink-faint); }
+.litem__x { color: var(--ink-faint); font-size: 20px; line-height: 1; padding: 2px 4px; }
+
+/* ---- kitchen / pantry -------------------------------------------------- */
+.pgrid { display: flex; flex-wrap: wrap; gap: 7px; }
+.pchip {
+  padding: 8px 12px; border-radius: 100px;
+  border: 1px solid var(--line); background: var(--surface);
+  font-size: 13.5px; color: var(--ink-soft);
+}
+.pchip[aria-pressed="true"] { background: var(--good-wash); border-color: var(--good); color: var(--good); font-weight: 500; }
+.match { display: flex; align-items: center; gap: 10px; }
+.match__bar { flex: 1; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.match__fill { height: 100%; background: var(--good); }
+
+/* ---- store picker ------------------------------------------------------ */
+.storelist { display: flex; flex-direction: column; }
+.storeopt {
+  display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;
+  padding: 13px 15px; border-bottom: 1px solid var(--line-soft); width: 100%; text-align: left;
+}
+.storeopt:last-child { border-bottom: none; }
+.storeopt__name { font-family: var(--font-display); font-size: 18px; font-weight: 600; }
+.storeopt__meta { font-size: 12px; color: var(--ink-faint); }
+.storeopt__tick { width: 20px; height: 20px; stroke: var(--good); stroke-width: 2.6; fill: none; opacity: 0; }
+.storeopt[aria-pressed="true"] .storeopt__tick { opacity: 1; }
+.storeopt[aria-pressed="true"] { background: var(--good-wash); }
+.storeopt[aria-pressed="true"] .storeopt__meta { color: var(--good); }
+
+.setrow {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 13px 15px; border-bottom: 1px solid var(--line-soft);
+}
+.setrow:last-child { border-bottom: none; }
+.setrow__label { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.setrow__label b { font-weight: 500; }
+.setrow__label span { font-size: 12px; color: var(--ink-faint); }
+.toggle {
+  width: 46px; height: 27px; border-radius: 14px; flex: none;
+  background: var(--line); border: 1px solid var(--line);
+  position: relative; transition: background .15s ease;
+}
+.toggle::after {
+  content: ""; position: absolute; top: 2px; left: 2px;
+  width: 21px; height: 21px; border-radius: 50%;
+  background: var(--surface); box-shadow: 0 1px 2px rgba(0,0,0,.25);
+  transition: transform .15s ease;
+}
+.toggle[aria-pressed="true"] { background: var(--good); border-color: var(--good); }
+.toggle[aria-pressed="true"]::after { transform: translateX(19px); }
+
+.prose { padding: 14px 15px; display: flex; flex-direction: column; gap: 9px; font-size: 13.5px; color: var(--ink-soft); line-height: 1.55; }
+.prose b { color: var(--ink); font-weight: 600; }
+
+/* ---- sheet (shelf card) ------------------------------------------------ */
+.scrim {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(16, 18, 8, .55);
+  display: flex; align-items: flex-end; justify-content: center;
+  animation: fade .16s ease;
+}
+.sheet {
+  width: 100%; max-width: 520px;
+  background: var(--surface);
+  border-radius: 12px 12px 0 0;
+  border-top: 3px solid var(--accent);
+  max-height: 88vh; overflow-y: auto;
+  animation: rise .2s cubic-bezier(.2, .8, .3, 1);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+@keyframes fade { from { opacity: 0; } }
+@keyframes rise { from { transform: translateY(18px); } }
+@media (prefers-reduced-motion: reduce) {
+  .scrim, .sheet { animation: none; }
+  .toggle, .toggle::after { transition: none; }
+}
+.sheet__head { padding: 16px 16px 12px; display: flex; gap: 13px; align-items: flex-start; border-bottom: 1px solid var(--line); }
+.sheet__x { margin-left: auto; font-size: 24px; line-height: 1; color: var(--ink-faint); padding: 0 4px; }
+.shelfcard {
+  margin: 14px 16px;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--accent);
+  border-radius: 4px;
+  background: var(--surface-2);
+  padding: 13px 15px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.shelfcard__local {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 27px; line-height: 1.08; letter-spacing: .01em;
+}
+.shelfcard__pack { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); }
+.shelfcard__where { font-size: 12.5px; color: var(--ink-soft); line-height: 1.45; margin-top: 4px; }
+.sheet__section { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.sheet__section h3 { font-size: 15px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+.sub {
+  border-left: 2px solid var(--line); padding-left: 11px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.sub b { font-weight: 500; font-size: 14px; }
+.sub span { font-size: 12.5px; color: var(--ink-soft); line-height: 1.45; }
+
+.toast {
+  position: fixed; bottom: 74px; left: 50%; transform: translateX(-50%);
+  z-index: 70; max-width: 430px; width: calc(100% - 32px);
+  background: var(--ink); color: var(--ground);
+  border-radius: var(--radius); padding: 11px 15px;
+  font-size: 13.5px; text-align: center;
+  box-shadow: var(--shadow);
+  animation: fade .16s ease;
+}
+
+.notice {
+  display: flex; gap: 10px; padding: 11px 13px;
+  background: var(--warn-wash); border: 1px solid transparent; border-radius: var(--radius);
+  font-size: 12.5px; color: var(--warn); line-height: 1.45;
+}
+.notice svg { width: 16px; height: 16px; flex: none; margin-top: 1px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+@media (min-width: 560px) {
+  .app { border-inline: 1px solid var(--line); }
+  body { background: var(--surface-2); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="topbar__brand">
+      <span class="topbar__title">Asian Pantry</span>
+      <button class="topbar__store" id="store-btn" data-go="#/store"></button>
+    </div>
+  </header>
+  <main class="main" id="main"></main>
+</div>
+<nav class="tabs" id="tabs" aria-label="Sections"></nav>
+<div id="sheet"></div>
+<div id="toast" aria-live="polite"></div>
+
+<script>window.__DATA__ = {"stores":{"aisle_labels":{"en":{"produce":"Fruit & Vegetables","bakery":"Bakery","meat_fish":"Meat & Fish","dairy_eggs":"Dairy & Eggs","frozen":"Frozen","dry_goods":"Rice, Pasta & Noodles","canned":"Tins & Jars","world_food":"World Food / Asian aisle","condiments":"Sauces & Oils","spices":"Herbs & Spices","baking":"Baking & Sugar","snacks":"Nuts & Snacks","drinks":"Drinks"},"nl":{"produce":"Groente & Fruit","bakery":"Brood & Banket","meat_fish":"Vlees & Vis","dairy_eggs":"Zuivel & Eieren","frozen":"Diepvries","dry_goods":"Rijst, Pasta & Noedels","canned":"Conserven","world_food":"Wereldkeuken","condiments":"Sauzen & Olie","spices":"Kruiden & Specerijen","baking":"Bakproducten & Suiker","snacks":"Noten & Snacks","drinks":"Dranken"},"de":{"produce":"Obst & Gemüse","bakery":"Backwaren","meat_fish":"Fleisch & Fisch","dairy_eggs":"Kühlregal (Milch & Eier)","frozen":"Tiefkühl","dry_goods":"Reis, Nudeln & Pasta","canned":"Konserven","world_food":"Weltküche / Asien-Regal","condiments":"Saucen & Öle","spices":"Gewürze","baking":"Backzutaten & Zucker","snacks":"Nüsse & Snacks","drinks":"Getränke"}},"default_aisle_order":["produce","bakery","meat_fish","dairy_eggs","frozen","dry_goods","canned","world_food","condiments","spices","baking","snacks","drinks"],"regions":[{"code":"NL","name":"Netherlands","language":"nl","language_name":"Dutch"},{"code":"DE","name":"Germany","language":"de","language_name":"German"}],"stores":[{"id":"lidl_nl","name":"Lidl","region":"NL","language":"nl","kind":"Discounter","asian_range":"Vitasia","note":"The Asian range is almost entirely the Vitasia house brand, on one shelf in the Wereldkeuken block. A few items only appear during the twice-yearly Asia theme week — those are flagged as seasonal.","aisle_order":["produce","bakery","dairy_eggs","meat_fish","frozen","dry_goods","canned","world_food","condiments","spices","baking","snacks","drinks"]},{"id":"ah_nl","name":"Albert Heijn","region":"NL","language":"nl","kind":"Full-range supermarket","asian_range":"AH huismerk, Conimex, Go-Tan","note":"The widest Asian selection of the Dutch chains. Conimex and Go-Tan cover Indonesian and Chinese basics; larger stores carry a separate Aziatisch/Oosters shelf.","aisle_order":["produce","bakery","meat_fish","dairy_eggs","frozen","dry_goods","canned","world_food","condiments","spices","baking","snacks","drinks"]},{"id":"jumbo_nl","name":"Jumbo","region":"NL","language":"nl","kind":"Full-range supermarket","asian_range":"Jumbo huismerk, Conimex, Go-Tan","note":"Very close to Albert Heijn in range. Where a Jumbo own-brand item is missing, the Conimex or Go-Tan equivalent is nearly always on the same shelf.","aisle_order":["produce","bakery","meat_fish","dairy_eggs","frozen","dry_goods","canned","world_food","condiments","spices","baking","snacks","drinks"]},{"id":"lidl_de","name":"Lidl","region":"DE","language":"de","kind":"Discounter","asian_range":"Vitasia","note":"Same Vitasia range as the Dutch stores, German labelling. The Asia-Wochen theme weeks add fresh noodles, gyoza and specialty sauces for a couple of weeks at a time.","aisle_order":["produce","bakery","dairy_eggs","meat_fish","frozen","dry_goods","canned","world_food","condiments","spices","baking","snacks","drinks"]},{"id":"rewe_de","name":"REWE","region":"DE","language":"de","kind":"Full-range supermarket","asian_range":"ja!, REWE Beste Wahl, Kikkoman, Suzi Wan","note":"Carries branded Asian staples (Kikkoman, Suzi Wan, Thai Kitchen) alongside the ja! budget line, usually in a dedicated Weltküche block.","aisle_order":["produce","bakery","meat_fish","dairy_eggs","frozen","dry_goods","canned","world_food","condiments","spices","baking","snacks","drinks"]}]},"ingredients":[{"id":"garlic","en":"Garlic","category":"produce","role":"core","pantry_default":true,"note":"Buy loose bulbs rather than pre-minced jars — the jarred stuff tastes sour in a hot wok.","defaults":{"nl":{"name":"Knoflook","package":"netje van 3 bollen","size":3,"unit":"piece"},"de":{"name":"Knoblauch","package":"Netz mit 3 Knollen","size":3,"unit":"piece"}},"substitutes":[{"text":"Garlic granules","note":"1/4 tsp per clove. Fine in a marinade, flat in a stir-fry."}]},{"id":"ginger","en":"Fresh ginger","category":"produce","role":"core","note":"Sold loose by weight. A thumb-sized piece is roughly 25 g. Freeze what you don't use and grate it from frozen.","defaults":{"nl":{"name":"Gemberwortel","package":"los per kilo, ca. 100 g stuk","shelf":"Bij de exotische groenten, naast de knoflook en chilipepers"},"de":{"name":"Ingwer","package":"lose, ca. 100 g Stück","shelf":"Bei den exotischen Früchten, neben Knoblauch und Chili"}},"substitutes":[{"text":"Ground ginger","note":"1/2 tsp per 15 g fresh. Loses the citrus note but keeps the heat."}]},{"id":"spring_onion","en":"Spring onions","aka":["scallions"],"category":"produce","role":"core","defaults":{"nl":{"name":"Bosui","package":"bosje van ca. 100 g"},"de":{"name":"Frühlingszwiebeln","package":"Bund, ca. 100 g"}},"substitutes":[{"id":"onion","note":"Use the green tops' job for a small amount of finely sliced raw onion, or chives."}]},{"id":"onion","en":"Onion","category":"produce","role":"core","pantry_default":true,"defaults":{"nl":{"name":"Uien","package":"net van 1 kg","size":1000,"unit":"g"},"de":{"name":"Zwiebeln","package":"Netz 1 kg","size":1000,"unit":"g"}}},{"id":"carrot","en":"Carrots","category":"produce","role":"core","defaults":{"nl":{"name":"Winterpeen / bospeen","package":"zak 1 kg","size":1000,"unit":"g"},"de":{"name":"Möhren (Karotten)","package":"Beutel 1 kg","size":1000,"unit":"g"}}},{"id":"broccoli","en":"Broccoli","category":"produce","role":"core","defaults":{"nl":{"name":"Broccoli","package":"stuk van ca. 400 g","size":400,"unit":"g"},"de":{"name":"Brokkoli","package":"Stück, ca. 400 g","size":400,"unit":"g"}},"substitutes":[{"text":"Tenderstem / broccolini or green beans","note":"Same cooking time, same job."}]},{"id":"paksoi","en":"Pak choi","aka":["bok choy"],"category":"produce","role":"core","note":"One of the few genuinely Asian vegetables that has gone fully mainstream in NL and DE supermarkets.","defaults":{"nl":{"name":"Paksoi","package":"krop van ca. 300 g","size":300,"unit":"g","shelf":"Bij de bladgroenten, vaak naast de Chinese kool"},"de":{"name":"Pak Choi","package":"Stück, ca. 300 g","size":300,"unit":"g","shelf":"Beim Blattgemüse, oft neben dem Chinakohl"}},"products":{"lidl_nl":{"name":"Paksoi","package":"verpakt, ca. 300 g","size":300,"unit":"g","availability":"varies","shelf":"Niet altijd op voorraad bij Lidl — spitskool is de vervanger"},"lidl_de":{"name":"Pak Choi","package":"verpackt, ca. 300 g","size":300,"unit":"g","availability":"varies"}},"substitutes":[{"id":"pointed_cabbage","note":"Closest everyday swap: shred it, cook it 1 minute longer."},{"text":"Chinese leaf / Chinese kool / Chinakohl","note":"Milder and wetter — drive off the water on high heat."}]},{"id":"pointed_cabbage","en":"Pointed cabbage","aka":["sweetheart cabbage","hispi"],"category":"produce","role":"core","note":"The workhorse substitute for pak choi, Chinese leaf and even cabbage-y kimchi bases. Cheap and in every store, all year.","defaults":{"nl":{"name":"Spitskool","package":"stuk van ca. 500 g","size":500,"unit":"g"},"de":{"name":"Spitzkohl","package":"Stück, ca. 500 g","size":500,"unit":"g"}}},{"id":"bell_pepper_red","en":"Red bell pepper","category":"produce","role":"core","defaults":{"nl":{"name":"Rode paprika","package":"3-pack (rood/geel/groen) of los","size":3,"unit":"piece"},"de":{"name":"Rote Paprika","package":"3er-Pack (rot/gelb/grün) oder lose","size":3,"unit":"piece"}}},{"id":"chilli_red","en":"Fresh red chilli","category":"produce","role":"core","note":"European supermarket chillies are mild — closer to a fresno than a Thai bird's eye. Use two where a Thai recipe says one, or lean on sambal.","defaults":{"nl":{"name":"Rode peper","package":"bakje van 2-3 stuks","size":3,"unit":"piece","shelf":"Bij de exotische groenten, in een klein plastic bakje"},"de":{"name":"Rote Chilischoten","package":"Schale mit 2-3 Stück","size":3,"unit":"piece","shelf":"Bei den exotischen Gemüsen, in kleiner Plastikschale"}},"substitutes":[{"id":"sambal_oelek","note":"1/2 tsp sambal per chilli. Sharper and saltier, but always in the cupboard."}]},{"id":"lime","en":"Lime","category":"produce","role":"core","defaults":{"nl":{"name":"Limoen","package":"netje van 4 stuks","size":4,"unit":"piece"},"de":{"name":"Limette","package":"Netz mit 4 Stück","size":4,"unit":"piece"}},"substitutes":[{"text":"Lemon","note":"Use 2/3 the amount — lemon is sharper and less floral."}]},{"id":"cucumber","en":"Cucumber","category":"produce","role":"core","defaults":{"nl":{"name":"Komkommer","package":"stuk","size":1,"unit":"piece"},"de":{"name":"Salatgurke","package":"Stück","size":1,"unit":"piece"}}},{"id":"aubergine","en":"Aubergine","aka":["eggplant"],"category":"produce","role":"core","defaults":{"nl":{"name":"Aubergine","package":"stuk van ca. 300 g","size":300,"unit":"g"},"de":{"name":"Aubergine","package":"Stück, ca. 300 g","size":300,"unit":"g"}}},{"id":"mushrooms","en":"Chestnut mushrooms","category":"produce","role":"core","defaults":{"nl":{"name":"Kastanjechampignons","package":"bakje 250 g","size":250,"unit":"g"},"de":{"name":"Braune Champignons","package":"Schale 250 g","size":250,"unit":"g"}},"substitutes":[{"text":"Dried shiitake","note":"15 g dried, soaked 20 min in hot water. Keep the soaking liquid — it is free stock."}]},{"id":"beansprouts","en":"Beansprouts","category":"produce","role":"core","note":"Cheap, and the single thing that makes home pad thai and bami taste like takeaway. Add in the last 30 seconds so they stay crunchy.","defaults":{"nl":{"name":"Taugé","package":"zak 300 g","size":300,"unit":"g","shelf":"Bij de voorgesneden groenten / roerbakmixen"},"de":{"name":"Mungbohnensprossen","package":"Beutel 300 g","size":300,"unit":"g","shelf":"Bei den geschnittenen Salaten / Wok-Mischungen"}},"products":{"lidl_nl":{"name":"Taugé","package":"zak 300 g","size":300,"unit":"g","availability":"varies","shelf":"Wisselend op voorraad — anders de kant-en-klare roerbakmix pakken"},"lidl_de":{"name":"Sojasprossen","package":"Beutel 300 g","size":300,"unit":"g","availability":"varies"}},"substitutes":[{"text":"Shredded pointed cabbage","note":"Not the same crunch, but it keeps the dish from being all noodle."}]},{"id":"coriander_fresh","en":"Fresh coriander","aka":["cilantro"],"category":"produce","role":"core","defaults":{"nl":{"name":"Verse koriander","package":"potje of bosje","shelf":"Bij de verse kruiden in potjes"},"de":{"name":"Frischer Koriander","package":"Topf oder Bund","shelf":"Bei den frischen Kräutern im Topf"}},"substitutes":[{"text":"Flat-leaf parsley","note":"Different flavour, same fresh green lift. Better than nothing."}]},{"id":"basil_fresh","en":"Fresh basil","category":"produce","role":"core","note":"Thai holy basil is not sold in mainstream stores. Italian basil plus a little extra chilli and fish sauce gets surprisingly close in pad krapow.","defaults":{"nl":{"name":"Verse basilicum","package":"plantje in pot","shelf":"Bij de verse kruidenplantjes"},"de":{"name":"Basilikum","package":"Topfpflanze","shelf":"Bei den frischen Kräutertöpfen"}}},{"id":"mint_fresh","en":"Fresh mint","category":"produce","role":"core","defaults":{"nl":{"name":"Verse munt","package":"plantje in pot of bosje"},"de":{"name":"Frische Minze","package":"Topfpflanze oder Bund"}}},{"id":"green_beans","en":"Green beans","category":"produce","role":"core","defaults":{"nl":{"name":"Sperziebonen (haricots verts)","package":"zak 400 g","size":400,"unit":"g"},"de":{"name":"Grüne Bohnen","package":"Beutel 400 g","size":400,"unit":"g"}}},{"id":"sugar_snap","en":"Sugar snap peas","category":"produce","role":"core","defaults":{"nl":{"name":"Peultjes / sugar snaps","package":"zak 150 g","size":150,"unit":"g"},"de":{"name":"Zuckerschoten","package":"Beutel 150 g","size":150,"unit":"g"}}},{"id":"potato","en":"Potatoes","category":"produce","role":"core","pantry_default":true,"defaults":{"nl":{"name":"Vastkokende aardappelen","package":"zak 2,5 kg","size":2500,"unit":"g"},"de":{"name":"Festkochende Kartoffeln","package":"Beutel 2,5 kg","size":2500,"unit":"g"}}},{"id":"spinach","en":"Baby spinach","category":"produce","role":"core","defaults":{"nl":{"name":"Jonge bladspinazie","package":"zak 300 g","size":300,"unit":"g"},"de":{"name":"Junger Blattspinat","package":"Beutel 300 g","size":300,"unit":"g"}}},{"id":"tomato","en":"Tomatoes","category":"produce","role":"core","defaults":{"nl":{"name":"Trostomaten","package":"500 g","size":500,"unit":"g"},"de":{"name":"Rispentomaten","package":"500 g","size":500,"unit":"g"}}},{"id":"radish_pink","en":"Pink radishes","category":"produce","role":"core","note":"Stands in for daikon in bánh mì pickles. Daikon is a specialty-shop item; radishes are next to the lettuce.","defaults":{"nl":{"name":"Radijs","package":"bosje","size":1,"unit":"piece"},"de":{"name":"Radieschen","package":"Bund","size":1,"unit":"piece"}}},{"id":"chicken_thigh","en":"Chicken thigh fillet","category":"meat_fish","role":"core","note":"Thigh, not breast. It survives a screaming-hot wok without going stringy, and it is cheaper. This is the single biggest upgrade to home stir-fries.","defaults":{"nl":{"name":"Kipdijfilet","package":"schaal ca. 500 g","size":500,"unit":"g"},"de":{"name":"Hähnchenoberschenkelfilet","package":"Schale ca. 500 g","size":500,"unit":"g"}},"products":{"lidl_de":{"name":"Metzgerfrisch Hähnchen-Oberkeulenfilet","package":"Schale ca. 500 g","size":500,"unit":"g"},"rewe_de":{"name":"Wilhelm Brandenburg Hähnchenschenkelfilet","package":"Schale ca. 400 g","size":400,"unit":"g"},"ah_nl":{"name":"AH Kipdijfilet naturel","package":"schaal 500 g","size":500,"unit":"g"},"jumbo_nl":{"name":"Jumbo Kipdijfilet","package":"schaal 500 g","size":500,"unit":"g"}},"substitutes":[{"id":"chicken_breast","note":"Works, but slice thin and cook 2 minutes less or it turns to chalk."}]},{"id":"chicken_breast","en":"Chicken breast","category":"meat_fish","role":"core","defaults":{"nl":{"name":"Kipfilet","package":"schaal ca. 500 g","size":500,"unit":"g"},"de":{"name":"Hähnchenbrustfilet","package":"Schale ca. 500 g","size":500,"unit":"g"}},"products":{"lidl_de":{"name":"Metzgerfrisch Hähnchenbrustfilet","package":"Schale ca. 500 g","size":500,"unit":"g"}}},{"id":"pork_mince","en":"Minced pork","category":"meat_fish","role":"core","defaults":{"nl":{"name":"Gehakt (varken) / half-om-half","package":"schaal 500 g","size":500,"unit":"g"},"de":{"name":"Schweinehackfleisch","package":"Schale 500 g","size":500,"unit":"g"}},"products":{"lidl_de":{"name":"Metzgerfrisch Hackfleisch gemischt","package":"Schale 500 g","size":500,"unit":"g"}},"substitutes":[{"text":"Minced chicken or turkey","note":"Leaner, so add an extra teaspoon of oil to the pan."}]},{"id":"beef_steak","en":"Beef frying steak","category":"meat_fish","role":"core","note":"Cheap flat cuts work best for stir-fry — slice across the grain into 3 mm strips while the meat is fridge-cold.","defaults":{"nl":{"name":"Sucadelappen of biefstukpuntjes","package":"schaal ca. 300 g","size":300,"unit":"g"},"de":{"name":"Rindergeschnetzeltes","package":"Schale ca. 300 g","size":300,"unit":"g"}},"products":{"ah_nl":{"name":"AH Biefstukpuntjes","package":"schaal 300 g","size":300,"unit":"g"},"lidl_nl":{"name":"Rundvlees reepjes (roerbak)","package":"schaal ca. 300 g","size":300,"unit":"g"},"lidl_de":{"name":"Metzgerfrisch Rindergeschnetzeltes","package":"Schale ca. 300 g","size":300,"unit":"g"}}},{"id":"pork_shoulder","en":"Pork shoulder / neck","category":"meat_fish","role":"core","note":"The right cut for char siu: enough fat to stay juicy through a 200 °C oven.","defaults":{"nl":{"name":"Procureur / schouderkarbonade zonder been","package":"ca. 600 g","size":600,"unit":"g"},"de":{"name":"Schweinenacken ohne Knochen","package":"ca. 600 g","size":600,"unit":"g"}}},{"id":"prawns_frozen","en":"Raw prawns (frozen)","category":"frozen","role":"core","note":"Frozen raw is better value and better texture than the cooked pink ones. Defrost in cold water for 10 minutes, pat very dry.","defaults":{"nl":{"name":"Rauwe garnalen, gepeld (diepvries)","package":"zak 200-250 g","size":200,"unit":"g","aisle":"frozen"},"de":{"name":"Rohe Garnelen, geschält (TK)","package":"Beutel 200-250 g","size":200,"unit":"g","aisle":"frozen"}},"products":{"lidl_nl":{"name":"Ocean Sea Garnalen rauw gepeld","package":"diepvrieszak 200 g","size":200,"unit":"g","aisle":"frozen"},"lidl_de":{"name":"Ocean Sea Garnelen roh geschält","package":"TK-Beutel 200 g","size":200,"unit":"g","aisle":"frozen"}}},{"id":"salmon_fillet","en":"Salmon fillet","category":"meat_fish","role":"core","defaults":{"nl":{"name":"Zalmfilet zonder huid","package":"2 stuks, ca. 250 g","size":250,"unit":"g"},"de":{"name":"Lachsfilet ohne Haut","package":"2 Stück, ca. 250 g","size":250,"unit":"g"}},"substitutes":[{"text":"Cod or pollock fillet","note":"Leaner — add it later and stir less, or it falls apart in the curry."}]},{"id":"tofu_firm","en":"Firm tofu","category":"world_food","role":"core","note":"Press it: wrap in kitchen paper under a heavy pan for 15 minutes. Untreated tofu steams instead of frying and never browns.","defaults":{"nl":{"name":"Tofu naturel (stevig)","package":"blok 200-400 g","size":200,"unit":"g","aisle":"dairy_eggs","shelf":"Bij de vegetarische koelvakken, naast de vleesvervangers"},"de":{"name":"Tofu natur (fest)","package":"Block 200-400 g","size":200,"unit":"g","aisle":"dairy_eggs","shelf":"Im Kühlregal bei den Fleischalternativen"}},"products":{"lidl_nl":{"name":"Vemondo Tofu naturel","package":"blok 200 g","size":200,"unit":"g","aisle":"dairy_eggs"},"lidl_de":{"name":"Vemondo Tofu natur","package":"Block 200 g","size":200,"unit":"g","aisle":"dairy_eggs"},"ah_nl":{"name":"AH Tofu naturel","package":"blok 400 g","size":400,"unit":"g","aisle":"dairy_eggs"}}},{"id":"eggs","en":"Eggs","category":"dairy_eggs","role":"core","pantry_default":true,"defaults":{"nl":{"name":"Eieren (vrije uitloop)","package":"doos van 10","size":10,"unit":"piece"},"de":{"name":"Eier (Freilandhaltung)","package":"10er-Packung","size":10,"unit":"piece"}}},{"id":"butter","en":"Butter","category":"dairy_eggs","role":"core","pantry_default":true,"defaults":{"nl":{"name":"Roomboter ongezouten","package":"pak 250 g","size":250,"unit":"g"},"de":{"name":"Butter ungesalzen","package":"Stück 250 g","size":250,"unit":"g"}},"products":{"lidl_nl":{"name":"Milbona Roomboter","package":"pak 250 g","size":250,"unit":"g"},"lidl_de":{"name":"Milbona Deutsche Markenbutter","package":"Stück 250 g","size":250,"unit":"g"}}},{"id":"cream_cooking","en":"Cooking cream","category":"dairy_eggs","role":"core","defaults":{"nl":{"name":"Kookroom","package":"pak 250 ml","size":250,"unit":"ml"},"de":{"name":"Kochsahne / Schlagsahne","package":"Becher 200 ml","size":200,"unit":"ml"}},"substitutes":[{"id":"coconut_milk","note":"In curries, coconut milk does the same job and tastes more of the region."}]},{"id":"yoghurt_greek","en":"Greek yoghurt","category":"dairy_eggs","role":"core","defaults":{"nl":{"name":"Griekse yoghurt 10%","package":"kuipje 500 g","size":500,"unit":"g"},"de":{"name":"Griechischer Joghurt 10%","package":"Becher 500 g","size":500,"unit":"g"}},"products":{"lidl_nl":{"name":"Milbona Griekse yoghurt","package":"kuipje 500 g","size":500,"unit":"g"},"lidl_de":{"name":"Milbona Griechischer Joghurt","package":"Becher 500 g","size":500,"unit":"g"}}},{"id":"rice_jasmine","en":"Jasmine rice","category":"dry_goods","role":"core","pantry_default":true,"note":"Rinse until the water runs clear, then 1 part rice to 1.25 parts water, lid on, 12 minutes, 10 minutes off the heat. That ratio is the whole trick.","defaults":{"nl":{"name":"Jasmijnrijst","package":"pak 1 kg","size":1000,"unit":"g"},"de":{"name":"Jasminreis","package":"Packung 1 kg","size":1000,"unit":"g"}},"products":{"lidl_nl":{"name":"Vitasia Jasmijnrijst","package":"pak 1 kg","size":1000,"unit":"g","shelf":"Wereldkeuken-schap, niet bij de gewone rijst"},"lidl_de":{"name":"Vitasia Jasminreis","package":"Packung 1 kg","size":1000,"unit":"g","shelf":"Weltküche-Regal, nicht beim normalen Reis"},"ah_nl":{"name":"AH Jasmijnrijst","package":"pak 1 kg","size":1000,"unit":"g"},"rewe_de":{"name":"ja! Jasminreis","package":"Packung 500 g","size":500,"unit":"g"}},"substitutes":[{"id":"rice_basmati","note":"Fine, but drier and more perfumed. Use 1:1.2 water instead."}]},{"id":"rice_basmati","en":"Basmati rice","category":"dry_goods","role":"core","defaults":{"nl":{"name":"Basmatirijst","package":"pak 1 kg","size":1000,"unit":"g"},"de":{"name":"Basmatireis","package":"Packung 1 kg","size":1000,"unit":"g"}},"products":{"lidl_nl":{"name":"Golden Sun Basmatirijst","package":"pak 1 kg","size":1000,"unit":"g"},"lidl_de":{"name":"Golden Sun Basmatireis","package":"Packung 1 kg","size":1000,"unit":"g"}}},{"id":"noodles_egg","en":"Dried egg noodles","aka":["mie","bami"],"category":"world_food","role":"core","note":"Sold as flat nests. Boil 3-4 minutes, drain, rinse cold, toss with a teaspoon of oil or they weld together.","defaults":{"nl":{"name":"Mie / eiernoedels","package":"pak 250 g (3 nesten)","size":250,"unit":"g"},"de":{"name":"Eiernudeln (Mie)","package":"Packung 250 g","size":250,"unit":"g"}},"products":{"lidl_nl":{"name":"Vitasia Mie noedels","package":"pak 250 g","size":250,"unit":"g","shelf":"Wereldkeuken, onderste plank bij de woksauzen"},"lidl_de":{"name":"Vitasia Mie Nudeln","package":"Packung 250 g","size":250,"unit":"g"},"ah_nl":{"name":"Conimex Mie","package":"pak 250 g","size":250,"unit":"g","shelf":"Wereldkeuken, blauw Conimex-blok"},"jumbo_nl":{"name":"Conimex Mie","package":"pak 250 g","size":250,"unit":"g"},"rewe_de":{"name":"Suzi Wan Mie Nudeln","package":"Packung 250 g","size":250,"unit":"g"}},"substitutes":[{"text":"Dried spaghetti or tagliatelle","note":"Genuinely fine in bami and lo mein. Boil 1 minute under the packet time."}]},{"id":"noodles_rice_flat","en":"Flat rice noodles","aka":["pad thai noodles"],"category":"world_food","role":"core","note":"Do not boil them. Soak in just-boiled water off the heat for 6-8 minutes until bendy but still firm — they finish cooking in the pan.","defaults":{"nl":{"name":"Rijstnoedels (breed)","package":"pak 250 g","size":250,"unit":"g"},"de":{"name":"Reisbandnudeln","package":"Packung 250 g","size":250,"unit":"g"}},"products":{"lidl_nl":{"name":"Vitasia Rijstnoedels","package":"pak 250 g","size":250,"unit":"g","availability":"varies"},"lidl_de":{"name":"Vitasia Reisnudeln","package":"Packung 250 g","size":250,"unit":"g","availability":"varies"},"ah_nl":{"name":"AH Rijstnoedels breed","package":"pak 250 g","size":250,"unit":"g"},"rewe_de":{"name":"Thai Kitchen / Suzi Wan Reisnudeln","package":"Packung 250 g","size":250,"unit":"g"}},"substitutes":[{"id":"vermicelli_mihoen","note":"Thinner, cooks faster, same idea. Soak 3 minutes only."}]},{"id":"vermicelli_mihoen","en":"Rice vermicelli","aka":["mihoen","bee hoon"],"category":"world_food","role":"core","defaults":{"nl":{"name":"Mihoen","package":"pak 250 g","size":250,"unit":"g"},"de":{"name":"Reisnudeln dünn (Vermicelli)","package":"Packung 250 g","size":250,"unit":"g"}},"products":{"ah_nl":{"name":"Conimex Mihoen","package":"pak 250 g","size":250,"unit":"g"},"jumbo_nl":{"name":"Conimex Mihoen","package":"pak 250 g","size":250,"unit":"g"},"lidl_nl":{"name":"Vitasia Mihoen","package":"pak 250 g","size":250,"unit":"g"}}},{"id":"noodles_instant","en":"Instant ramen noodles","category":"world_food","role":"core","note":"Buy them for the noodle block and bin the flavour sachet — the broth you build yourself is the whole point.","defaults":{"nl":{"name":"Instant noedels (naturel of kip)","package":"5-pack à 70 g","size":5,"unit":"piece"},"de":{"name":"Instant-Nudeln","package":"5er-Pack à 70 g","size":5,"unit":"piece"}},"products":{"lidl_nl":{"name":"Vitasia Instant noodles","package":"5-pack","size":5,"unit":"piece"},"lidl_de":{"name":"Vitasia Instant Nudeln","package":"5er-Pack","size":5,"unit":"piece"}}},{"id":"cornstarch","en":"Cornflour","aka":["cornstarch","maizena"],"category":"baking","role":"core","pantry_default":true,"note":"Does two jobs: velveting the meat (toss raw strips with 1 tsp cornflour + 1 tbsp soy) and thickening the sauce at the end. Both matter.","defaults":{"nl":{"name":"Maizena","package":"pak 250 g","size":250,"unit":"g","aisle":"baking"},"de":{"name":"Speisestärke","package":"Packung 400 g","size":400,"unit":"g","aisle":"baking"}},"products":{"lidl_de":{"name":"Belbake Speisestärke","package":"Packung 400 g","size":400,"unit":"g","aisle":"baking"},"rewe_de":{"name":"Mondamin Speisestärke","package":"Packung 400 g","size":400,"unit":"g","aisle":"baking"}}},{"id":"flour_plain","en":"Plain flour","category":"baking","role":"core","pantry_default":true,"defaults":{"nl":{"name":"Patentbloem / tarwebloem","package":"pak 1 kg","size":1000,"unit":"g","aisle":"baking"},"de":{"name":"Weizenmehl Type 405","package":"Packung 1 kg","size":1000,"unit":"g","aisle":"baking"}},"products":{"lidl_de":{"name":"Belbake Weizenmehl Type 405","package":"Packung 1 kg","size":1000,"unit":"g","aisle":"baking"}}},{"id":"panko","en":"Panko breadcrumbs","category":"world_food","role":"specialty","note":"Shard-shaped rather than sandy, so katsu stays crisp. Ordinary breadcrumbs work but go soft within minutes.","defaults":{"nl":{"name":"Panko paneermeel","package":"pak 200 g","size":200,"unit":"g"},"de":{"name":"Panko Paniermehl","package":"Packung 200 g","size":200,"unit":"g"}},"products":{"lidl_nl":{"name":"Vitasia Panko paneermeel","package":"pak 200 g","size":200,"unit":"g","availability":"seasonal","shelf":"Vaak alleen tijdens de Aziatische themaweek"},"lidl_de":{"name":"Vitasia Panko Paniermehl","package":"Packung 200 g","size":200,"unit":"g","availability":"seasonal","shelf":"Meist nur während der Asia-Wochen"},"ah_nl":{"name":"Go-Tan Panko","package":"pak 200 g","size":200,"unit":"g"}},"substitutes":[{"text":"Ordinary breadcrumbs (paneermeel / Paniermehl)","note":"Or blitz 3 slices of stale white bread, crusts off — closer to panko than the fine stuff."}]},{"id":"sesame_seeds","en":"Sesame seeds","category":"spices","role":"core","defaults":{"nl":{"name":"Sesamzaad","package":"potje 60 g","size":60,"unit":"g","aisle":"spices"},"de":{"name":"Sesamsaat","package":"Streuer 60 g","size":60,"unit":"g","aisle":"spices"}}},{"id":"peanuts_roasted","en":"Roasted peanuts","category":"snacks","role":"core","note":"Unsalted if you can, salted if you must — just cut the added salt in the dish.","defaults":{"nl":{"name":"Ongezouten pinda's","package":"zak 200 g","size":200,"unit":"g","aisle":"snacks"},"de":{"name":"Erdnüsse ungesalzen","package":"Beutel 200 g","size":200,"unit":"g","aisle":"snacks"}},"products":{"lidl_de":{"name":"Alesto Erdnüsse geröstet","package":"Beutel 200 g","size":200,"unit":"g","aisle":"snacks"},"lidl_nl":{"name":"Alesto Pinda's geroosterd","package":"zak 200 g","size":200,"unit":"g","aisle":"snacks"}}},{"id":"cashews","en":"Cashew nuts","category":"snacks","role":"core","defaults":{"nl":{"name":"Cashewnoten ongezouten","package":"zak 200 g","size":200,"unit":"g","aisle":"snacks"},"de":{"name":"Cashewkerne ungesalzen","package":"Beutel 200 g","size":200,"unit":"g","aisle":"snacks"}},"products":{"lidl_nl":{"name":"Alesto Cashewnoten","package":"zak 200 g","size":200,"unit":"g","aisle":"snacks"},"lidl_de":{"name":"Alesto Cashewkerne","package":"Beutel 200 g","size":200,"unit":"g","aisle":"snacks"}},"substitutes":[{"id":"peanuts_roasted","note":"Cheaper and works in every dish here except the Thai ones where cashew is the point."}]},{"id":"red_lentils","en":"Red lentils","category":"dry_goods","role":"core","defaults":{"nl":{"name":"Rode linzen","package":"pak 500 g","size":500,"unit":"g"},"de":{"name":"Rote Linsen","package":"Packung 500 g","size":500,"unit":"g"}}},{"id":"baguette","en":"Baguette","category":"bakery","role":"core","note":"The French colonial legacy that makes bánh mì work. The cheap crusty stick from the in-store bakery is exactly right.","defaults":{"nl":{"name":"Stokbrood wit","package":"stuk","size":1,"unit":"piece","aisle":"bakery"},"de":{"name":"Baguette","package":"Stück","size":1,"unit":"piece","aisle":"bakery"}}},{"id":"sugar_white","en":"White sugar","category":"baking","role":"core","pantry_default":true,"defaults":{"nl":{"name":"Kristalsuiker","package":"pak 1 kg","size":1000,"unit":"g","aisle":"baking"},"de":{"name":"Zucker","package":"Packung 1 kg","size":1000,"unit":"g","aisle":"baking"}}},{"id":"brown_sugar","en":"Brown sugar","category":"baking","role":"core","note":"Stands in for palm sugar everywhere in this app. Dark muscovado is closest; ordinary light brown is fine.","defaults":{"nl":{"name":"Basterdsuiker bruin","package":"pak 500 g","size":500,"unit":"g","aisle":"baking"},"de":{"name":"Brauner Zucker","package":"Packung 500 g","size":500,"unit":"g","aisle":"baking"}},"substitutes":[{"text":"Palm sugar (palmsuiker / Palmzucker)","note":"The authentic one, sold by Go-Tan at AH. Brown sugar is 95% of the way there."}]},{"id":"honey","en":"Honey","category":"baking","role":"core","pantry_default":true,"defaults":{"nl":{"name":"Vloeibare honing","package":"knijpfles 350 g","size":350,"unit":"g","aisle":"baking"},"de":{"name":"Flüssiger Honig","package":"Spenderflasche 350 g","size":350,"unit":"g","aisle":"baking"}}},{"id":"soy_sauce_light","en":"Light soy sauce","aka":["soja","soy"],"category":"world_food","role":"core","pantry_default":true,"note":"The everyday salty one — this is what a recipe means by 'soy sauce'. Naturally brewed tastes far better than the hydrolysed kind; check the label for 'gebrouwen' / 'gebraut'.","defaults":{"nl":{"name":"Sojasaus","package":"fles 150-250 ml","size":150,"unit":"ml"},"de":{"name":"Sojasauce","package":"Flasche 150-250 ml","size":150,"unit":"ml"}},"products":{"lidl_nl":{"name":"Vitasia Sojasaus","package":"fles 150 ml","size":150,"unit":"ml","shelf":"Wereldkeuken-schap, kleine glazen fles met rood etiket"},"lidl_de":{"name":"Vitasia Sojasauce","package":"Flasche 150 ml","size":150,"unit":"ml","shelf":"Weltküche-Regal, kleine Glasflasche mit rotem Etikett"},"ah_nl":{"name":"Kikkoman Sojasaus","package":"fles 250 ml","size":250,"unit":"ml","shelf":"Wereldkeuken, hoge fles met rode dop"},"jumbo_nl":{"name":"Conimex Ketjap Sojasaus","package":"fles 175 ml","size":175,"unit":"ml"},"rewe_de":{"name":"Kikkoman Sojasauce","package":"Flasche 250 ml","size":250,"unit":"ml","shelf":"Weltküche, hohe Flasche mit rotem Verschluss"}},"substitutes":[{"text":"Tamari (gluten-free)","note":"Slightly thicker and less salty. Use 1:1."}]},{"id":"soy_sauce_dark","en":"Dark soy sauce","category":"world_food","role":"specialty","note":"Not interchangeable with light soy: dark is thicker, less salty, and there for colour. If your store has none, ketjap manis is the everyday European stand-in.","defaults":{"nl":{"name":"Donkere sojasaus","package":"fles 150 ml","size":150,"unit":"ml","availability":"varies"},"de":{"name":"Dunkle Sojasauce","package":"Flasche 150 ml","size":150,"unit":"ml","availability":"varies"}},"products":{"ah_nl":{"name":"Go-Tan Donkere sojasaus","package":"fles 150 ml","size":150,"unit":"ml","availability":"varies"},"lidl_nl":{"name":"Vitasia Donkere sojasaus","package":"fles 150 ml","size":150,"unit":"ml","availability":"seasonal","shelf":"Alleen tijdens de Aziatische themaweek"},"lidl_de":{"name":"Vitasia Dunkle Sojasauce","package":"Flasche 150 ml","size":150,"unit":"ml","availability":"seasonal"}},"substitutes":[{"id":"ketjap_manis","note":"Use 2/3 the amount and cut the sugar in the recipe — ketjap is sweetened."},{"text":"Light soy + 1/4 tsp brown sugar per tbsp","note":"Gets the colour and the round edge. This is the workable fix in Germany."}]},{"id":"ketjap_manis","en":"Sweet soy sauce","aka":["kecap manis","ketjap"],"category":"world_food","role":"core","note":"The most useful bottle in a Dutch supermarket. Thick, sweet, molasses-dark — it carries nasi goreng, bami and satay. Standard in NL, hard to find in DE.","defaults":{"nl":{"name":"Ketjap manis","package":"fles 500 ml","size":500,"unit":"ml"},"de":{"name":"Süße Sojasauce (Ketjap Manis)","package":"Flasche 250 ml","size":250,"unit":"ml","availability":"varies"}},"products":{"ah_nl":{"name":"Conimex Ketjap Manis","package":"fles 500 ml","size":500,"unit":"ml","shelf":"Wereldkeuken, blauw Conimex-blok, hoge donkere fles"},"jumbo_nl":{"name":"Conimex Ketjap Manis","package":"fles 500 ml","size":500,"unit":"ml"},"lidl_nl":{"name":"Vitasia Ketjap Manis","package":"fles 250 ml","size":250,"unit":"ml","shelf":"Wereldkeuken-schap naast de sojasaus"},"lidl_de":{"name":"Vitasia Ketjap Manis","package":"Flasche 250 ml","size":250,"unit":"ml","availability":"seasonal"},"rewe_de":{"name":"Kikkoman Sojasauce süß","package":"Flasche 250 ml","size":250,"unit":"ml","availability":"varies"}},"substitutes":[{"text":"3 tbsp light soy + 2 tbsp brown sugar, warmed until dissolved","note":"Makes about 5 tbsp of a very close stand-in. This is the German workaround."}]},{"id":"oyster_sauce","en":"Oyster sauce","category":"world_food","role":"core","note":"Savoury-sweet and slightly thick — it gives Cantonese stir-fries their glossy coating. Vegetarian mushroom versions exist and taste nearly identical.","defaults":{"nl":{"name":"Oestersaus","package":"fles 250 ml","size":250,"unit":"ml"},"de":{"name":"Austernsauce","package":"Flasche 250 ml","size":250,"unit":"ml"}},"products":{"lidl_nl":{"name":"Vitasia Oestersaus","package":"fles 250 ml","size":250,"unit":"ml"},"lidl_de":{"name":"Vitasia Austernsauce","package":"Flasche 250 ml","size":250,"unit":"ml"},"ah_nl":{"name":"Go-Tan Oestersaus","package":"fles 250 ml","size":250,"unit":"ml"},"rewe_de":{"name":"Suzi Wan Austernsauce","package":"Flasche 200 ml","size":200,"unit":"ml"}},"substitutes":[{"text":"Hoisin thinned with a splash of water, or soy + 1/2 tsp sugar","note":"For a vegetarian dish, mushroom stir-fry sauce is the direct swap."}]},{"id":"fish_sauce","en":"Fish sauce","aka":["nam pla"],"category":"world_food","role":"core","note":"Smells alarming in the bottle, tastes of nothing but savoury depth in the pan. Thai and Vietnamese food does not work without it.","defaults":{"nl":{"name":"Vissaus","package":"fles 200-300 ml","size":200,"unit":"ml"},"de":{"name":"Fischsauce","package":"Flasche 200-300 ml","size":200,"unit":"ml"}},"products":{"lidl_nl":{"name":"Vitasia Vissaus","package":"fles 200 ml","size":200,"unit":"ml","availability":"varies"},"lidl_de":{"name":"Vitasia Fischsauce","package":"Flasche 200 ml","size":200,"unit":"ml","availability":"varies"},"ah_nl":{"name":"Go-Tan Vissaus","package":"fles 200 ml","size":200,"unit":"ml"},"rewe_de":{"name":"Suzi Wan Fischsauce","package":"Flasche 200 ml","size":200,"unit":"ml"}},"substitutes":[{"text":"Light soy sauce + a mashed anchovy fillet","note":"Per tbsp of fish sauce. Vegetarian: soy + a few drops of vinegar and a pinch of sugar."}]},{"id":"sesame_oil","en":"Toasted sesame oil","category":"world_food","role":"core","note":"A finishing oil, not a frying oil — it burns. Half a teaspoon off the heat at the end does more than a tablespoon in the wok.","defaults":{"nl":{"name":"Sesamolie (geroosterd)","package":"flesje 100-250 ml","size":100,"unit":"ml"},"de":{"name":"Sesamöl (geröstet)","package":"Flasche 100-250 ml","size":100,"unit":"ml"}},"products":{"lidl_nl":{"name":"Vitasia Sesamolie","package":"flesje 100 ml","size":100,"unit":"ml"},"lidl_de":{"name":"Vitasia Sesamöl","package":"Flasche 100 ml","size":100,"unit":"ml"},"ah_nl":{"name":"Go-Tan Sesamolie","package":"flesje 150 ml","size":150,"unit":"ml"},"rewe_de":{"name":"Kikkoman Sesamöl","package":"Flasche 250 ml","size":250,"unit":"ml"}}},{"id":"rice_vinegar","en":"Rice vinegar","category":"world_food","role":"core","defaults":{"nl":{"name":"Rijstazijn","package":"fles 250-500 ml","size":250,"unit":"ml"},"de":{"name":"Reisessig","package":"Flasche 250-500 ml","size":250,"unit":"ml"}},"products":{"lidl_nl":{"name":"Vitasia Rijstazijn","package":"fles 250 ml","size":250,"unit":"ml","availability":"varies"},"ah_nl":{"name":"Go-Tan Rijstazijn","package":"fles 250 ml","size":250,"unit":"ml"},"rewe_de":{"name":"Kikkoman Reisessig","package":"Flasche 250 ml","size":250,"unit":"ml"}},"substitutes":[{"text":"White wine vinegar cut with a little water","note":"3 parts vinegar to 1 part water plus a pinch of sugar. Apple vinegar also works."}]},{"id":"mirin","en":"Mirin","category":"world_food","role":"specialty","note":"Sweet Japanese cooking wine. Only reliably stocked at the bigger full-range stores — the substitute below is genuinely good, so don't hunt for it.","defaults":{"nl":{"name":"Mirin","package":"fles 150 ml","size":150,"unit":"ml","availability":"varies"},"de":{"name":"Mirin","package":"Flasche 150 ml","size":150,"unit":"ml","availability":"varies"}},"products":{"ah_nl":{"name":"Go-Tan Mirin","package":"fles 150 ml","size":150,"unit":"ml","availability":"varies"},"rewe_de":{"name":"Kikkoman Mirin","package":"Flasche 150 ml","size":150,"unit":"ml","availability":"varies"},"lidl_nl":{"name":"Vitasia Mirin","package":"fles 150 ml","size":150,"unit":"ml","availability":"seasonal"}},"substitutes":[{"text":"2 tbsp dry sherry or white wine + 1 tsp sugar","note":"Per 2 tbsp mirin. Non-alcoholic: rice vinegar + sugar in the same ratio."}]},{"id":"sriracha","en":"Sriracha","category":"world_food","role":"core","defaults":{"nl":{"name":"Sriracha chilisaus","package":"knijpfles 455 ml","size":455,"unit":"ml"},"de":{"name":"Sriracha Chilisauce","package":"Quetschflasche 455 ml","size":455,"unit":"ml"}},"products":{"ah_nl":{"name":"Flying Goose Sriracha","package":"fles 455 ml","size":455,"unit":"ml"},"lidl_nl":{"name":"Vitasia Sriracha saus","package":"fles 200 ml","size":200,"unit":"ml","availability":"varies"},"lidl_de":{"name":"Vitasia Sriracha Sauce","package":"Flasche 200 ml","size":200,"unit":"ml","availability":"varies"},"rewe_de":{"name":"Flying Goose Sriracha","package":"Flasche 455 ml","size":455,"unit":"ml"}},"substitutes":[{"id":"sambal_oelek","note":"Hotter and not sweet — add a pinch of sugar and a drop of vinegar."}]},{"id":"sambal_oelek","en":"Sambal oelek","category":"world_food","role":"core","pantry_default":true,"note":"Crushed raw chilli and salt, nothing else. In the Netherlands it is in every supermarket and most kitchens; treat it as your default chilli source.","defaults":{"nl":{"name":"Sambal oelek","package":"potje 200 g","size":200,"unit":"g"},"de":{"name":"Sambal Oelek","package":"Glas 200 g","size":200,"unit":"g","availability":"varies"}},"products":{"ah_nl":{"name":"Conimex Sambal Oelek","package":"potje 200 g","size":200,"unit":"g","shelf":"Wereldkeuken, klein glazen potje met rode inhoud"},"jumbo_nl":{"name":"Conimex Sambal Oelek","package":"potje 200 g","size":200,"unit":"g"},"lidl_nl":{"name":"Vitasia Sambal Oelek","package":"potje 200 g","size":200,"unit":"g"},"lidl_de":{"name":"Vitasia Sambal Oelek","package":"Glas 200 g","size":200,"unit":"g","availability":"seasonal"},"rewe_de":{"name":"Suzi Wan Sambal Oelek","package":"Glas 200 g","size":200,"unit":"g","availability":"varies"}},"substitutes":[{"text":"Chilli flakes or a fresh red chilli","note":"1/2 tsp flakes per tsp sambal, plus a pinch of salt."}]},{"id":"gochujang","en":"Gochujang","aka":["Korean chilli paste"],"category":"world_food","role":"specialty","note":"Fermented chilli paste — sweet, deep, only moderately hot. It has gone mainstream in the last few years and most full-range stores now carry a tub.","defaults":{"nl":{"name":"Gochujang (Koreaanse chilipasta)","package":"kuipje 200-500 g","size":200,"unit":"g","availability":"varies"},"de":{"name":"Gochujang (koreanische Chilipaste)","package":"Becher 200-500 g","size":200,"unit":"g","availability":"varies"}},"products":{"ah_nl":{"name":"Bibigo Gochujang","package":"kuipje 500 g","size":500,"unit":"g","shelf":"Wereldkeuken, rode kunststof kuip"},"rewe_de":{"name":"Bibigo Gochujang","package":"Becher 500 g","size":500,"unit":"g"},"lidl_nl":{"name":"Vitasia Gochujang","package":"kuipje 200 g","size":200,"unit":"g","availability":"seasonal"},"lidl_de":{"name":"Vitasia Gochujang","package":"Becher 200 g","size":200,"unit":"g","availability":"seasonal"}},"substitutes":[{"text":"1 tbsp sambal oelek + 1 tsp miso + 1 tsp honey","note":"Per tbsp of gochujang. Not identical, but it hits sweet-fermented-hot in the same place."}]},{"id":"miso_paste","en":"Miso paste","category":"world_food","role":"specialty","note":"Buy white (shiro) miso if there is a choice — it is the mild, sweet one that suits everything here. Keeps for months in the fridge.","defaults":{"nl":{"name":"Misopasta (wit)","package":"kuipje 300 g","size":300,"unit":"g","availability":"varies"},"de":{"name":"Miso Paste (hell)","package":"Becher 300 g","size":300,"unit":"g","availability":"varies"}},"products":{"ah_nl":{"name":"AH Miso pasta","package":"kuipje 300 g","size":300,"unit":"g","availability":"varies"},"rewe_de":{"name":"Miso Paste hell (Weltküche-Regal)","package":"Becher 300 g","size":300,"unit":"g","availability":"varies"},"lidl_nl":{"name":"Vitasia Miso pasta","package":"kuipje 300 g","size":300,"unit":"g","availability":"seasonal"}},"substitutes":[{"text":"Tahini + light soy sauce, 2:1","note":"For glazes and dressings only — it will not make miso soup taste like miso soup."}]},{"id":"curry_paste_red","en":"Thai red curry paste","category":"world_food","role":"core","defaults":{"nl":{"name":"Rode currypasta","package":"potje 100-200 g","size":100,"unit":"g"},"de":{"name":"Rote Currypaste","package":"Glas 100-200 g","size":100,"unit":"g"}},"products":{"lidl_nl":{"name":"Vitasia Rode currypasta","package":"potje 100 g","size":100,"unit":"g"},"lidl_de":{"name":"Vitasia Rote Currypaste","package":"Glas 100 g","size":100,"unit":"g"},"ah_nl":{"name":"Go-Tan Rode currypasta","package":"potje 100 g","size":100,"unit":"g"},"rewe_de":{"name":"Thai Kitchen Rote Currypaste","package":"Glas 100 g","size":100,"unit":"g"}},"substitutes":[{"text":"Green curry paste","note":"Different herb profile, same heat and salt. Use the same amount."}]},{"id":"curry_paste_green","en":"Thai green curry paste","category":"world_food","role":"core","defaults":{"nl":{"name":"Groene currypasta","package":"potje 100-200 g","size":100,"unit":"g"},"de":{"name":"Grüne Currypaste","package":"Glas 100-200 g","size":100,"unit":"g"}},"products":{"lidl_nl":{"name":"Vitasia Groene currypasta","package":"potje 100 g","size":100,"unit":"g"},"lidl_de":{"name":"Vitasia Grüne Currypaste","package":"Glas 100 g","size":100,"unit":"g"},"ah_nl":{"name":"Go-Tan Groene currypasta","package":"potje 100 g","size":100,"unit":"g"},"rewe_de":{"name":"Thai Kitchen Grüne Currypaste","package":"Glas 100 g","size":100,"unit":"g"}}},{"id":"coconut_milk","en":"Coconut milk","category":"world_food","role":"core","pantry_default":true,"note":"Full-fat, not 'light'. Don't shake the tin: the thick cream on top is what you fry the curry paste in.","defaults":{"nl":{"name":"Kokosmelk","package":"blik 400 ml","size":400,"unit":"ml"},"de":{"name":"Kokosmilch","package":"Dose 400 ml","size":400,"unit":"ml"}},"products":{"lidl_nl":{"name":"Vitasia Kokosmelk","package":"blik 400 ml","size":400,"unit":"ml"},"lidl_de":{"name":"Vitasia Kokosmilch","package":"Dose 400 ml","size":400,"unit":"ml"},"ah_nl":{"name":"AH Kokosmelk","package":"blik 400 ml","size":400,"unit":"ml"},"jumbo_nl":{"name":"Jumbo Kokosmelk","package":"blik 400 ml","size":400,"unit":"ml"},"rewe_de":{"name":"ja! Kokosmilch","package":"Dose 400 ml","size":400,"unit":"ml"}}},{"id":"peanut_butter","en":"Peanut butter","category":"condiments","role":"core","pantry_default":true,"note":"Use the plain, unsweetened kind if you can. In the Netherlands, 100% pinda pindakaas is on every shelf and makes excellent satay sauce.","defaults":{"nl":{"name":"Pindakaas naturel (100% pinda)","package":"pot 350 g","size":350,"unit":"g","aisle":"condiments"},"de":{"name":"Erdnussmus / Erdnussbutter natur","package":"Glas 350 g","size":350,"unit":"g","aisle":"condiments"}},"products":{"ah_nl":{"name":"AH Pindakaas 100% pinda","package":"pot 350 g","size":350,"unit":"g","aisle":"condiments"},"lidl_nl":{"name":"Maribel Pindakaas","package":"pot 350 g","size":350,"unit":"g","aisle":"condiments"}}},{"id":"hoisin_sauce","en":"Hoisin sauce","category":"world_food","role":"core","defaults":{"nl":{"name":"Hoisinsaus","package":"fles 250 ml","size":250,"unit":"ml"},"de":{"name":"Hoisin Sauce","package":"Flasche 250 ml","size":250,"unit":"ml"}},"products":{"lidl_nl":{"name":"Vitasia Hoisinsaus","package":"fles 250 ml","size":250,"unit":"ml"},"lidl_de":{"name":"Vitasia Hoisin Sauce","package":"Flasche 250 ml","size":250,"unit":"ml"},"ah_nl":{"name":"Go-Tan Hoisinsaus","package":"fles 250 ml","size":250,"unit":"ml"},"rewe_de":{"name":"Suzi Wan Hoisin Sauce","package":"Flasche 200 ml","size":200,"unit":"ml"}},"substitutes":[{"text":"2 tbsp ketjap manis + 1 tsp peanut butter + a drop of vinegar","note":"Per 2 tbsp hoisin. Close enough for char siu."}]},{"id":"sweet_chilli","en":"Sweet chilli sauce","category":"world_food","role":"core","defaults":{"nl":{"name":"Zoete chilisaus","package":"fles 250-700 ml","size":250,"unit":"ml"},"de":{"name":"Süße Chilisauce","package":"Flasche 250-700 ml","size":250,"unit":"ml"}},"products":{"lidl_nl":{"name":"Vitasia Zoete chilisaus","package":"fles 250 ml","size":250,"unit":"ml"},"lidl_de":{"name":"Vitasia Süße Chilisauce","package":"Flasche 250 ml","size":250,"unit":"ml"},"ah_nl":{"name":"Go-Tan Sweet chilli saus","package":"fles 270 ml","size":270,"unit":"ml"}}},{"id":"kimchi","en":"Kimchi","category":"world_food","role":"specialty","note":"In the chilled section, not the world food aisle — look near the sauerkraut or the vegetarian fridge.","defaults":{"nl":{"name":"Kimchi","package":"pot 300-500 g","size":300,"unit":"g","aisle":"dairy_eggs","availability":"varies"},"de":{"name":"Kimchi","package":"Glas 300-500 g","size":300,"unit":"g","aisle":"dairy_eggs","availability":"varies"}},"products":{"ah_nl":{"name":"AH Kimchi","package":"pot 300 g","size":300,"unit":"g","aisle":"dairy_eggs"},"rewe_de":{"name":"Kimchi (Kühlregal)","package":"Glas 300 g","size":300,"unit":"g","aisle":"dairy_eggs","availability":"varies"}},"substitutes":[{"text":"Sauerkraut + 1 tsp gochujang + 1/2 tsp sugar per 100 g","note":"Drain the sauerkraut first. Surprisingly convincing in fried rice and stews."}]},{"id":"nori","en":"Nori sheets","category":"world_food","role":"specialty","defaults":{"nl":{"name":"Nori vellen","package":"pak 10 vellen","size":10,"unit":"piece","availability":"varies"},"de":{"name":"Noriblätter","package":"Packung 10 Blatt","size":10,"unit":"piece","availability":"varies"}},"products":{"ah_nl":{"name":"AH Nori vellen","package":"pak 10 vellen","size":10,"unit":"piece"},"lidl_nl":{"name":"Vitasia Nori vellen","package":"pak 10 vellen","size":10,"unit":"piece","availability":"seasonal"},"lidl_de":{"name":"Vitasia Noriblätter","package":"Packung 10 Blatt","size":10,"unit":"piece","availability":"seasonal"}},"substitutes":[{"text":"Leave it out","note":"It is a garnish. A ramen bowl without nori is still a ramen bowl."}]},{"id":"sunflower_oil","en":"Neutral frying oil","category":"condiments","role":"core","pantry_default":true,"note":"Sunflower or rapeseed. Olive oil burns and tastes wrong in a wok.","defaults":{"nl":{"name":"Zonnebloemolie","package":"fles 1 l","size":1000,"unit":"ml","aisle":"condiments"},"de":{"name":"Sonnenblumenöl","package":"Flasche 1 l","size":1000,"unit":"ml","aisle":"condiments"}},"products":{"lidl_nl":{"name":"Vita D'or Zonnebloemolie","package":"fles 1 l","size":1000,"unit":"ml","aisle":"condiments"},"lidl_de":{"name":"Vita D'or Sonnenblumenöl","package":"Flasche 1 l","size":1000,"unit":"ml","aisle":"condiments"}}},{"id":"salt","en":"Salt","category":"spices","role":"core","pantry_default":true,"defaults":{"nl":{"name":"Keukenzout","package":"pak 1 kg","size":1000,"unit":"g","aisle":"spices"},"de":{"name":"Speisesalz","package":"Packung 500 g","size":500,"unit":"g","aisle":"spices"}}},{"id":"black_pepper","en":"Black pepper","category":"spices","role":"core","pantry_default":true,"defaults":{"nl":{"name":"Zwarte peper (molen)","package":"molen 50 g","size":50,"unit":"g","aisle":"spices"},"de":{"name":"Schwarzer Pfeffer (Mühle)","package":"Mühle 50 g","size":50,"unit":"g","aisle":"spices"}}},{"id":"chilli_flakes","en":"Chilli flakes","category":"spices","role":"core","pantry_default":true,"defaults":{"nl":{"name":"Chilivlokken / gedroogde chilipeper","package":"potje 30 g","size":30,"unit":"g","aisle":"spices"},"de":{"name":"Chiliflocken","package":"Streuer 30 g","size":30,"unit":"g","aisle":"spices"}},"products":{"lidl_nl":{"name":"Kania Chilivlokken","package":"potje 30 g","size":30,"unit":"g","aisle":"spices"},"lidl_de":{"name":"Kania Chiliflocken","package":"Streuer 30 g","size":30,"unit":"g","aisle":"spices"}}},{"id":"five_spice","en":"Chinese five-spice","category":"spices","role":"specialty","note":"Star anise, cinnamon, clove, fennel, pepper. One teaspoon is the difference between 'pork in soy sauce' and char siu.","defaults":{"nl":{"name":"Vijfkruidenpoeder","package":"potje 30-40 g","size":30,"unit":"g","aisle":"spices","availability":"varies"},"de":{"name":"Fünf-Gewürze-Pulver","package":"Streuer 30-40 g","size":30,"unit":"g","aisle":"spices","availability":"varies"}},"products":{"ah_nl":{"name":"Conimex Vijfkruidenpoeder","package":"potje 33 g","size":33,"unit":"g","aisle":"spices"},"jumbo_nl":{"name":"Verstegen Chinese vijfkruidenpoeder","package":"potje 20 g","size":20,"unit":"g","aisle":"spices"},"lidl_nl":{"name":"Kania Vijfkruidenpoeder","package":"potje 30 g","size":30,"unit":"g","aisle":"spices","availability":"seasonal"}},"substitutes":[{"text":"1/2 tsp cinnamon + 1/4 tsp ground fennel + a pinch of ground clove and pepper","note":"Per tsp. Or crush one star anise with 1/2 tsp cinnamon."}]},{"id":"star_anise","en":"Star anise","category":"spices","role":"specialty","defaults":{"nl":{"name":"Steranijs","package":"potje 15 g","size":15,"unit":"g","aisle":"spices","availability":"varies"},"de":{"name":"Sternanis","package":"Glas 15 g","size":15,"unit":"g","aisle":"spices","availability":"varies"}},"substitutes":[{"text":"1/4 tsp five-spice powder","note":"Per star. Or a pinch of fennel seed plus a small piece of cinnamon."}]},{"id":"cinnamon_stick","en":"Cinnamon stick","category":"spices","role":"core","defaults":{"nl":{"name":"Kaneelstokjes","package":"potje 15 g","size":15,"unit":"g","aisle":"spices"},"de":{"name":"Zimtstangen","package":"Glas 15 g","size":15,"unit":"g","aisle":"spices"}}},{"id":"curry_powder","en":"Curry powder","category":"spices","role":"core","pantry_default":true,"note":"The mild European blend. It is the backbone of Singapore noodles and of Japanese curry made from scratch.","defaults":{"nl":{"name":"Kerriepoeder","package":"potje 50 g","size":50,"unit":"g","aisle":"spices"},"de":{"name":"Curry Pulver","package":"Streuer 50 g","size":50,"unit":"g","aisle":"spices"}},"products":{"lidl_nl":{"name":"Kania Kerrie","package":"potje 50 g","size":50,"unit":"g","aisle":"spices"},"lidl_de":{"name":"Kania Curry","package":"Streuer 50 g","size":50,"unit":"g","aisle":"spices"},"ah_nl":{"name":"AH Kerriepoeder","package":"potje 45 g","size":45,"unit":"g","aisle":"spices"}}},{"id":"turmeric","en":"Ground turmeric","category":"spices","role":"core","defaults":{"nl":{"name":"Kurkuma (geelwortel)","package":"potje 40 g","size":40,"unit":"g","aisle":"spices"},"de":{"name":"Kurkuma gemahlen","package":"Streuer 40 g","size":40,"unit":"g","aisle":"spices"}}},{"id":"cumin_ground","en":"Ground cumin","category":"spices","role":"core","defaults":{"nl":{"name":"Komijnpoeder (djinten)","package":"potje 40 g","size":40,"unit":"g","aisle":"spices"},"de":{"name":"Kreuzkümmel gemahlen","package":"Streuer 40 g","size":40,"unit":"g","aisle":"spices"}}},{"id":"coriander_ground","en":"Ground coriander","category":"spices","role":"core","defaults":{"nl":{"name":"Korianderpoeder (ketoembar)","package":"potje 30 g","size":30,"unit":"g","aisle":"spices"},"de":{"name":"Koriander gemahlen","package":"Streuer 30 g","size":30,"unit":"g","aisle":"spices"}}},{"id":"garam_masala","en":"Garam masala","category":"spices","role":"core","defaults":{"nl":{"name":"Garam masala","package":"potje 40 g","size":40,"unit":"g","aisle":"spices"},"de":{"name":"Garam Masala","package":"Streuer 40 g","size":40,"unit":"g","aisle":"spices"}},"substitutes":[{"text":"Curry powder + a pinch of cinnamon and ground clove","note":"Not the same, but it lands in the right family."}]},{"id":"paprika_powder","en":"Sweet paprika","category":"spices","role":"core","pantry_default":true,"note":"Doing the job of Korean gochugaru in a pinch: paprika for the colour, chilli flakes for the heat.","defaults":{"nl":{"name":"Paprikapoeder zoet","package":"potje 50 g","size":50,"unit":"g","aisle":"spices"},"de":{"name":"Paprika edelsüß","package":"Streuer 50 g","size":50,"unit":"g","aisle":"spices"}}},{"id":"sichuan_pepper","en":"Sichuan pepper","category":"spices","role":"specialty","note":"Honest answer: no mainstream European supermarket reliably stocks this, and nothing tastes like it. The numbing tingle is optional — the dish still works without it.","defaults":{"nl":{"name":"Szechuanpeper","package":"potje 20 g","size":20,"unit":"g","aisle":"spices","availability":"varies"},"de":{"name":"Szechuanpfeffer","package":"Glas 20 g","size":20,"unit":"g","aisle":"spices","availability":"varies"}},"substitutes":[{"text":"Extra black pepper + a strip of lemon zest","note":"Gets the aroma, not the tingle. Order the real thing online if you fall for mapo tofu."}]},{"id":"laos_galangal","en":"Ground galangal","aka":["laos"],"category":"spices","role":"specialty","note":"A Dutch supermarket quirk: because of the Indonesian connection, ground laos sits in the ordinary spice rack in NL. German stores rarely have it.","defaults":{"nl":{"name":"Laos (galangapoeder)","package":"potje 20 g","size":20,"unit":"g","aisle":"spices"},"de":{"name":"Galgant gemahlen","package":"Glas 20 g","size":20,"unit":"g","aisle":"spices","availability":"varies"}},"products":{"ah_nl":{"name":"Verstegen Laos","package":"potje 20 g","size":20,"unit":"g","aisle":"spices"},"jumbo_nl":{"name":"Verstegen Laos","package":"potje 20 g","size":20,"unit":"g","aisle":"spices"}},"substitutes":[{"id":"ginger","note":"Use fresh ginger plus a squeeze of lime. Sharper and less piney, but it works."}]},{"id":"lemongrass","en":"Lemongrass","category":"produce","role":"specialty","defaults":{"nl":{"name":"Citroengras (sereh)","package":"2 stengels","size":2,"unit":"piece","availability":"varies","shelf":"Bij de exotische groenten, of als pasta in een tube bij de verse kruiden"},"de":{"name":"Zitronengras","package":"2 Stängel","size":2,"unit":"piece","availability":"varies"}},"substitutes":[{"text":"Zest of half a lime + a strip of lemon peel","note":"Bruise it into the pan the same way. Lemongrass paste in a tube is the other easy option."}]},{"id":"dry_sherry","en":"Dry sherry","category":"drinks","role":"core","note":"The standing substitute for Shaoxing rice wine, which mainstream stores do not carry. Dry sherry is genuinely close — this is the one swap Chinese cooks abroad agree on.","defaults":{"nl":{"name":"Dry sherry (fino)","package":"fles 750 ml","size":750,"unit":"ml","aisle":"drinks"},"de":{"name":"Sherry trocken (Fino)","package":"Flasche 750 ml","size":750,"unit":"ml","aisle":"drinks"}},"substitutes":[{"text":"Dry white wine, or leave it out","note":"Non-alcoholic: 1 tbsp stock + 1/2 tsp rice vinegar per tbsp."}]},{"id":"stock_cube_chicken","en":"Chicken stock cube","category":"dry_goods","role":"core","pantry_default":true,"defaults":{"nl":{"name":"Kippenbouillonblokjes","package":"doos 8-12 blokjes","size":10,"unit":"piece"},"de":{"name":"Hühnerbrühwürfel","package":"Packung 8-12 Würfel","size":10,"unit":"piece"}},"products":{"lidl_nl":{"name":"Kania Kippenbouillonblokjes","package":"doos 12 blokjes","size":12,"unit":"piece"},"lidl_de":{"name":"Kania Hühnerbrühwürfel","package":"Packung 12 Würfel","size":12,"unit":"piece"}}},{"id":"stock_cube_veg","en":"Vegetable stock cube","category":"dry_goods","role":"core","pantry_default":true,"defaults":{"nl":{"name":"Groentebouillonblokjes","package":"doos 8-12 blokjes","size":10,"unit":"piece"},"de":{"name":"Gemüsebrühwürfel","package":"Packung 8-12 Würfel","size":10,"unit":"piece"}}},{"id":"tomato_puree","en":"Tomato purée","category":"canned","role":"core","pantry_default":true,"defaults":{"nl":{"name":"Tomatenpuree","package":"blikje 70 g","size":70,"unit":"g","aisle":"canned"},"de":{"name":"Tomatenmark","package":"Dose 70 g","size":70,"unit":"g","aisle":"canned"}}},{"id":"tomatoes_tinned","en":"Chopped tomatoes","category":"canned","role":"core","pantry_default":true,"defaults":{"nl":{"name":"Tomatenblokjes","package":"blik 400 g","size":400,"unit":"g","aisle":"canned"},"de":{"name":"Gehackte Tomaten","package":"Dose 400 g","size":400,"unit":"g","aisle":"canned"}},"products":{"lidl_nl":{"name":"Freshona Tomatenblokjes","package":"blik 400 g","size":400,"unit":"g","aisle":"canned"},"lidl_de":{"name":"Freshona Gehackte Tomaten","package":"Dose 400 g","size":400,"unit":"g","aisle":"canned"}}},{"id":"pineapple_tinned","en":"Pineapple chunks in juice","category":"canned","role":"core","defaults":{"nl":{"name":"Ananasstukjes op sap","package":"blik 425 g","size":425,"unit":"g","aisle":"canned"},"de":{"name":"Ananasstücke in Saft","package":"Dose 425 g","size":425,"unit":"g","aisle":"canned"}}},{"id":"ketchup","en":"Tomato ketchup","category":"condiments","role":"core","pantry_default":true,"note":"Yes, really. Ketchup is the shortcut base for sweet-and-sour sauce and no one will guess.","defaults":{"nl":{"name":"Tomatenketchup","package":"fles 500 ml","size":500,"unit":"ml","aisle":"condiments"},"de":{"name":"Tomatenketchup","package":"Flasche 500 ml","size":500,"unit":"ml","aisle":"condiments"}}},{"id":"satay_mix","en":"Satay sauce mix","category":"world_food","role":"specialty","note":"A Dutch shortcut worth knowing: Conimex sells a satay sauce mix you whisk with water. Not as good as making it from peanut butter, but it is 90 seconds.","defaults":{"nl":{"name":"Sausmix voor sate","package":"zakje 44 g","size":44,"unit":"g"},"de":{"name":"Erdnusssauce (Fertigmischung)","package":"Beutel 40 g","size":40,"unit":"g","availability":"varies"}},"products":{"ah_nl":{"name":"Conimex Sausmix voor Sate","package":"zakje 44 g","size":44,"unit":"g","shelf":"Wereldkeuken, blauwe Conimex-zakjes"},"jumbo_nl":{"name":"Conimex Sausmix voor Sate","package":"zakje 44 g","size":44,"unit":"g"}},"substitutes":[{"id":"peanut_butter","note":"The from-scratch route in this app uses peanut butter, ketjap and sambal. It is better."}]}],"recipes":[{"id":"kung_pao_chicken","title":"Kung Pao Chicken","cuisine":"Chinese · Sichuan","style":"stir_fry","protein":"chicken","diet":["dairy_free"],"prep_min":15,"cook_min":10,"serves":2,"heat":2,"blurb":"The takeaway classic, minus the gloop. Peanuts, dried chilli and a sharp-sweet sauce that thickens in the last thirty seconds.","ingredients":[{"id":"chicken_thigh","qty":300,"unit":"g","prep":"cut into 2 cm cubes"},{"id":"cornstarch","qty":2,"unit":"tsp"},{"id":"soy_sauce_light","qty":3,"unit":"tbsp"},{"id":"dry_sherry","qty":1,"unit":"tbsp"},{"id":"rice_vinegar","qty":1,"unit":"tbsp"},{"id":"sugar_white","qty":2,"unit":"tsp"},{"id":"garlic","qty":3,"unit":"clove","prep":"finely chopped"},{"id":"ginger","qty":15,"unit":"g","prep":"finely chopped"},{"id":"spring_onion","qty":4,"unit":"piece","prep":"cut into 2 cm lengths, white and green kept apart"},{"id":"chilli_flakes","qty":1,"unit":"tsp"},{"id":"peanuts_roasted","qty":60,"unit":"g"},{"id":"sunflower_oil","qty":2,"unit":"tbsp"},{"id":"sichuan_pepper","qty":0.5,"unit":"tsp","prep":"crushed","optional":true},{"id":"rice_jasmine","qty":150,"unit":"g"}],"steps":["Toss the chicken with 1 tsp cornflour and 1 tbsp of the soy sauce. Leave it while you do everything else — this is velveting, and it is why restaurant chicken is never dry.","Start the rice: rinse 150 g jasmine rice until the water runs clear, add 190 ml water, lid on, boil then 12 minutes on the lowest heat. Don't lift the lid.","Mix the sauce in a cup: the remaining 2 tbsp soy, the sherry, vinegar, sugar and the last 1 tsp cornflour. Stir until no lumps.","Get a large frying pan or wok very hot with the oil. Add the chicken in one layer and leave it alone for 2 minutes so it browns, then stir-fry 2 minutes more until just cooked. Tip it onto a plate.","Same pan, heat down to medium. Add the chilli flakes, Sichuan pepper if using, garlic, ginger and the white parts of the spring onion. Stir for 30 seconds — you want fragrant, not brown.","Chicken back in, pour the sauce down the side of the pan. It will thicken and go glossy in about 45 seconds. Take it off the heat the moment it coats the chicken.","Stir through the peanuts and the green spring onion tops. Serve on the rice."],"tips":["Dried whole chillies are more authentic than flakes — if your store has them, use 6 snipped in half and fry them first in the oil until they darken.","No sherry? A tablespoon of stock plus a few drops of vinegar keeps the sauce balanced."]},{"id":"nasi_goreng","title":"Nasi Goreng","cuisine":"Indonesian","style":"rice","protein":"chicken","diet":["dairy_free"],"prep_min":15,"cook_min":15,"serves":2,"heat":2,"blurb":"The Netherlands' unofficial national dish. Every ingredient is a Dutch supermarket staple, and cold leftover rice makes it better than fresh.","ingredients":[{"id":"rice_jasmine","qty":150,"unit":"g","prep":"cooked and cooled — ideally yesterday's"},{"id":"chicken_thigh","qty":250,"unit":"g","prep":"cut into 1.5 cm pieces"},{"id":"eggs","qty":2,"unit":"piece"},{"id":"onion","qty":1,"unit":"piece","prep":"finely chopped"},{"id":"garlic","qty":3,"unit":"clove","prep":"crushed"},{"id":"carrot","qty":1,"unit":"piece","prep":"diced small"},{"id":"pointed_cabbage","qty":150,"unit":"g","prep":"shredded"},{"id":"ketjap_manis","qty":3,"unit":"tbsp"},{"id":"sambal_oelek","qty":1,"unit":"tsp"},{"id":"coriander_ground","qty":1,"unit":"tsp"},{"id":"cumin_ground","qty":0.5,"unit":"tsp"},{"id":"laos_galangal","qty":0.5,"unit":"tsp","optional":true},{"id":"sunflower_oil","qty":2,"unit":"tbsp"},{"id":"cucumber","qty":0.5,"unit":"piece","prep":"sliced, to serve"}],"steps":["If you don't have cold rice, cook 150 g jasmine rice now and spread it on a plate in the fridge for 20 minutes. Warm rice turns to porridge in the pan.","Fry the eggs in a little oil, sunny side up with crisp edges. Set aside — they go on top at the end.","Heat the oil in your largest pan. Onion and carrot first, 4 minutes until softening.","Add the chicken and fry 4 minutes until it colours. Then the garlic, coriander, cumin, laos and sambal — 1 minute, stirring, until the kitchen smells like an Indonesian toko.","Cabbage in, 2 minutes, then the cold rice. Break up the lumps with the back of your spoon and let it fry undisturbed for a minute at a time so it catches slightly.","Pour over the ketjap manis and toss until every grain is brown. Taste — it usually wants a little more ketjap or a pinch of salt.","Serve with a fried egg on top and cucumber on the side."],"tips":["Prawn crackers (kroepoek) are on the same shelf as the ketjap and take 20 seconds in hot oil.","For bami goreng, swap the rice for 200 g cooked egg noodles and keep everything else identical."]},{"id":"chicken_teriyaki_donburi","title":"Chicken Teriyaki Rice Bowl","cuisine":"Japanese","style":"rice","protein":"chicken","diet":["dairy_free","nut_free"],"prep_min":10,"cook_min":15,"serves":2,"heat":0,"blurb":"Four ingredients make real teriyaki sauce, and none of them is a bottle labelled teriyaki. Weeknight food that children eat without argument.","ingredients":[{"id":"chicken_thigh","qty":400,"unit":"g","prep":"left whole"},{"id":"soy_sauce_light","qty":4,"unit":"tbsp"},{"id":"mirin","qty":4,"unit":"tbsp"},{"id":"sugar_white","qty":2,"unit":"tsp"},{"id":"ginger","qty":10,"unit":"g","prep":"grated"},{"id":"sunflower_oil","qty":1,"unit":"tbsp"},{"id":"rice_jasmine","qty":150,"unit":"g"},{"id":"spring_onion","qty":2,"unit":"piece","prep":"finely sliced"},{"id":"sesame_seeds","qty":1,"unit":"tsp"},{"id":"broccoli","qty":200,"unit":"g","prep":"in florets"}],"steps":["Rice on first: rinse, 150 g rice to 190 ml water, lid on, 12 minutes low, then 10 minutes off the heat with the lid still on.","Mix the soy, mirin, sugar and ginger in a cup.","Heat the oil in a frying pan over medium-high. Lay the thighs in smooth side down and leave them for 5 minutes without touching — you want a proper brown crust.","Flip, cook 4 minutes more. Meanwhile steam or boil the broccoli for 3 minutes until bright green and still firm.","Pour the sauce into the pan. It will bubble hard and reduce; turn the chicken every 30 seconds for about 2 minutes until the sauce is syrupy and clinging.","Rest the chicken for 2 minutes, then slice across into thick strips.","Rice into bowls, chicken on top, spoon over every drop of pan sauce. Broccoli alongside, spring onion and sesame over the lot."],"tips":["No mirin: 4 tbsp dry sherry or white wine plus 2 extra tsp sugar. Non-alcoholic: 3 tbsp rice vinegar, 1 tbsp water and 2 extra tsp sugar.","The sauce reduces fast at the end. If it goes past syrup to toffee, a tablespoon of water brings it back."]},{"id":"thai_green_curry_chicken","title":"Thai Green Curry","cuisine":"Thai","style":"curry","protein":"chicken","diet":["dairy_free","gluten_free_option"],"prep_min":10,"cook_min":20,"serves":3,"heat":2,"blurb":"The technique that separates good from bland: fry the paste in coconut cream until the oil splits out before anything else goes in.","ingredients":[{"id":"chicken_thigh","qty":400,"unit":"g","prep":"sliced"},{"id":"curry_paste_green","qty":3,"unit":"tbsp"},{"id":"coconut_milk","qty":400,"unit":"ml"},{"id":"fish_sauce","qty":2,"unit":"tbsp"},{"id":"brown_sugar","qty":2,"unit":"tsp"},{"id":"green_beans","qty":200,"unit":"g","prep":"topped, halved"},{"id":"bell_pepper_red","qty":1,"unit":"piece","prep":"sliced"},{"id":"lime","qty":1,"unit":"piece"},{"id":"basil_fresh","qty":1,"unit":"handful"},{"id":"rice_jasmine","qty":225,"unit":"g"},{"id":"lemongrass","qty":1,"unit":"piece","prep":"bruised with the back of a knife","optional":true}],"steps":["Open the coconut milk without shaking it. Spoon the thick cream from the top into a cold pan — about 4 tablespoons.","Heat it until it bubbles and you see clear oil separating at the edges, 3-4 minutes. Add the curry paste and fry it hard for 2 minutes, stirring. This is the step everyone skips and it is the whole dish.","Chicken in, turning it in the paste for 3 minutes until coated and sealed.","Pour in the rest of the coconut milk plus 100 ml water, add the lemongrass if you have it, and simmer 8 minutes.","Beans and pepper in for a final 5 minutes — they should keep some bite.","Off the heat, season with the fish sauce, sugar and the juice of half the lime. Taste and push it around: more fish sauce for salt, more sugar for roundness, more lime for lift.","Tear in the basil, serve with jasmine rice and the rest of the lime in wedges."],"tips":["European supermarket curry paste is milder than Thai. Three tablespoons is a starting point, not a limit.","Vegetarian version: swap chicken for 400 g firm tofu and fish sauce for 2 tbsp light soy plus an extra pinch of sugar. Check the paste — some contain shrimp."]},{"id":"beef_broccoli","title":"Beef & Broccoli","cuisine":"Chinese · Cantonese","style":"stir_fry","protein":"beef","diet":["dairy_free","nut_free"],"prep_min":15,"cook_min":10,"serves":2,"heat":0,"blurb":"Cheap frying steak turned tender by cornflour and thirty seconds of restraint. The sauce is five things you already own.","ingredients":[{"id":"beef_steak","qty":300,"unit":"g","prep":"sliced 3 mm thick across the grain"},{"id":"cornstarch","qty":3,"unit":"tsp"},{"id":"soy_sauce_light","qty":3,"unit":"tbsp"},{"id":"oyster_sauce","qty":2,"unit":"tbsp"},{"id":"dry_sherry","qty":1,"unit":"tbsp"},{"id":"sugar_white","qty":1,"unit":"tsp"},{"id":"broccoli","qty":400,"unit":"g","prep":"small florets, stalk peeled and sliced"},{"id":"garlic","qty":4,"unit":"clove","prep":"sliced"},{"id":"ginger","qty":20,"unit":"g","prep":"matchsticks"},{"id":"sunflower_oil","qty":2,"unit":"tbsp"},{"id":"sesame_oil","qty":1,"unit":"tsp"},{"id":"rice_jasmine","qty":150,"unit":"g"}],"steps":["Toss the beef with 2 tsp cornflour and 1 tbsp of the soy sauce. Leave 15 minutes while the rice cooks and you chop.","Boil the broccoli for 2 minutes, then drain it very well. Wet broccoli steams the beef instead of frying it.","Mix the sauce: remaining 2 tbsp soy, oyster sauce, sherry, sugar, the last 1 tsp cornflour and 4 tbsp water.","Wok or big pan as hot as it goes, 1 tbsp oil. Half the beef, spread out, 90 seconds without stirring, then 30 seconds tossing. Out onto a plate. Repeat with the second half — crowding the pan is the classic mistake.","Last tablespoon of oil, garlic and ginger, 20 seconds. Broccoli in, 1 minute.","Beef back in, sauce poured down the side of the pan. Toss for 45 seconds until it thickens and coats everything.","Sesame oil off the heat, straight onto rice."],"tips":["Slicing is easier if the beef goes in the freezer for 15 minutes first.","Vegetarian: use mushroom stir-fry sauce instead of oyster and 300 g pressed firm tofu."]},{"id":"pad_thai_veg","title":"Vegetable Pad Thai","cuisine":"Thai","style":"noodles","protein":"veg","diet":["vegetarian","dairy_free"],"prep_min":20,"cook_min":10,"serves":2,"heat":1,"blurb":"Tamarind is the one thing you cannot buy at Lidl, so this uses the lime-and-brown-sugar route that Thai cooks abroad use anyway.","ingredients":[{"id":"noodles_rice_flat","qty":200,"unit":"g"},{"id":"tofu_firm","qty":200,"unit":"g","prep":"pressed, cubed"},{"id":"eggs","qty":2,"unit":"piece","prep":"beaten"},{"id":"beansprouts","qty":150,"unit":"g"},{"id":"spring_onion","qty":4,"unit":"piece","prep":"in 3 cm lengths"},{"id":"carrot","qty":1,"unit":"piece","prep":"matchsticks"},{"id":"garlic","qty":3,"unit":"clove","prep":"chopped"},{"id":"peanuts_roasted","qty":50,"unit":"g","prep":"roughly crushed"},{"id":"lime","qty":1,"unit":"piece"},{"id":"brown_sugar","qty":2,"unit":"tbsp"},{"id":"soy_sauce_light","qty":3,"unit":"tbsp"},{"id":"rice_vinegar","qty":1,"unit":"tbsp"},{"id":"sambal_oelek","qty":1,"unit":"tsp"},{"id":"sunflower_oil","qty":3,"unit":"tbsp"},{"id":"coriander_fresh","qty":1,"unit":"handful"}],"steps":["Pour just-boiled water over the rice noodles in a bowl, off the heat. Leave 7 minutes until bendy but still firm in the middle, then drain and rinse cold. They finish cooking in the pan.","Whisk the sauce: brown sugar, soy, vinegar, sambal and the juice of the whole lime. It should taste aggressively sweet-sour-salty on its own.","Dry the tofu on kitchen paper, then fry in 2 tbsp oil over high heat, 6-8 minutes, turning only when each side has browned. Set aside.","Last tablespoon of oil, garlic and carrot, 1 minute. Push everything to one side, pour the egg into the empty half and scramble it in loose curds.","Noodles and sauce in. Toss with tongs for 2 minutes — it will look wet, then suddenly the noodles drink it up and turn glossy.","Tofu back in with the beansprouts and spring onion, 30 seconds only so the sprouts stay crunchy.","Onto plates, peanuts and coriander over the top, extra lime on the side."],"tips":["If your store has tamarind paste, use 2 tbsp in place of the vinegar and half the lime — that is the real thing.","Vegan: leave out the egg and add 100 g extra tofu."]},{"id":"bibimbap_bowl","title":"Bibimbap-style Rice Bowl","cuisine":"Korean","style":"rice","protein":"beef","diet":["dairy_free"],"prep_min":20,"cook_min":20,"serves":2,"heat":2,"blurb":"Separate piles of vegetables on rice, a fried egg, and gochujang sauce stirred through at the table. Assembly, not cooking.","ingredients":[{"id":"rice_jasmine","qty":150,"unit":"g"},{"id":"beef_steak","qty":200,"unit":"g","prep":"sliced thin"},{"id":"gochujang","qty":2,"unit":"tbsp"},{"id":"soy_sauce_light","qty":3,"unit":"tbsp"},{"id":"sesame_oil","qty":2,"unit":"tbsp"},{"id":"sugar_white","qty":2,"unit":"tsp"},{"id":"rice_vinegar","qty":1,"unit":"tbsp"},{"id":"garlic","qty":3,"unit":"clove","prep":"crushed"},{"id":"carrot","qty":1,"unit":"piece","prep":"matchsticks"},{"id":"spinach","qty":150,"unit":"g"},{"id":"mushrooms","qty":150,"unit":"g","prep":"sliced"},{"id":"cucumber","qty":0.5,"unit":"piece","prep":"matchsticks"},{"id":"eggs","qty":2,"unit":"piece"},{"id":"sesame_seeds","qty":2,"unit":"tsp"},{"id":"sunflower_oil","qty":2,"unit":"tbsp"}],"steps":["Rice on. Meanwhile marinate the beef in 2 tbsp soy, 1 tsp sugar, half the garlic and 1 tsp sesame oil.","Make the sauce: gochujang, 1 tbsp water, 1 tsp sugar, the vinegar and 1 tsp sesame oil. Stir smooth and set aside.","Wilt the spinach in a dry hot pan for 1 minute, squeeze out the water, then dress with 1 tsp sesame oil, a pinch of salt and the rest of the garlic.","Fry the mushrooms in 1 tbsp oil until browned and squeaky, season with the last tablespoon of soy. Out. Same pan, carrots for 2 minutes so they soften but keep colour. Out.","Pan on high, remaining oil, beef in one layer for 2 minutes until caramelised at the edges.","Fry the eggs so the whites are set and the yolks runny.","Rice into two wide bowls. Arrange the spinach, mushrooms, carrot, cucumber and beef in separate piles on top, egg in the middle, sesame seeds over. Sauce on the side — everyone stirs their own bowl into a mess, which is the point."],"tips":["No gochujang: 1 tbsp sambal oelek, 1 tsp miso and 2 tsp honey gets close.","Works with anything in the fridge. Courgette, beansprouts and pointed cabbage are all traditional-adjacent."]},{"id":"mapo_tofu","title":"Mapo Tofu","cuisine":"Chinese · Sichuan","style":"stir_fry","protein":"pork","diet":["dairy_free","nut_free"],"prep_min":10,"cook_min":15,"serves":2,"heat":3,"blurb":"Silky tofu in a fierce red sauce. The authentic broad bean paste is a specialty-shop item, so this rebuilds it from sambal and miso.","ingredients":[{"id":"tofu_firm","qty":400,"unit":"g","prep":"cut into 2 cm cubes"},{"id":"pork_mince","qty":150,"unit":"g"},{"id":"sambal_oelek","qty":2,"unit":"tbsp"},{"id":"miso_paste","qty":1,"unit":"tbsp"},{"id":"soy_sauce_light","qty":2,"unit":"tbsp"},{"id":"garlic","qty":4,"unit":"clove","prep":"chopped"},{"id":"ginger","qty":15,"unit":"g","prep":"chopped"},{"id":"spring_onion","qty":3,"unit":"piece","prep":"sliced"},{"id":"stock_cube_chicken","qty":1,"unit":"cube"},{"id":"cornstarch","qty":2,"unit":"tsp"},{"id":"sunflower_oil","qty":2,"unit":"tbsp"},{"id":"sichuan_pepper","qty":1,"unit":"tsp","prep":"toasted and ground","optional":true},{"id":"rice_jasmine","qty":150,"unit":"g"}],"steps":["Slide the tofu cubes into a pan of salted simmering water and leave them off the heat while you cook. It firms them up and stops them breaking later.","Dissolve the stock cube in 250 ml hot water. Mix the cornflour with 2 tbsp cold water in a separate cup.","Oil in a wide pan on high. Pork mince in, pressed flat, and left to brown properly for 3 minutes before you break it up. Brown, not grey.","Heat down to medium. Sambal, miso, garlic and ginger, fried for 90 seconds until the oil turns red.","Pour in the stock and the soy. Drain the tofu and slide it in. Simmer 5 minutes, pushing the tofu gently with the back of a spoon rather than stirring.","Stir the cornflour slurry and add it in two goes, letting it bubble between, until the sauce coats a spoon.","Spring onion and the ground Sichuan pepper over the top. Serve on rice with something plain and green alongside."],"tips":["Vegetarian: leave out the pork and brown 150 g finely chopped mushrooms instead — same depth.","If you find doubanjiang (broad bean paste) in an Asian shop, use 2 tbsp of it in place of the sambal and miso and you have the real thing."]},{"id":"chicken_satay_peanut","title":"Chicken Satay with Peanut Sauce","cuisine":"Indonesian","style":"grill","protein":"chicken","diet":["dairy_free"],"prep_min":20,"cook_min":15,"serves":3,"heat":1,"blurb":"Made entirely from things in a Dutch supermarket, and better than any jar. The sauce keeps a week and improves on day two.","ingredients":[{"id":"chicken_thigh","qty":600,"unit":"g","prep":"cut into 3 cm chunks"},{"id":"ketjap_manis","qty":4,"unit":"tbsp"},{"id":"peanut_butter","qty":5,"unit":"tbsp"},{"id":"coconut_milk","qty":200,"unit":"ml"},{"id":"sambal_oelek","qty":2,"unit":"tsp"},{"id":"garlic","qty":4,"unit":"clove","prep":"crushed"},{"id":"coriander_ground","qty":2,"unit":"tsp"},{"id":"cumin_ground","qty":1,"unit":"tsp"},{"id":"turmeric","qty":1,"unit":"tsp"},{"id":"lime","qty":1,"unit":"piece"},{"id":"sunflower_oil","qty":2,"unit":"tbsp"},{"id":"rice_jasmine","qty":225,"unit":"g"},{"id":"cucumber","qty":1,"unit":"piece","prep":"in chunks, to serve"}],"steps":["Marinate the chicken in 2 tbsp of the ketjap, half the garlic, the coriander, cumin, turmeric and 1 tbsp oil. Twenty minutes on the counter, or overnight in the fridge.","Sauce: gently heat the remaining garlic in 1 tbsp oil for 30 seconds, then stir in the peanut butter, coconut milk, the other 2 tbsp ketjap and the sambal.","Let it bubble for 3-4 minutes until it thickens and darkens, loosening with a splash of water if it seizes. Finish with the juice of half the lime. Taste: it wants to be salty-sweet with a low burn.","Thread the chicken onto skewers, or don't — loose chunks cook just as well.","Grill under a hot oven grill for 12 minutes, turning halfway, until charred at the edges. A ridged pan or a barbecue is better still. The ketjap catches quickly, which is what you want.","Serve with rice, the warm peanut sauce poured over, cucumber on the side and the rest of the lime."],"tips":["Soak wooden skewers 20 minutes first, or they burn.","The sauce is also the dressing for gado-gado: pour it over boiled potatoes, green beans, beansprouts and a hard-boiled egg."]},{"id":"pho_ga_shortcut","title":"Weeknight Chicken Pho","cuisine":"Vietnamese","style":"soup","protein":"chicken","diet":["dairy_free","nut_free"],"prep_min":15,"cook_min":25,"serves":2,"heat":1,"blurb":"Real pho broth takes six hours. This charred-onion shortcut takes twenty-five minutes and is honest about the difference.","ingredients":[{"id":"chicken_thigh","qty":300,"unit":"g"},{"id":"stock_cube_chicken","qty":2,"unit":"cube"},{"id":"onion","qty":1,"unit":"piece","prep":"halved, skin on"},{"id":"ginger","qty":40,"unit":"g","prep":"halved lengthways"},{"id":"star_anise","qty":2,"unit":"piece"},{"id":"cinnamon_stick","qty":1,"unit":"piece"},{"id":"coriander_ground","qty":1,"unit":"tsp"},{"id":"fish_sauce","qty":2,"unit":"tbsp"},{"id":"sugar_white","qty":1,"unit":"tsp"},{"id":"noodles_rice_flat","qty":150,"unit":"g"},{"id":"beansprouts","qty":100,"unit":"g"},{"id":"spring_onion","qty":3,"unit":"piece","prep":"sliced"},{"id":"coriander_fresh","qty":1,"unit":"handful"},{"id":"mint_fresh","qty":1,"unit":"handful"},{"id":"lime","qty":1,"unit":"piece"},{"id":"chilli_red","qty":1,"unit":"piece","prep":"sliced"},{"id":"sriracha","qty":2,"unit":"tbsp","optional":true}],"steps":["Put the onion halves and ginger cut-side down in a dry pan over high heat. Leave 5 minutes until properly blackened. This is where the smoky depth comes from, so let them go further than feels sensible.","Add 1.2 litres water, the stock cubes, star anise, cinnamon and ground coriander. Bring to a simmer.","Slide in the chicken thighs and poach at the barest simmer for 18 minutes. Do not let it boil or the broth goes cloudy.","Lift out the chicken and shred it with two forks. Strain the broth and season with the fish sauce and sugar. It should taste slightly too savoury on its own — the noodles absorb a lot.","Soak the rice noodles in just-boiled water for 6 minutes, drain.","Noodles into deep bowls, chicken on top, ladle over the hot broth.","Everything else goes on the table: beansprouts, herbs, lime, chilli, sriracha. Building the bowl is the diner's job, not the cook's."],"tips":["Toasting the star anise and cinnamon in the dry pan with the onion for the last minute is worth the ten seconds.","Beef version: use beef stock and lay paper-thin raw steak in the bowl — the boiling broth cooks it as you pour."]},{"id":"banh_mi","title":"Bánh Mì","cuisine":"Vietnamese","style":"sandwich","protein":"pork","diet":["dairy_free","nut_free"],"prep_min":25,"cook_min":10,"serves":2,"heat":1,"blurb":"A European baguette is the whole reason this sandwich exists. The pickle needs twenty minutes, and everything else is assembly.","ingredients":[{"id":"baguette","qty":1,"unit":"piece"},{"id":"pork_mince","qty":300,"unit":"g"},{"id":"carrot","qty":1,"unit":"piece","prep":"matchsticks"},{"id":"radish_pink","qty":6,"unit":"piece","prep":"sliced thin"},{"id":"rice_vinegar","qty":4,"unit":"tbsp"},{"id":"sugar_white","qty":2,"unit":"tbsp"},{"id":"fish_sauce","qty":2,"unit":"tbsp"},{"id":"soy_sauce_light","qty":1,"unit":"tbsp"},{"id":"garlic","qty":2,"unit":"clove","prep":"crushed"},{"id":"brown_sugar","qty":1,"unit":"tbsp"},{"id":"cucumber","qty":0.5,"unit":"piece","prep":"in long strips"},{"id":"coriander_fresh","qty":1,"unit":"handful"},{"id":"chilli_red","qty":1,"unit":"piece","prep":"sliced"},{"id":"sriracha","qty":2,"unit":"tbsp"},{"id":"sunflower_oil","qty":1,"unit":"tbsp"}],"steps":["Pickle first: dissolve the white sugar and 1/2 tsp salt in the vinegar plus 4 tbsp warm water. Add the carrot and radish and leave for at least 20 minutes, tossing once.","Fry the pork in the oil over high heat, pressed flat, until it is properly browned in patches — 5 minutes, resisting the urge to stir.","Add the garlic, then the fish sauce, soy and brown sugar. Cook 2 minutes more until sticky and glazed.","Split the baguette lengthways, keeping a hinge, and toast it cut side up for 2 minutes so it can hold a wet filling.","Spread sriracha along the bottom. Cucumber strips, then the hot pork, then a generous handful of drained pickle.","Coriander and chilli on top, press the lid down hard, cut in half."],"tips":["Mayonnaise on the top half is traditional and makes it far better.","The pickle keeps a fortnight in a jar in the fridge and improves everything it touches."]},{"id":"thai_red_curry_salmon","title":"Red Curry Salmon","cuisine":"Thai","style":"curry","protein":"fish","diet":["dairy_free","nut_free","gluten_free_option"],"prep_min":10,"cook_min":15,"serves":2,"heat":2,"blurb":"Twenty-five minutes start to finish. The salmon goes in last and poaches in the curry, so it never overcooks.","ingredients":[{"id":"salmon_fillet","qty":250,"unit":"g","prep":"cut into large chunks"},{"id":"curry_paste_red","qty":2,"unit":"tbsp"},{"id":"coconut_milk","qty":400,"unit":"ml"},{"id":"fish_sauce","qty":1,"unit":"tbsp"},{"id":"brown_sugar","qty":1,"unit":"tsp"},{"id":"lime","qty":1,"unit":"piece"},{"id":"sugar_snap","qty":150,"unit":"g"},{"id":"bell_pepper_red","qty":1,"unit":"piece","prep":"sliced"},{"id":"spinach","qty":100,"unit":"g"},{"id":"coriander_fresh","qty":1,"unit":"handful"},{"id":"rice_jasmine","qty":150,"unit":"g"}],"steps":["Rice on first — it takes the longest.","Spoon the thick cream off the top of the coconut milk into a pan and heat until it splits and the oil shows, 3 minutes.","Curry paste in, fried for 2 minutes until dark and fragrant.","Rest of the coconut milk in, plus 50 ml water. Simmer 5 minutes to thicken slightly.","Pepper and sugar snaps in for 3 minutes, then lay the salmon chunks on top, lid on, and poach for 4 minutes without stirring. Nudge, don't stir, or the fish breaks up.","Off the heat, stir the spinach through until it wilts. Season with fish sauce, sugar and lime juice.","Coriander over, rice underneath."],"tips":["Cod, pollock or prawns all work — prawns need 2 minutes, not 4.","A tablespoon of peanut butter stirred into the sauce turns this into something closer to a massaman."]},{"id":"egg_fried_rice","title":"Egg Fried Rice","cuisine":"Chinese","style":"rice","protein":"egg","diet":["vegetarian","dairy_free","nut_free"],"prep_min":5,"cook_min":10,"serves":2,"heat":0,"blurb":"Fifteen minutes, five ingredients, and one rule: the rice must be cold. Everything else is negotiable.","ingredients":[{"id":"rice_jasmine","qty":150,"unit":"g","prep":"cooked and thoroughly chilled"},{"id":"eggs","qty":3,"unit":"piece","prep":"beaten with a pinch of salt"},{"id":"spring_onion","qty":4,"unit":"piece","prep":"whites and greens separated"},{"id":"garlic","qty":2,"unit":"clove","prep":"chopped"},{"id":"soy_sauce_light","qty":2,"unit":"tbsp"},{"id":"sesame_oil","qty":1,"unit":"tsp"},{"id":"sunflower_oil","qty":2,"unit":"tbsp"},{"id":"sugar_snap","qty":100,"unit":"g","prep":"sliced","optional":true},{"id":"carrot","qty":1,"unit":"piece","prep":"diced small","optional":true}],"steps":["Get the pan properly hot before anything goes in. This dish is about heat, not time.","1 tbsp oil, pour in the egg, and let it set for 20 seconds before scrambling it into large soft curds. Tip it out while still slightly underdone.","Second tablespoon of oil. Carrot and sugar snaps if using, 2 minutes. Then garlic and spring onion whites, 30 seconds.","Cold rice in. Press it against the pan and let it sit for 30 seconds at a time between stirs — you are toasting the grains, not steaming them. Three minutes.","Egg back in, broken into pieces. Soy sauce poured around the edge of the pan so it sizzles rather than pools.","Sesame oil and the green spring onion tops off the heat. Serve immediately."],"tips":["No cold rice? Cook it, spread it thin on a tray and give it 20 minutes in the freezer.","Leftover roast chicken, frozen peas, or the last of a bag of prawns all belong here."]},{"id":"singapore_noodles","title":"Singapore Noodles","cuisine":"Chinese · Singaporean","style":"noodles","protein":"seafood","diet":["dairy_free","nut_free"],"prep_min":15,"cook_min":10,"serves":2,"heat":2,"blurb":"Curry powder in a Chinese stir-fry — a colonial accident that became a classic. Ordinary European kerrie is exactly the right stuff.","ingredients":[{"id":"vermicelli_mihoen","qty":150,"unit":"g"},{"id":"prawns_frozen","qty":200,"unit":"g","prep":"defrosted, patted dry"},{"id":"eggs","qty":2,"unit":"piece","prep":"beaten"},{"id":"curry_powder","qty":2,"unit":"tbsp"},{"id":"turmeric","qty":0.5,"unit":"tsp"},{"id":"bell_pepper_red","qty":1,"unit":"piece","prep":"sliced thin"},{"id":"onion","qty":1,"unit":"piece","prep":"sliced"},{"id":"beansprouts","qty":150,"unit":"g"},{"id":"spring_onion","qty":3,"unit":"piece","prep":"in 3 cm lengths"},{"id":"garlic","qty":3,"unit":"clove","prep":"chopped"},{"id":"soy_sauce_light","qty":2,"unit":"tbsp"},{"id":"dry_sherry","qty":1,"unit":"tbsp"},{"id":"sugar_white","qty":1,"unit":"tsp"},{"id":"sunflower_oil","qty":3,"unit":"tbsp"},{"id":"sesame_oil","qty":1,"unit":"tsp"}],"steps":["Soak the vermicelli in just-boiled water for 3 minutes only, then drain, rinse cold and cut through the nest a few times with scissors so it doesn't become one solid rope.","Mix the curry powder and turmeric with the soy, sherry, sugar and 3 tbsp water.","Hot pan, 1 tbsp oil, scramble the eggs into loose curds and set aside.","1 tbsp oil, prawns in a single layer for 90 seconds a side until just pink. Out — they will finish later.","Last tablespoon of oil, onion and pepper for 2 minutes, then garlic for 30 seconds.","Noodles in with the curry sauce. Toss constantly with tongs for 2 minutes until every strand is yellow. Add a splash of water if it looks dry — the noodles drink more than you expect.","Prawns, egg, beansprouts and spring onion back in for 45 seconds. Sesame oil off the heat."],"tips":["Char siu pork from this app, sliced thin, is the traditional partner to the prawns.","Vegetarian: skip the prawns, double the egg and add 150 g fried tofu."]},{"id":"japanese_curry_rice","title":"Japanese Curry Rice","cuisine":"Japanese","style":"curry","protein":"chicken","diet":["nut_free"],"prep_min":15,"cook_min":30,"serves":4,"heat":1,"blurb":"The boxed roux blocks are a specialty import. Making the roux yourself takes four minutes and costs almost nothing.","ingredients":[{"id":"chicken_thigh","qty":500,"unit":"g","prep":"in 3 cm chunks"},{"id":"onion","qty":2,"unit":"piece","prep":"sliced"},{"id":"carrot","qty":2,"unit":"piece","prep":"in chunks"},{"id":"potato","qty":400,"unit":"g","prep":"in 3 cm chunks"},{"id":"butter","qty":40,"unit":"g"},{"id":"flour_plain","qty":3,"unit":"tbsp"},{"id":"curry_powder","qty":2,"unit":"tbsp"},{"id":"garam_masala","qty":1,"unit":"tsp"},{"id":"stock_cube_chicken","qty":2,"unit":"cube"},{"id":"soy_sauce_light","qty":2,"unit":"tbsp"},{"id":"honey","qty":1,"unit":"tbsp"},{"id":"ketchup","qty":2,"unit":"tbsp"},{"id":"rice_jasmine","qty":300,"unit":"g"},{"id":"sunflower_oil","qty":1,"unit":"tbsp"}],"steps":["Brown the chicken in the oil in a large pan, 5 minutes. Add the onions and cook 5 minutes more until they collapse and sweeten.","Carrot and potato in with 700 ml water and the stock cubes. Simmer 15 minutes until the potato is tender.","Meanwhile, the roux: melt the butter in a small pan, stir in the flour and cook over low heat for 3 minutes until it smells like biscuits and turns the colour of sand.","Off the heat, stir the curry powder and garam masala into the roux. It will look like wet sand.","Ladle three spoonfuls of the hot cooking liquid into the roux and whisk to a smooth paste, then scrape all of it back into the main pan.","Add the soy, honey and ketchup. Simmer 5 minutes, stirring, until it thickens to a thick gravy that holds a line on the back of a spoon.","Serve in a wide bowl, curry on one half, rice on the other."],"tips":["Grated apple is the classic secret ingredient — half an apple added with the onions.","Better the next day, and it freezes well. Make the full four portions even if you are two."]},{"id":"chicken_katsu","title":"Chicken Katsu","cuisine":"Japanese","style":"fried","protein":"chicken","diet":["dairy_free","nut_free"],"prep_min":15,"cook_min":15,"serves":2,"heat":0,"blurb":"Panko is the only thing that makes this work, and it is the one specialty item worth going out of your way for.","ingredients":[{"id":"chicken_breast","qty":2,"unit":"piece","prep":"butterflied and flattened to 1 cm"},{"id":"panko","qty":100,"unit":"g"},{"id":"flour_plain","qty":4,"unit":"tbsp"},{"id":"eggs","qty":2,"unit":"piece","prep":"beaten"},{"id":"sunflower_oil","qty":200,"unit":"ml"},{"id":"ketchup","qty":3,"unit":"tbsp"},{"id":"soy_sauce_light","qty":1,"unit":"tbsp"},{"id":"oyster_sauce","qty":1,"unit":"tbsp"},{"id":"honey","qty":1,"unit":"tsp"},{"id":"rice_jasmine","qty":150,"unit":"g"},{"id":"pointed_cabbage","qty":200,"unit":"g","prep":"shredded as finely as you can"},{"id":"lime","qty":0.5,"unit":"piece"}],"steps":["Katsu sauce: stir the ketchup, soy, oyster sauce and honey together. That is the whole sauce, and it tastes remarkably like the bottled stuff.","Season the chicken well. Three shallow bowls: flour, egg, panko.","Flour the chicken and shake off the excess, then egg, then press hard into the panko on both sides. Press, don't dip — the crumbs need to embed.","Heat 1 cm of oil in a frying pan to about 175 °C. A panko crumb should sizzle briskly, not violently.","Fry 3-4 minutes a side until deep golden. Drain on a rack, not on paper, so the underside stays crisp.","Rest 2 minutes, then slice across into 2 cm strips.","Serve on rice with a mountain of raw shredded cabbage, a squeeze of lime over the cabbage, and the sauce poured over the chicken."],"tips":["The raw cabbage is not a garnish. It cuts the fried richness and is how it is eaten in Japan.","Pork loin steaks make tonkatsu with no other change. Aubergine slices work for a vegetarian version."]},{"id":"char_siu_oven_pork","title":"Oven Char Siu Pork","cuisine":"Chinese · Cantonese","style":"oven","protein":"pork","diet":["dairy_free","nut_free"],"prep_min":15,"cook_min":35,"serves":4,"heat":0,"blurb":"The sticky red pork from the takeaway window, done in a normal oven. Marinate in the morning, roast in the evening.","ingredients":[{"id":"pork_shoulder","qty":700,"unit":"g","prep":"cut into long 5 cm-thick strips"},{"id":"hoisin_sauce","qty":4,"unit":"tbsp"},{"id":"soy_sauce_light","qty":3,"unit":"tbsp"},{"id":"honey","qty":3,"unit":"tbsp"},{"id":"dry_sherry","qty":2,"unit":"tbsp"},{"id":"five_spice","qty":1,"unit":"tsp"},{"id":"garlic","qty":4,"unit":"clove","prep":"crushed"},{"id":"ginger","qty":20,"unit":"g","prep":"grated"},{"id":"sugar_white","qty":1,"unit":"tbsp"},{"id":"rice_jasmine","qty":300,"unit":"g"},{"id":"paksoi","qty":300,"unit":"g","prep":"halved lengthways"}],"steps":["Mix the hoisin, soy, 2 tbsp of the honey, sherry, five-spice, garlic, ginger and sugar. Keep 3 tablespoons of it back in a separate cup — that is your glaze, and it must not touch raw pork.","Coat the pork in the rest and refrigerate. Four hours minimum, overnight for real depth.","Oven to 200 °C. Sit the pork on a rack over a roasting tin with 1 cm of water in the bottom — the water stops the drips burning and smoking out your kitchen.","Roast 20 minutes. Turn, brush with the reserved glaze, roast 10 minutes more.","Stir the last tablespoon of honey into what remains of the glaze, brush it on, and give it a final 5 minutes until the edges are dark and lacquered. Watch it — the sugar goes from caramel to carbon quickly.","Rest 10 minutes before slicing across the grain. Meanwhile steam the pak choi for 3 minutes.","Serve sliced over rice with the greens and any juices from the board."],"tips":["The classic red colour comes from food colouring. It tastes the same without it.","Leftovers are the best possible addition to fried rice, Singapore noodles or a bowl of instant ramen."]},{"id":"nasu_dengaku","title":"Miso-Glazed Aubergine","cuisine":"Japanese","style":"oven","protein":"veg","diet":["vegetarian","vegan","dairy_free","nut_free"],"prep_min":10,"cook_min":25,"serves":2,"heat":0,"blurb":"Three tablespoons of glaze turn a cheap aubergine into the best thing on the table. Almost no work.","ingredients":[{"id":"aubergine","qty":2,"unit":"piece","prep":"halved lengthways, flesh scored in a diamond pattern"},{"id":"miso_paste","qty":3,"unit":"tbsp"},{"id":"mirin","qty":2,"unit":"tbsp"},{"id":"sugar_white","qty":1,"unit":"tbsp"},{"id":"sesame_oil","qty":1,"unit":"tsp"},{"id":"sunflower_oil","qty":3,"unit":"tbsp"},{"id":"sesame_seeds","qty":2,"unit":"tsp"},{"id":"spring_onion","qty":2,"unit":"piece","prep":"finely sliced"},{"id":"rice_jasmine","qty":150,"unit":"g"}],"steps":["Oven to 200 °C. Brush the cut faces of the aubergine generously with the sunflower oil — aubergine drinks oil, and underdone aubergine is unpleasant, so be generous.","Roast cut side up for 20 minutes until the flesh is completely soft and collapsing when pressed.","Meanwhile whisk the miso, mirin, sugar and sesame oil into a thick, spreadable glaze.","Spread the glaze over the roasted faces, right into the scored cuts.","Back in under a hot grill for 3-5 minutes until the glaze bubbles and blackens in patches. Do not walk away — miso burns fast.","Sesame seeds and spring onion over the top. Serve with rice, one half each."],"tips":["No mirin: 2 tbsp rice vinegar plus an extra teaspoon of sugar.","The same glaze is excellent on salmon — grill it for 4 minutes."]},{"id":"pad_krapow_moo","title":"Thai Basil Pork","cuisine":"Thai","style":"stir_fry","protein":"pork","diet":["dairy_free","nut_free"],"prep_min":10,"cook_min":10,"serves":2,"heat":3,"blurb":"Thailand's actual weeknight dinner. Twenty minutes, one pan, and a fried egg on top that is non-negotiable.","ingredients":[{"id":"pork_mince","qty":300,"unit":"g"},{"id":"basil_fresh","qty":2,"unit":"handful"},{"id":"garlic","qty":5,"unit":"clove","prep":"roughly chopped"},{"id":"chilli_red","qty":3,"unit":"piece","prep":"chopped, seeds in"},{"id":"oyster_sauce","qty":2,"unit":"tbsp"},{"id":"soy_sauce_light","qty":1,"unit":"tbsp"},{"id":"fish_sauce","qty":1,"unit":"tbsp"},{"id":"brown_sugar","qty":2,"unit":"tsp"},{"id":"green_beans","qty":100,"unit":"g","prep":"cut into 2 cm lengths","optional":true},{"id":"eggs","qty":2,"unit":"piece"},{"id":"sunflower_oil","qty":4,"unit":"tbsp"},{"id":"rice_jasmine","qty":150,"unit":"g"}],"steps":["Rice on. Mix the oyster sauce, soy, fish sauce and sugar in a cup.","Fry the eggs first, in 2 tbsp of oil over high heat, spooning hot oil over the tops until the whites are blistered and lacy and the yolk is still liquid. Set aside on kitchen paper.","Same pan, remaining oil, high heat. Garlic and chilli for 20 seconds only.","Pork in, pressed flat, left for 2 minutes to brown before you break it up. Then stir-fry 3 minutes more.","Green beans in for 2 minutes if using, then pour in the sauce and let it bubble and reduce for 1 minute.","Off the heat, throw in the basil and stir until it just wilts — 15 seconds. Any longer and it turns black.","Over rice with the fried egg on top. Break the yolk into the pork."],"tips":["Holy basil is what Thailand uses and no European supermarket has it. Italian basil plus an extra chilli and the fish sauce lands close enough that this is worth cooking anyway.","Chicken mince works identically. So does firm tofu, crumbled."]},{"id":"sweet_sour_chicken","title":"Sweet & Sour Chicken","cuisine":"Chinese","style":"stir_fry","protein":"chicken","diet":["dairy_free","nut_free"],"prep_min":15,"cook_min":15,"serves":3,"heat":0,"blurb":"Rescued from the neon-orange version. Real pineapple, real vinegar, and a sauce built on ketchup without apology.","ingredients":[{"id":"chicken_thigh","qty":400,"unit":"g","prep":"in 3 cm chunks"},{"id":"cornstarch","qty":5,"unit":"tbsp"},{"id":"eggs","qty":1,"unit":"piece","prep":"beaten"},{"id":"pineapple_tinned","qty":425,"unit":"g","prep":"drained, juice kept"},{"id":"bell_pepper_red","qty":1,"unit":"piece","prep":"in chunks"},{"id":"onion","qty":1,"unit":"piece","prep":"in chunks"},{"id":"ketchup","qty":4,"unit":"tbsp"},{"id":"rice_vinegar","qty":3,"unit":"tbsp"},{"id":"sugar_white","qty":2,"unit":"tbsp"},{"id":"soy_sauce_light","qty":1,"unit":"tbsp"},{"id":"garlic","qty":2,"unit":"clove","prep":"chopped"},{"id":"sunflower_oil","qty":150,"unit":"ml"},{"id":"rice_jasmine","qty":225,"unit":"g"}],"steps":["Toss the chicken with the egg, then with 4 tbsp of the cornflour and a good pinch of salt, until each piece wears a dry, craggy coat.","Sauce: 150 ml of the reserved pineapple juice, the ketchup, vinegar, sugar, soy and the last tablespoon of cornflour, whisked smooth.","Heat 1 cm of oil in a frying pan. Fry the chicken in two batches, 4 minutes a batch, until golden and crisp. Drain on a rack.","Pour off all but a tablespoon of the oil. Onion and pepper on high heat for 2 minutes — they should stay crunchy.","Garlic for 20 seconds, then the pineapple chunks for 1 minute.","Stir the sauce again and pour it in. It thickens and turns glossy within a minute.","Chicken back in, tossed for 20 seconds only so it stays crisp. Straight to the table over rice."],"tips":["Frying the chicken twice — once at 4 minutes, cooled, then 90 seconds more just before serving — makes it stay crisp under the sauce.","Pork shoulder in the same batter is the Cantonese original."]},{"id":"miso_ramen_shortcut","title":"Weeknight Miso Ramen","cuisine":"Japanese","style":"soup","protein":"pork","diet":["dairy_free"],"prep_min":10,"cook_min":20,"serves":2,"heat":1,"blurb":"Instant noodle blocks, a broth you build in fifteen minutes, and a jammy egg. Nothing like a twelve-hour tonkotsu, and still very good.","ingredients":[{"id":"noodles_instant","qty":2,"unit":"piece","prep":"flavour sachets discarded"},{"id":"pork_mince","qty":200,"unit":"g"},{"id":"miso_paste","qty":3,"unit":"tbsp"},{"id":"stock_cube_chicken","qty":2,"unit":"cube"},{"id":"soy_sauce_light","qty":2,"unit":"tbsp"},{"id":"garlic","qty":4,"unit":"clove","prep":"crushed"},{"id":"ginger","qty":20,"unit":"g","prep":"grated"},{"id":"sesame_oil","qty":2,"unit":"tsp"},{"id":"eggs","qty":2,"unit":"piece"},{"id":"spring_onion","qty":3,"unit":"piece","prep":"sliced"},{"id":"paksoi","qty":200,"unit":"g","prep":"halved"},{"id":"sweet_chilli","qty":1,"unit":"tbsp","optional":true},{"id":"nori","qty":2,"unit":"piece","optional":true},{"id":"sunflower_oil","qty":1,"unit":"tbsp"}],"steps":["Eggs first: 6.5 minutes in boiling water, then straight into cold water. Peel when cool — the yolk should be soft, not runny, not set.","Brown the pork mince hard in the sunflower oil, 5 minutes, until there are genuinely crisp brown bits. Add half the garlic and ginger for the last minute. Scoop out and keep warm.","Same pan, 1 litre water and the stock cubes. Simmer with the remaining garlic and ginger for 10 minutes.","Take a ladle of the hot broth and whisk the miso into it in a separate bowl, then pour it back. Never boil miso in the pot — it goes grainy and loses its edge.","Season with the soy and sesame oil. Taste; it should be noticeably savoury.","Boil the noodle blocks for 2 minutes in a separate pan of water (not the broth — the starch cloudies it). Blanch the pak choi in the same water for the last minute.","Noodles into deep bowls, broth over, then arrange pork, pak choi, halved egg, spring onion and nori on top. Sweet chilli drizzled over if you like heat."],"tips":["Char siu from this app, sliced thin, replaces the mince and turns this into something close to the real thing.","Vegetarian: vegetable stock, 200 g fried mushrooms in place of the pork, and check your miso."]},{"id":"dal_tadka","title":"Red Lentil Dal with Tadka","cuisine":"Indian","style":"curry","protein":"veg","diet":["vegetarian","vegan","dairy_free","nut_free","gluten_free_option"],"prep_min":10,"cook_min":25,"serves":4,"heat":1,"blurb":"Costs under three euros and every single ingredient is in the cheapest aisle. The tadka poured over at the end is the entire point.","ingredients":[{"id":"red_lentils","qty":250,"unit":"g","prep":"rinsed"},{"id":"turmeric","qty":1,"unit":"tsp"},{"id":"onion","qty":1,"unit":"piece","prep":"finely chopped"},{"id":"tomato","qty":2,"unit":"piece","prep":"chopped"},{"id":"garlic","qty":5,"unit":"clove","prep":"sliced thin"},{"id":"ginger","qty":20,"unit":"g","prep":"grated"},{"id":"cumin_ground","qty":2,"unit":"tsp"},{"id":"coriander_ground","qty":2,"unit":"tsp"},{"id":"garam_masala","qty":1,"unit":"tsp"},{"id":"chilli_flakes","qty":1,"unit":"tsp"},{"id":"sunflower_oil","qty":4,"unit":"tbsp"},{"id":"lime","qty":1,"unit":"piece"},{"id":"coriander_fresh","qty":1,"unit":"handful"},{"id":"rice_basmati","qty":300,"unit":"g"}],"steps":["Put the lentils in a pan with 900 ml water, the turmeric and 1 tsp salt. Bring to a boil, skim off the foam, then simmer 20 minutes until they collapse into a loose porridge. Stir now and then so the bottom doesn't catch.","While it cooks, fry the onion in 1 tbsp of the oil for 8 minutes until properly golden — not pale, golden.","Add half the garlic, the ginger, cumin and ground coriander. One minute, then the tomatoes, and cook 5 minutes until they break down into a thick paste.","Stir this into the lentils with the garam masala. Loosen with hot water until it pours slowly off a spoon. Taste for salt — dal needs more than you think.","The tadka: heat the remaining 3 tbsp oil in a small pan until it shimmers. Add the rest of the sliced garlic and fry until it turns pale gold, about 40 seconds, then the chilli flakes for 5 seconds.","Pour the whole sizzling lot over the dal in the pot. It will hiss dramatically. Stir it through only half way, so there are streaks.","Lime juice and fresh coriander. Serve with basmati."],"tips":["Take the garlic off the heat while it is pale gold — it keeps darkening in the hot oil and burnt garlic ruins the pot.","A spoon of the tadka oil over plain rice the next day is one of the great cheap lunches."]},{"id":"butter_chicken_weeknight","title":"Weeknight Butter Chicken","cuisine":"Indian","style":"curry","protein":"chicken","diet":["nut_free","gluten_free_option"],"prep_min":15,"cook_min":30,"serves":4,"heat":1,"blurb":"No tandoor, no cream by the litre, no three-hour marinade. Yoghurt does the tenderising and the sauce comes together in one pan.","ingredients":[{"id":"chicken_thigh","qty":600,"unit":"g","prep":"in 3 cm chunks"},{"id":"yoghurt_greek","qty":150,"unit":"g"},{"id":"garam_masala","qty":3,"unit":"tsp"},{"id":"turmeric","qty":1,"unit":"tsp"},{"id":"cumin_ground","qty":2,"unit":"tsp"},{"id":"paprika_powder","qty":2,"unit":"tsp"},{"id":"garlic","qty":5,"unit":"clove","prep":"crushed"},{"id":"ginger","qty":25,"unit":"g","prep":"grated"},{"id":"tomatoes_tinned","qty":400,"unit":"g"},{"id":"tomato_puree","qty":2,"unit":"tbsp"},{"id":"butter","qty":50,"unit":"g"},{"id":"cream_cooking","qty":100,"unit":"ml"},{"id":"sugar_white","qty":1,"unit":"tsp"},{"id":"coriander_fresh","qty":1,"unit":"handful"},{"id":"rice_basmati","qty":300,"unit":"g"}],"steps":["Marinate the chicken in the yoghurt, 2 tsp garam masala, the turmeric, cumin, paprika, half the garlic and half the ginger. Fifteen minutes is enough; two hours is better.","Spread it on a foil-lined tray and grill on the highest oven setting for 12 minutes, turning once, until charred at the edges. Those black bits are standing in for the tandoor, so let them happen.","Meanwhile melt half the butter in a wide pan. Remaining garlic and ginger for 1 minute, then the tomato purée for another minute until it darkens.","Tinned tomatoes in, plus 100 ml water and the sugar. Simmer 12 minutes, then blend smooth with a stick blender. This is what makes it taste like a restaurant instead of a stew.","Stir in the cream, the last teaspoon of garam masala and the rest of the butter in small pieces, off the heat, so it emulsifies rather than splits.","Chicken in along with every drop of juice from the tray. Simmer 5 minutes.","Salt to taste, coriander over, basmati alongside."],"tips":["Kasoori methi (dried fenugreek leaf) is the flavour you cannot place in restaurant versions. If you ever see it, crush a teaspoon in at the end.","Coconut milk instead of cream makes it dairy-free apart from the butter, which you can swap for oil."]},{"id":"bami_goreng","title":"Bami Goreng","cuisine":"Indonesian","style":"noodles","protein":"chicken","diet":["dairy_free","nut_free"],"prep_min":15,"cook_min":15,"serves":3,"heat":1,"blurb":"Nasi goreng's noodle sibling and the Dutch takeaway standard. One pan, twenty-five minutes, no specialty shopping.","ingredients":[{"id":"noodles_egg","qty":250,"unit":"g"},{"id":"chicken_thigh","qty":300,"unit":"g","prep":"sliced"},{"id":"pointed_cabbage","qty":200,"unit":"g","prep":"shredded"},{"id":"carrot","qty":1,"unit":"piece","prep":"matchsticks"},{"id":"beansprouts","qty":150,"unit":"g"},{"id":"spring_onion","qty":3,"unit":"piece","prep":"sliced"},{"id":"onion","qty":1,"unit":"piece","prep":"sliced"},{"id":"garlic","qty":3,"unit":"clove","prep":"chopped"},{"id":"ketjap_manis","qty":4,"unit":"tbsp"},{"id":"soy_sauce_light","qty":1,"unit":"tbsp"},{"id":"sambal_oelek","qty":1,"unit":"tsp"},{"id":"coriander_ground","qty":1,"unit":"tsp"},{"id":"eggs","qty":2,"unit":"piece","prep":"beaten"},{"id":"sunflower_oil","qty":2,"unit":"tbsp"}],"steps":["Boil the egg noodles 1 minute less than the packet says. Drain, rinse cold, toss with a teaspoon of oil so they don't fuse.","Hot pan, 1 tbsp oil. Pour in the beaten egg, let it set into a thin omelette, then slide it out and cut into ribbons.","Remaining oil, high heat. Chicken for 4 minutes until browned. Onion and carrot for 3 minutes more.","Garlic, sambal and ground coriander, 30 seconds. Then the cabbage, 2 minutes — it should keep some crunch.","Noodles in with the ketjap and soy. Toss with tongs until every strand is uniformly brown, about 2 minutes, letting it catch on the pan between tosses.","Beansprouts, spring onion and egg ribbons folded through for the last 30 seconds.","Straight onto plates. Extra sambal on the side."],"tips":["Fried onions (gebakken uitjes) from a tub scattered over the top is exactly how it is served in the Netherlands.","Leftover roast chicken or ham works instead of raw chicken — add it with the noodles."]},{"id":"gochujang_chicken_traybake","title":"Gochujang Chicken Traybake","cuisine":"Korean","style":"oven","protein":"chicken","diet":["dairy_free","nut_free"],"prep_min":10,"cook_min":35,"serves":4,"heat":2,"blurb":"Everything on one tray, into the oven, done. The glaze caramelises against the potatoes and there is nothing to wash up.","ingredients":[{"id":"chicken_thigh","qty":700,"unit":"g"},{"id":"potato","qty":600,"unit":"g","prep":"in 3 cm chunks"},{"id":"gochujang","qty":3,"unit":"tbsp"},{"id":"soy_sauce_light","qty":3,"unit":"tbsp"},{"id":"honey","qty":2,"unit":"tbsp"},{"id":"rice_vinegar","qty":1,"unit":"tbsp"},{"id":"sesame_oil","qty":1,"unit":"tbsp"},{"id":"garlic","qty":5,"unit":"clove","prep":"crushed"},{"id":"ginger","qty":20,"unit":"g","prep":"grated"},{"id":"onion","qty":1,"unit":"piece","prep":"in thick wedges"},{"id":"sunflower_oil","qty":2,"unit":"tbsp"},{"id":"spring_onion","qty":3,"unit":"piece","prep":"sliced"},{"id":"sesame_seeds","qty":2,"unit":"tsp"},{"id":"rice_jasmine","qty":300,"unit":"g"}],"steps":["Oven to 200 °C. Whisk the gochujang, soy, honey, vinegar, sesame oil, garlic and ginger into a glaze.","Toss the potatoes and onion wedges with the sunflower oil and a good pinch of salt, and spread them over a large roasting tray. Give them a 15-minute head start in the oven.","Coat the chicken thighs in two thirds of the glaze.","Push the potatoes aside and lay the chicken among them, skin or smooth side up. Roast 25 minutes.","Brush with the remaining glaze and give it 8 more minutes, until the edges are dark and sticky and the potatoes have soaked up the run-off.","Rest 5 minutes, then scatter with spring onion and sesame seeds. Rice on the side to mop the tray."],"tips":["Kimchi on the side, straight from the jar, cuts the sweetness perfectly.","No gochujang: 2 tbsp sambal oelek, 1 tbsp miso and an extra tablespoon of honey."]}]};</script>
+<script>
+/* Asian Pantry — mobile web app for cooking Asian food from European supermarkets.
+   No build step, no framework: the data is inlined as window.__DATA__ by build.py. */
+(function () {
+  "use strict";
+
+  var DB = window.__DATA__;
+  var ING = {};
+  DB.ingredients.forEach(function (i) { ING[i.id] = i; });
+  var REC = {};
+  DB.recipes.forEach(function (r) { REC[r.id] = r; });
+  var STORES = {};
+  DB.stores.stores.forEach(function (s) { STORES[s.id] = s; });
+
+  /* ---------- state ---------- */
+
+  var KEY = "asianpantry.v1";
+  var S = defaults();
+
+  function defaults() {
+    return {
+      store: "lidl_nl",
+      pantry: DB.ingredients.filter(function (i) { return i.pantry_default; }).map(function (i) { return i.id; }),
+      list: {},
+      servings: {},
+      localFirst: false
+    };
+  }
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      var saved = JSON.parse(raw);
+      Object.keys(S).forEach(function (k) {
+        if (saved[k] !== undefined && saved[k] !== null) S[k] = saved[k];
+      });
+      if (!STORES[S.store]) S.store = "lidl_nl";
+      S.pantry = S.pantry.filter(function (id) { return ING[id]; });
+    } catch (e) { /* private mode, blocked storage: run with defaults */ }
+  }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* not fatal */ }
+  }
+
+  /* ---------- helpers ---------- */
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function store() { return STORES[S.store]; }
+
+  function aisleName(aisle, lang) {
+    var set = DB.stores.aisle_labels[lang] || DB.stores.aisle_labels.en;
+    return set[aisle] || aisle;
+  }
+
+  /* Resolve an ingredient to a product at the selected store.
+     A store-specific entry is an exact match; otherwise fall back to the
+     regional default, which is a typical own-brand item rather than a promise. */
+  function productFor(ing, st) {
+    st = st || store();
+    var p = (ing.products || {})[st.id];
+    var exact = !!p;
+    if (!p) p = (ing.defaults || {})[st.language];
+    if (!p) return null;
+    return {
+      name: p.name,
+      pack: p.package || "",
+      size: p.size || null,
+      unit: p.unit || null,
+      aisle: p.aisle || ing.category,
+      availability: p.availability || "staple",
+      shelf: p.shelf || null,
+      exact: exact
+    };
+  }
+
+  var UNIT_ML = { tbsp: 15, tsp: 5, ml: 1 };
+  var UNIT_LABEL = { g: "g", ml: "ml", tbsp: "tbsp", tsp: "tsp", clove: "cloves", cube: "cubes", handful: "handful", piece: "" };
+
+  function baseOf(qty, unit) {
+    if (unit === "g") return { kind: "g", amount: qty };
+    if (UNIT_ML[unit]) return { kind: "ml", amount: qty * UNIT_ML[unit] };
+    return { kind: "count", amount: qty };
+  }
+
+  function fmtNum(n) {
+    var r = Math.round(n * 100) / 100;
+    if (Math.abs(r - Math.round(r)) < 0.005) return String(Math.round(r));
+    if (Math.abs(r * 2 - Math.round(r * 2)) < 0.005) return String(Math.round(r * 2) / 2);
+    return r.toFixed(1);
+  }
+
+  function fmtQty(qty, unit) {
+    var label = UNIT_LABEL[unit] === undefined ? unit : UNIT_LABEL[unit];
+    var n = fmtNum(qty);
+    if (unit === "piece") return n + "×";
+    if (unit === "clove" && qty === 1) label = "clove";
+    if (unit === "cube" && qty === 1) label = "cube";
+    return label ? n + " " + label : n;
+  }
+
+  function mult(recipe) {
+    var want = S.servings[recipe.id] || recipe.serves;
+    return want / recipe.serves;
+  }
+
+  function totalTime(r) { return (r.prep_min || 0) + (r.cook_min || 0); }
+
+  function have(id) { return S.pantry.indexOf(id) !== -1; }
+
+  function missingFor(recipe) {
+    return recipe.ingredients.filter(function (it) {
+      return !it.optional && !have(it.id);
+    });
+  }
+
+  function required(recipe) {
+    return recipe.ingredients.filter(function (it) { return !it.optional; });
+  }
+
+  /* ---------- shopping list ---------- */
+
+  function listCount() {
+    return Object.keys(S.list).filter(function (id) { return !S.list[id].done; }).length;
+  }
+
+  function addToList(id, need) {
+    var e = S.list[id];
+    if (!e) e = S.list[id] = { needs: [], done: false };
+    if (need) {
+      var dup = e.needs.some(function (n) {
+        return n.r === need.r && n.qty === need.qty && n.unit === need.unit;
+      });
+      if (!dup) e.needs.push(need);
+    }
+    e.done = false;
+  }
+
+  function addRecipe(recipe, onlyMissing) {
+    var m = mult(recipe);
+    var added = 0;
+    recipe.ingredients.forEach(function (it) {
+      // "Add missing" mirrors missingFor(): what you must buy, optional extras excluded.
+      if (onlyMissing && (have(it.id) || it.optional)) return;
+      addToList(it.id, { r: recipe.id, qty: it.qty * m, unit: it.unit });
+      added++;
+    });
+    save();
+    return added;
+  }
+
+  function totalsFor(entry) {
+    var t = { g: 0, ml: 0, count: 0 };
+    entry.needs.forEach(function (n) {
+      var b = baseOf(n.qty, n.unit);
+      t[b.kind] += b.amount;
+    });
+    return t;
+  }
+
+  function totalsLabel(t) {
+    var parts = [];
+    if (t.g) parts.push(fmtNum(t.g) + " g");
+    if (t.ml) parts.push(fmtNum(t.ml) + " ml");
+    if (t.count) parts.push(fmtNum(t.count) + "×");
+    return parts.join(" + ");
+  }
+
+  function packsFor(product, t) {
+    if (!product || !product.size || !product.unit) return null;
+    var need = (product.unit === "piece") ? t.count : (t.g + t.ml);
+    if (!need) return null;
+    return Math.max(1, Math.ceil(need / product.size));
+  }
+
+  /* ---------- package glyph ----------
+     Shape is read out of the package description itself, so the drawing never
+     claims more than the data says. It is a shelf cue, not a product photo. */
+
+  function packShape(product) {
+    var p = ((product && product.pack) || "").toLowerCase();
+    if (/fles|flasche|bottle|spender|quetsch|knijp/.test(p)) return "bottle";
+    if (/blik|dose|tin\b|can\b/.test(p)) return "can";
+    if (/pot\b|potje|glas|jar|kuip|becher|streuer|m[uü]hle/.test(p)) return "jar";
+    if (/schaal|schale|tray|bakje|punnet/.test(p)) return "tray";
+    if (/bos|bund|netje|netz|net\b/.test(p)) return "bunch";
+    if (/blok|block|st[uü]ck 250|doos|packung|pack\b|karton/.test(p)) return "box";
+    if (/zak|beutel|bag/.test(p)) return "bag";
+    return "box";
+  }
+
+  var SHAPES = {
+    bottle: '<path d="M10 3h4v3.2l2.4 3.1V21H7.6V9.3L10 6.2V3z"/><path d="M7.6 12h8.8"/>',
+    can: '<rect x="6" y="5" width="12" height="15" rx="1.4"/><path d="M6 8.4h12M6 16.6h12"/>',
+    jar: '<path d="M8 3.6h8v2.2H8z"/><path d="M6.6 8.2c0-1.3 1-2.4 2.3-2.4h6.2c1.3 0 2.3 1.1 2.3 2.4V19a1.6 1.6 0 0 1-1.6 1.6H8.2A1.6 1.6 0 0 1 6.6 19V8.2z"/>',
+    tray: '<path d="M4.4 8.6h15.2l-1.5 10.2a1.4 1.4 0 0 1-1.4 1.2H7.3a1.4 1.4 0 0 1-1.4-1.2L4.4 8.6z"/><path d="M3.4 8.6h17.2"/>',
+    bunch: '<path d="M12 20.4V9"/><path d="M12 9c-3.6 0-5.6-2.2-5.6-5.4 3.4 0 5.6 2 5.6 5.4z"/><path d="M12 9c3.6 0 5.6-2.2 5.6-5.4-3.4 0-5.6 2-5.6 5.4z"/>',
+    box: '<rect x="5" y="4" width="14" height="16.4" rx="1.2"/><path d="M5 9.2h14"/>',
+    bag: '<path d="M6.4 7.6h11.2l1.2 12.2a.9.9 0 0 1-.9 1H6.1a.9.9 0 0 1-.9-1L6.4 7.6z"/><path d="M9.2 7.6V5.4c0-.9.7-1.6 1.6-1.6h2.4c.9 0 1.6.7 1.6 1.6v2.2"/>'
+  };
+
+  function glyph(product, cls) {
+    var s = SHAPES[packShape(product)] || SHAPES.box;
+    return '<svg class="' + (cls || "swatch") + '" viewBox="0 0 24 24" aria-hidden="true" ' +
+      'style="fill:none;stroke:var(--ink-faint);stroke-width:1.3;stroke-linejoin:round">' + s + "</svg>";
+  }
+
+  /* ---------- shared fragments ---------- */
+
+  var STYLE_LABEL = {
+    stir_fry: "Stir-fry", curry: "Curry", noodles: "Noodles", rice: "Rice",
+    soup: "Soup", oven: "Oven", fried: "Fried", grill: "Grill", sandwich: "Sandwich"
+  };
+  var PROTEIN_LABEL = {
+    chicken: "Chicken", beef: "Beef", pork: "Pork", fish: "Fish",
+    seafood: "Seafood", veg: "Vegetables", egg: "Egg"
+  };
+  var DIET_LABEL = {
+    vegetarian: "Vegetarian", vegan: "Vegan", dairy_free: "Dairy-free",
+    nut_free: "Nut-free", gluten_free_option: "GF option"
+  };
+
+  function heatDots(n) {
+    var out = "";
+    for (var i = 0; i < 3; i++) out += i < n ? "◆" : '<span>◆</span>';
+    return '<span class="heat" title="Heat level ' + n + ' of 3">' + out + "</span>";
+  }
+
+  function availTag(product) {
+    if (!product) return "";
+    if (product.availability === "seasonal") return '<span class="tag tag--warn">Theme week only</span>';
+    if (product.availability === "varies") return '<span class="tag tag--warn">Not always stocked</span>';
+    return "";
+  }
+
+  function recipeCard(r) {
+    var miss = missingFor(r).length;
+    var pill = miss === 0
+      ? '<span class="tag tag--have">Everything in stock</span>'
+      : '<span class="tag tag--need">' + miss + " to buy</span>";
+    return '<button class="rcard" data-go="#/r/' + r.id + '">' +
+      '<span class="rcard__mark"><span class="rcard__time">' + totalTime(r) + '</span>' +
+      '<span class="rcard__unit">min</span></span>' +
+      '<span class="rcard__body">' +
+      '<span class="rcard__title">' + esc(r.title) + "</span>" +
+      '<span class="rcard__cuisine">' + esc(r.cuisine) + " · serves " + r.serves + "</span>" +
+      '<span class="rcard__blurb">' + esc(r.blurb) + "</span>" +
+      '<span class="rcard__foot">' + pill +
+      '<span class="tag">' + esc(STYLE_LABEL[r.style] || r.style) + "</span>" +
+      (r.heat ? heatDots(r.heat) : "") +
+      "</span></span></button>";
+  }
+
+  /* ---------- view: recipes ---------- */
+
+  var F = { q: "", time: 0, style: "", protein: "", diet: "" };
+
+  function matches(r) {
+    if (F.time && totalTime(r) > F.time) return false;
+    if (F.style && r.style !== F.style) return false;
+    if (F.protein && r.protein !== F.protein) return false;
+    if (F.diet && (r.diet || []).indexOf(F.diet) === -1) return false;
+    if (F.q) {
+      var q = F.q.toLowerCase();
+      var hay = [r.title, r.cuisine, r.blurb].join(" ").toLowerCase();
+      var inIng = r.ingredients.some(function (it) {
+        var i = ING[it.id];
+        if (!i) return false;
+        var p = productFor(i);
+        return (i.en + " " + (i.aka || []).join(" ") + " " + (p ? p.name : "")).toLowerCase().indexOf(q) !== -1;
+      });
+      if (hay.indexOf(q) === -1 && !inIng) return false;
+    }
+    return true;
+  }
+
+  function chip(group, value, label) {
+    var on = F[group] === value;
+    return '<button class="chip" role="button" aria-pressed="' + on + '" data-filter="' + group +
+      '" data-value="' + esc(String(value)) + '">' + esc(label) + "</button>";
+  }
+
+  function viewRecipes() {
+    var list = DB.recipes.filter(matches);
+    var active = F.q || F.time || F.style || F.protein || F.diet;
+
+    var filters = [
+      chip("time", 20, "≤ 20 min"),
+      chip("time", 30, "≤ 30 min"),
+      chip("style", "stir_fry", "Stir-fry"),
+      chip("style", "curry", "Curry"),
+      chip("style", "noodles", "Noodles"),
+      chip("style", "rice", "Rice"),
+      chip("style", "soup", "Soup"),
+      chip("style", "oven", "Oven"),
+      chip("protein", "chicken", "Chicken"),
+      chip("protein", "pork", "Pork"),
+      chip("protein", "beef", "Beef"),
+      chip("protein", "fish", "Fish"),
+      chip("protein", "veg", "Veg"),
+      chip("diet", "vegetarian", "Vegetarian"),
+      chip("diet", "vegan", "Vegan")
+    ].join("");
+
+    return '<section class="view">' +
+      '<div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.4"/><path d="m16 16 4.5 4.5"/></svg>' +
+      '<input type="search" id="q" placeholder="Search recipes or an ingredient" value="' + esc(F.q) + '" autocomplete="off"></div>' +
+      '<div class="chips">' + filters +
+      (active ? '<button class="chip chip--clear" data-action="clear-filters">Clear</button>' : "") +
+      "</div>" +
+      '<div class="section-head"><h2>' + list.length + " recipe" + (list.length === 1 ? "" : "s") + "</h2>" +
+      '<span class="eyebrow">' + esc(store().name) + "</span></div>" +
+      (list.length
+        ? '<div class="recipes">' + list.map(recipeCard).join("") + "</div>"
+        : '<div class="empty"><strong>Nothing matches</strong>' +
+          "<span>Try clearing a filter, or search for an ingredient you already have.</span></div>") +
+      "</section>";
+  }
+
+  /* ---------- view: recipe detail ---------- */
+
+  function ingredientRow(it, m) {
+    var ing = ING[it.id];
+    var p = productFor(ing);
+    var owned = have(it.id);
+    var cls = "irow";
+    if (owned) cls += " irow--have";
+    else if (p && p.availability === "seasonal") cls += " irow--seasonal";
+    else if (ing.role === "specialty") cls += " irow--specialty";
+
+    var local = p ? p.name : null;
+    var primary = S.localFirst && local ? local : ing.en;
+    var secondary = S.localFirst && local ? ing.en : local;
+
+    return '<button class="' + cls + '" data-shelf="' + it.id + '">' +
+      '<span class="irow__main">' +
+      '<span class="irow__en">' + esc(primary) + (it.optional ? ' <span class="tag">optional</span>' : "") + "</span>" +
+      (secondary ? '<span class="irow__local">' + esc(secondary) + "</span>" : "") +
+      (p && p.pack ? '<span class="irow__pack mono">' + esc(p.pack) + "</span>" : "") +
+      (it.prep ? '<span class="irow__prep">' + esc(it.prep) + "</span>" : "") +
+      "</span>" +
+      '<span class="irow__qty">' + esc(fmtQty(it.qty * m, it.unit)) + "</span>" +
+      "</button>";
+  }
+
+  function viewRecipe(id) {
+    var r = REC[id];
+    if (!r) return '<section class="view"><div class="empty"><strong>Recipe not found</strong></div></section>';
+    var m = mult(r);
+    var servings = S.servings[r.id] || r.serves;
+    var miss = missingFor(r);
+    var specials = r.ingredients.filter(function (it) {
+      var p = productFor(ING[it.id]);
+      return ING[it.id].role === "specialty" || (p && p.availability !== "staple");
+    });
+
+    var diet = (r.diet || []).map(function (d) {
+      return '<span class="tag">' + esc(DIET_LABEL[d] || d) + "</span>";
+    }).join("");
+
+    return '<section class="view">' +
+      '<button class="back" data-go="#/recipes">← All recipes</button>' +
+      '<div class="detail__head">' +
+      '<span class="eyebrow">' + esc(r.cuisine) + "</span>" +
+      '<h1 class="detail__title">' + esc(r.title) + "</h1>" +
+      '<p class="detail__blurb">' + esc(r.blurb) + "</p>" +
+      '<div class="detail__meta">' +
+      '<span class="tag">' + r.prep_min + " min prep</span>" +
+      '<span class="tag">' + r.cook_min + " min cook</span>" +
+      '<span class="tag">' + esc(STYLE_LABEL[r.style] || r.style) + "</span>" +
+      '<span class="tag">' + esc(PROTEIN_LABEL[r.protein] || r.protein) + "</span>" +
+      diet + (r.heat ? heatDots(r.heat) : "") +
+      "</div></div>" +
+
+      '<div class="card servings">' +
+      '<span class="servings__label">Servings</span>' +
+      '<span class="stepper">' +
+      '<button data-serv="-1" aria-label="Fewer servings"' + (servings <= 1 ? " disabled" : "") + ">−</button>" +
+      "<output>" + servings + "</output>" +
+      '<button data-serv="1" aria-label="More servings"' + (servings >= 12 ? " disabled" : "") + ">+</button>" +
+      "</span></div>" +
+
+      '<div class="section-head"><h2>Ingredients</h2>' +
+      '<span class="eyebrow">at ' + esc(store().name) + "</span></div>" +
+      '<div class="card ilist">' + r.ingredients.map(function (it) { return ingredientRow(it, m); }).join("") + "</div>" +
+
+      (specials.length
+        ? '<div class="notice"><svg viewBox="0 0 24 24"><path d="M12 8.4v4.8M12 16.6h.01"/>' +
+          '<path d="M10.3 4.2 2.6 18a1.9 1.9 0 0 0 1.7 2.9h15.4a1.9 1.9 0 0 0 1.7-2.9L13.7 4.2a1.9 1.9 0 0 0-3.4 0z"/></svg>' +
+          "<span><b>" + specials.length + (specials.length === 1 ? " item is" : " items are") +
+          " not a permanent fixture</b> at " + esc(store().name) +
+          ". Tap any ingredient for the substitute that works with what is always on the shelf.</span></div>"
+        : "") +
+
+      '<div class="btnrow">' +
+      '<button class="btn btn--accent" data-add="' + r.id + '" data-missing="1"' + (miss.length ? "" : " disabled") + ">" +
+      (miss.length ? "Add " + miss.length + " missing" : "Nothing to buy") + "</button>" +
+      '<button class="btn btn--ghost" data-add="' + r.id + '">Add all</button>' +
+      "</div>" +
+
+      '<div class="section-head"><h2>Method</h2></div>' +
+      (servings !== r.serves
+        ? '<div class="notice"><svg viewBox="0 0 24 24"><path d="M12 8.4v4.8M12 16.6h.01"/>' +
+          '<path d="M10.3 4.2 2.6 18a1.9 1.9 0 0 0 1.7 2.9h15.4a1.9 1.9 0 0 0 1.7-2.9L13.7 4.2a1.9 1.9 0 0 0-3.4 0z"/></svg>' +
+          "<span>The ingredient list above is scaled to " + servings + ". Amounts written into the steps below " +
+          "still read for " + r.serves + " — scale them by " + fmtNum(m) + "× as you go.</span></div>"
+        : "") +
+      '<ol class="steps">' + r.steps.map(function (s) {
+        return '<li class="step"><span class="step__n"></span><p>' + esc(s) + "</p></li>";
+      }).join("") + "</ol>" +
+
+      (r.tips && r.tips.length
+        ? '<div class="section-head"><h2>Worth knowing</h2></div><ul class="card tips">' +
+          r.tips.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ul>"
+        : "") +
+      "</section>";
+  }
+
+  /* ---------- view: kitchen (reverse search) ---------- */
+
+  var kq = "";
+
+  function viewKitchen() {
+    var picked = S.pantry.map(function (id) { return ING[id]; }).filter(Boolean);
+    var q = kq.toLowerCase();
+    var pool = DB.ingredients.filter(function (i) {
+      if (have(i.id)) return false;
+      if (!q) return false;
+      return (i.en + " " + (i.aka || []).join(" ") + " " +
+        Object.keys(i.defaults || {}).map(function (k) { return i.defaults[k].name; }).join(" ")
+      ).toLowerCase().indexOf(q) !== -1;
+    }).slice(0, 20);
+
+    var ranked = DB.recipes.map(function (r) {
+      var req = required(r);
+      var miss = missingFor(r);
+      return { r: r, miss: miss.length, req: req.length, pct: Math.round(((req.length - miss.length) / req.length) * 100) };
+    }).sort(function (a, b) {
+      return a.miss - b.miss || b.pct - a.pct || totalTime(a.r) - totalTime(b.r);
+    }).slice(0, 12);
+
+    return '<section class="view">' +
+      '<div class="section-head"><h2>What’s in my kitchen</h2></div>' +
+      '<p class="detail__blurb">Tick what you already have. Recipes reorder by how little else you need to buy.</p>' +
+
+      '<div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.4"/><path d="m16 16 4.5 4.5"/></svg>' +
+      '<input type="search" id="kq" placeholder="Add an ingredient you have" value="' + esc(kq) + '" autocomplete="off"></div>' +
+
+      (pool.length
+        ? '<div class="pgrid">' + pool.map(function (i) {
+            return '<button class="pchip" aria-pressed="false" data-pantry="' + i.id + '">+ ' + esc(i.en) + "</button>";
+          }).join("") + "</div>"
+        : (kq ? '<p class="detail__blurb">Nothing matching “' + esc(kq) + "” — it may already be ticked below.</p>" : "")) +
+
+      '<div class="section-head"><h2>In your kitchen</h2>' +
+      '<button class="back" data-action="reset-pantry">Reset</button></div>' +
+      (picked.length
+        ? '<div class="pgrid">' + picked.map(function (i) {
+            return '<button class="pchip" aria-pressed="true" data-pantry="' + i.id + '">' + esc(i.en) + " ×</button>";
+          }).join("") + "</div>"
+        : '<div class="empty"><strong>Nothing ticked</strong><span>Search above to add what you have.</span></div>') +
+
+      '<div class="section-head"><h2>Cook this</h2><span class="eyebrow">fewest extras first</span></div>' +
+      '<div class="recipes">' + ranked.map(function (x) {
+        return '<button class="rcard" data-go="#/r/' + x.r.id + '">' +
+          '<span class="rcard__mark"><span class="rcard__time">' + x.miss + '</span>' +
+          '<span class="rcard__unit">to buy</span></span>' +
+          '<span class="rcard__body">' +
+          '<span class="rcard__title">' + esc(x.r.title) + "</span>" +
+          '<span class="rcard__cuisine">' + esc(x.r.cuisine) + " · " + totalTime(x.r) + " min</span>" +
+          '<span class="match"><span class="match__bar"><span class="match__fill" style="width:' + x.pct + '%"></span></span>' +
+          '<span class="rcard__cuisine">' + (x.req - x.miss) + "/" + x.req + "</span></span>" +
+          "</span></button>";
+      }).join("") + "</div></section>";
+  }
+
+  /* ---------- view: shopping list ---------- */
+
+  function viewList() {
+    var ids = Object.keys(S.list);
+    if (!ids.length) {
+      return '<section class="view"><div class="section-head"><h2>Shopping list</h2></div>' +
+        '<div class="empty"><strong>Your list is empty</strong>' +
+        "<span>Open a recipe and add what you are missing. Items land here sorted by the aisle you walk past first.</span>" +
+        '<button class="btn btn--ghost btn--sm" data-go="#/recipes" style="margin:8px auto 0">Browse recipes</button></div></section>';
+    }
+
+    var st = store();
+    var order = st.aisle_order || DB.stores.default_aisle_order;
+    var groups = {};
+    ids.forEach(function (id) {
+      var ing = ING[id];
+      if (!ing) return;
+      var p = productFor(ing);
+      var a = p ? p.aisle : ing.category;
+      (groups[a] = groups[a] || []).push({ id: id, ing: ing, p: p, e: S.list[id] });
+    });
+
+    var done = ids.filter(function (id) { return S.list[id].done; }).length;
+    var pos = 0;
+
+    var body = order.filter(function (a) { return groups[a]; }).map(function (a) {
+      pos++;
+      var items = groups[a].sort(function (x, y) { return x.ing.en.localeCompare(y.ing.en); });
+      return '<div class="card aisle">' +
+        '<div class="aisle__rail"><span class="aisle__n">' + pos + "</span></div>" +
+        '<div class="aisle__body">' +
+        '<div class="aisle__name">' + esc(aisleName(a, st.language)) +
+        "<em>" + esc(aisleName(a, "en")) + "</em></div>" +
+        items.map(function (x) {
+          var t = totalsFor(x.e);
+          var packs = packsFor(x.p, t);
+          var why = x.e.needs.map(function (n) { return REC[n.r] ? REC[n.r].title : null; })
+            .filter(function (v, i, arr) { return v && arr.indexOf(v) === i; });
+          var buy = packs
+            ? packs + " × " + esc(x.p.pack)
+            : (x.p && x.p.pack ? esc(x.p.pack) : "1 pack");
+          return '<div class="litem' + (x.e.done ? " litem--done" : "") + '">' +
+            '<button class="litem__box" data-check="' + x.id + '" aria-label="Mark ' + esc(x.ing.en) + ' as picked up">' +
+            '<svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></button>' +
+            '<button class="litem__main" data-shelf="' + x.id + '" style="text-align:left">' +
+            '<span class="irow__en">' + esc(x.p ? x.p.name : x.ing.en) + "</span>" +
+            '<span class="irow__local">' + esc(x.ing.en) + "</span>" +
+            '<span class="irow__pack mono">' + buy + (totalsLabel(t) ? " · need " + totalsLabel(t) : "") + "</span>" +
+            (why.length ? '<span class="litem__why">for ' + esc(why.join(", ")) + "</span>" : "") +
+            "</button>" +
+            '<button class="litem__x" data-remove="' + x.id + '" aria-label="Remove ' + esc(x.ing.en) + '">×</button>' +
+            "</div>";
+        }).join("") +
+        "</div></div>";
+    }).join("");
+
+    return '<section class="view">' +
+      '<div class="section-head"><h2>Shopping list</h2>' +
+      '<span class="eyebrow">' + (ids.length - done) + " left · " + esc(st.name) + "</span></div>" +
+      '<p class="detail__blurb">Grouped in the order you walk the aisles. Numbers are your route, not a priority.</p>' +
+      body +
+      '<div class="btnrow">' +
+      '<button class="btn btn--ghost" data-action="clear-done"' + (done ? "" : " disabled") + ">Clear picked up</button>" +
+      '<button class="btn btn--ghost" data-action="clear-list">Empty list</button>' +
+      "</div></section>";
+  }
+
+  /* ---------- view: store ---------- */
+
+  function viewStore() {
+    var byRegion = {};
+    DB.stores.stores.forEach(function (s) { (byRegion[s.region] = byRegion[s.region] || []).push(s); });
+
+    var blocks = DB.stores.regions.map(function (reg) {
+      var list = byRegion[reg.code] || [];
+      return '<div class="section-head"><h2>' + esc(reg.name) + "</h2>" +
+        '<span class="eyebrow">' + esc(reg.language_name) + " labels</span></div>" +
+        '<div class="card storelist">' + list.map(function (s) {
+          var on = s.id === S.store;
+          return '<button class="storeopt" aria-pressed="' + on + '" data-store="' + s.id + '">' +
+            '<span class="setrow__label"><span class="storeopt__name">' + esc(s.name) + "</span>" +
+            '<span class="storeopt__meta">' + esc(s.kind) + " · " + esc(s.asian_range) + "</span></span>" +
+            '<svg class="storeopt__tick" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>' +
+            "</button>";
+        }).join("") + "</div>";
+    }).join("");
+
+    var st = store();
+
+    return '<section class="view">' +
+      '<div class="section-head"><h2>Your store</h2></div>' +
+      '<p class="detail__blurb">Every product name, package size and aisle in the app follows this choice.</p>' +
+      blocks +
+      '<div class="card prose"><p><b>' + esc(st.name) + " · " + esc(st.region) + "</b></p><p>" + esc(st.note) + "</p></div>" +
+
+      '<div class="section-head"><h2>Display</h2></div>' +
+      '<div class="card">' +
+      '<div class="setrow"><span class="setrow__label"><b>Local name first</b>' +
+      "<span>Show the " + esc(st.language === "nl" ? "Dutch" : "German") + " product name above the English one</span></span>" +
+      '<button class="toggle" role="switch" aria-checked="' + S.localFirst + '" aria-pressed="' + S.localFirst +
+      '" data-action="toggle-local"><span class="sr">Local name first</span></button></div>' +
+      "</div>" +
+
+      '<div class="section-head"><h2>About the product data</h2></div>' +
+      '<div class="card prose">' +
+      "<p>Supermarkets rotate their ranges, rename own-brand lines and change pack sizes. Treat every product name here as " +
+      "<b>a strong lead, not a guarantee</b> — the aisle, the local wording and the substitute are what get you home with dinner.</p>" +
+      "<p>Where a store-specific product is on file, the shelf card says so. Otherwise you get the typical " +
+      esc(st.language === "nl" ? "Dutch" : "German") + " product name for that item, which is what you would show a member of staff anyway.</p>" +
+      "<p>Nothing you tick, list or pick is sent anywhere. It is saved in this browser only.</p>" +
+      "</div></section>";
+  }
+
+  /* ---------- shelf card sheet ---------- */
+
+  var sheetFor = null;
+
+  function renderSheet() {
+    var host = document.getElementById("sheet");
+    if (!sheetFor) { host.innerHTML = ""; return; }
+    var ing = ING[sheetFor];
+    var p = productFor(ing);
+    var st = store();
+    var inList = !!S.list[ing.id];
+
+    var subs = (ing.substitutes || []).map(function (s) {
+      var name = s.text;
+      if (s.id && ING[s.id]) {
+        var sp = productFor(ING[s.id]);
+        name = ING[s.id].en + (sp ? " — " + sp.name : "");
+      }
+      return '<div class="sub"><b>' + esc(name || "") + "</b>" +
+        (s.note ? "<span>" + esc(s.note) + "</span>" : "") + "</div>";
+    }).join("");
+
+    host.innerHTML = '<div class="scrim" data-action="close-sheet">' +
+      '<div class="sheet" role="dialog" aria-modal="true" aria-label="Shelf card for ' + esc(ing.en) + '">' +
+      '<div class="sheet__head">' +
+      glyph(p, "swatch") +
+      '<div style="min-width:0">' +
+      '<span class="eyebrow">' + esc(ing.en) + "</span>" +
+      '<div class="irow__pack mono">' + esc(aisleName(p ? p.aisle : ing.category, "en")) + " · " + esc(st.name) + "</div>" +
+      "</div>" +
+      '<button class="sheet__x" data-action="close-sheet" aria-label="Close">×</button>' +
+      "</div>" +
+
+      (p
+        ? '<div class="shelfcard">' +
+          '<div class="eyebrow">Ask for / look for</div>' +
+          '<div class="shelfcard__local">' + esc(p.name) + "</div>" +
+          '<div class="shelfcard__pack">' + esc(p.pack) + "</div>" +
+          '<div class="detail__meta" style="margin-top:6px">' +
+          '<span class="tag">' + esc(aisleName(p.aisle, st.language)) + "</span>" +
+          (ing.role === "specialty" ? '<span class="tag tag--warn">Specialty</span>' : '<span class="tag tag--have">Pantry staple</span>') +
+          availTag(p) + "</div>" +
+          (p.shelf ? '<div class="shelfcard__where">' + esc(p.shelf) + "</div>" : "") +
+          (p.exact ? "" : '<div class="shelfcard__where"><b>No store-specific match on file.</b> This is the typical ' +
+            esc(st.language === "nl" ? "Dutch" : "German") + " name for it — show it to staff or scan the aisle above.</div>") +
+          "</div>"
+        : '<div class="shelfcard"><div class="shelfcard__local">' + esc(ing.en) + "</div>" +
+          '<div class="shelfcard__where">Not mapped at this store yet. Try the substitutes below.</div></div>') +
+
+      (ing.note ? '<div class="sheet__section"><h3>Why it matters</h3><p class="detail__blurb">' + esc(ing.note) + "</p></div>" : "") +
+      (subs ? '<div class="sheet__section"><h3>If you can’t find it</h3>' + subs + "</div>" : "") +
+
+      '<div class="sheet__section"><div class="btnrow">' +
+      '<button class="btn' + (have(ing.id) ? " btn--ghost" : " btn--ghost") + '" data-pantry="' + ing.id + '">' +
+      (have(ing.id) ? "In kitchen ✓" : "I have this") + "</button>" +
+      '<button class="btn btn--accent" data-listadd="' + ing.id + '">' + (inList ? "On the list ✓" : "Add to list") + "</button>" +
+      "</div></div></div></div>";
+  }
+
+  /* ---------- toast ---------- */
+
+  var toastTimer = null;
+  function toast(msg) {
+    var host = document.getElementById("toast");
+    host.innerHTML = '<div class="toast">' + esc(msg) + "</div>";
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { host.innerHTML = ""; }, 2200);
+  }
+
+  /* ---------- shell ---------- */
+
+  var TABS = [
+    { hash: "#/recipes", label: "Recipes", icon: '<path d="M4 5.5h16M4 12h16M4 18.5h10"/>' },
+    { hash: "#/kitchen", label: "Kitchen", icon: '<path d="M5 9.5h14l-1.1 10a1.6 1.6 0 0 1-1.6 1.4H7.7a1.6 1.6 0 0 1-1.6-1.4L5 9.5z"/><path d="M8.5 9.5V6.2A3.2 3.2 0 0 1 11.7 3h.6a3.2 3.2 0 0 1 3.2 3.2v3.3"/>' },
+    { hash: "#/list", label: "List", icon: '<path d="M8.5 6.5h11M8.5 12h11M8.5 17.5h11M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01"/>' },
+    { hash: "#/store", label: "Store", icon: '<path d="M4 9.2 5.4 4.5h13.2L20 9.2M4 9.2h16M4 9.2a2.4 2.4 0 0 0 4 1.6 2.4 2.4 0 0 0 4 0 2.4 2.4 0 0 0 4 0 2.4 2.4 0 0 0 4-1.6M5.8 11.6V20h12.4v-8.4"/>' }
+  ];
+
+  function renderTabs(route) {
+    var n = listCount();
+    return TABS.map(function (t) {
+      var on = route.indexOf(t.hash) === 0 || (t.hash === "#/recipes" && route.indexOf("#/r/") === 0);
+      return '<button class="tab" data-go="' + t.hash + '"' + (on ? ' aria-current="page"' : "") + ">" +
+        '<svg viewBox="0 0 24 24">' + t.icon + "</svg>" + t.label +
+        (t.hash === "#/list" && n ? '<span class="tab__count">' + n + "</span>" : "") +
+        "</button>";
+    }).join("");
+  }
+
+  function route() {
+    var h = location.hash || "#/recipes";
+    if (h.indexOf("#/r/") === 0) return h;
+    if (["#/recipes", "#/kitchen", "#/list", "#/store"].indexOf(h) === -1) return "#/recipes";
+    return h;
+  }
+
+  function render(keepScroll) {
+    var r = route();
+    var y = window.scrollY;
+    var main = document.getElementById("main");
+    if (r.indexOf("#/r/") === 0) main.innerHTML = viewRecipe(r.slice(4));
+    else if (r === "#/kitchen") main.innerHTML = viewKitchen();
+    else if (r === "#/list") main.innerHTML = viewList();
+    else if (r === "#/store") main.innerHTML = viewStore();
+    else main.innerHTML = viewRecipes();
+
+    document.getElementById("tabs").innerHTML = renderTabs(r);
+    document.getElementById("store-btn").innerHTML =
+      "Shopping at <b>" + esc(store().name) + "</b> · " + esc(store().region);
+    renderSheet();
+    if (keepScroll) window.scrollTo(0, y);
+    else window.scrollTo(0, 0);
+  }
+
+  /* ---------- events ---------- */
+
+  document.addEventListener("click", function (ev) {
+    var el = ev.target.closest("[data-go],[data-filter],[data-action],[data-shelf],[data-serv],[data-add],[data-pantry],[data-store],[data-check],[data-remove],[data-listadd]");
+    if (!el) return;
+
+    var d = el.dataset;
+
+    if (d.go) { location.hash = d.go; return; }
+
+    if (d.filter) {
+      var val = d.filter === "time" ? Number(d.value) : d.value;
+      F[d.filter] = F[d.filter] === val ? (d.filter === "time" ? 0 : "") : val;
+      render(true); return;
+    }
+
+    if (d.shelf) { sheetFor = d.shelf; renderSheet(); return; }
+
+    if (d.serv) {
+      var id = route().slice(4);
+      var rec = REC[id];
+      if (!rec) return;
+      var cur = S.servings[id] || rec.serves;
+      var next = Math.min(12, Math.max(1, cur + Number(d.serv)));
+      S.servings[id] = next; save(); render(true); return;
+    }
+
+    if (d.add) {
+      var rc = REC[d.add];
+      var n = addRecipe(rc, d.missing === "1");
+      toast(n + " item" + (n === 1 ? "" : "s") + " added to your list");
+      render(true); return;
+    }
+
+    if (d.pantry) {
+      var i = S.pantry.indexOf(d.pantry);
+      if (i === -1) S.pantry.push(d.pantry); else S.pantry.splice(i, 1);
+      save(); render(true); return;
+    }
+
+    if (d.listadd) {
+      if (S.list[d.listadd]) { delete S.list[d.listadd]; toast("Removed from list"); }
+      else { addToList(d.listadd, null); toast("Added to list"); }
+      save(); render(true); return;
+    }
+
+    if (d.store) {
+      S.store = d.store; save();
+      toast("Now shopping at " + STORES[d.store].name);
+      render(true); return;
+    }
+
+    if (d.check) {
+      var e = S.list[d.check];
+      if (e) { e.done = !e.done; save(); render(true); }
+      return;
+    }
+
+    if (d.remove) { delete S.list[d.remove]; save(); render(true); return; }
+
+    switch (d.action) {
+      case "clear-filters": F = { q: "", time: 0, style: "", protein: "", diet: "" }; render(true); break;
+      case "close-sheet":
+        if (ev.target.closest(".sheet") && !ev.target.closest("[data-action='close-sheet']")) return;
+        sheetFor = null; renderSheet(); break;
+      case "toggle-local": S.localFirst = !S.localFirst; save(); render(true); break;
+      case "reset-pantry": S.pantry = defaults().pantry; save(); toast("Kitchen reset to basics"); render(true); break;
+      case "clear-done":
+        Object.keys(S.list).forEach(function (k) { if (S.list[k].done) delete S.list[k]; });
+        save(); render(true); break;
+      case "clear-list": S.list = {}; save(); render(true); break;
+    }
+  });
+
+  document.addEventListener("input", function (ev) {
+    if (ev.target.id === "q") { F.q = ev.target.value; redrawKeepingFocus("q"); }
+    if (ev.target.id === "kq") { kq = ev.target.value; redrawKeepingFocus("kq"); }
+  });
+
+  function redrawKeepingFocus(id) {
+    var el = document.getElementById(id);
+    var pos = el ? el.selectionStart : null;
+    render(true);
+    var next = document.getElementById(id);
+    if (next) { next.focus(); try { next.setSelectionRange(pos, pos); } catch (e) { /* search inputs */ } }
+  }
+
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape" && sheetFor) { sheetFor = null; renderSheet(); }
+  });
+
+  window.addEventListener("hashchange", function () { sheetFor = null; render(false); });
+
+  load();
+  render(false);
+})();
+</script>
+</body>
+</html>
