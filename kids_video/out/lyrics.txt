@@ -1,0 +1,82 @@
+Animal Sounds Song - Sing Along with the Animal Friends
+
+[0:00] INTRO
+    Welcome to the Animal Sounds Song!
+    Can you make the sounds with me?
+    Let's go! Here we go!
+
+[0:12] COW
+    Here comes the cow!
+    The cow says: MOO! MOO!
+    Can you say MOO?
+    MOO! MOO! MOO!
+
+[0:24] DUCK
+    Look! A little yellow duck!
+    The duck says: QUACK! QUACK!
+    Can you say QUACK?
+    QUACK! QUACK! QUACK!
+
+[0:36] CAT
+    Hello, little orange cat!
+    The cat says: MEOW! MEOW!
+    Can you say MEOW?
+    MEOW! MEOW! MEOW!
+
+[0:48] DOG
+    Who is that? It's the dog!
+    The dog says: WOOF! WOOF!
+    Can you say WOOF?
+    WOOF! WOOF! WOOF!
+
+[1:00] FROG
+    Hop, hop! It's the frog!
+    The frog says: RIBBIT! RIBBIT!
+    Can you say RIBBIT?
+    RIBBIT! RIBBIT! RIBBIT!
+
+[1:12] LION
+    Meet the big, brave lion!
+    The lion says: ROAR! ROAR!
+    Can you say ROAR?
+    ROAR! ROAR! ROAR!
+
+[1:24] MONKEY
+    Swing, swing! Monkey time!
+    The monkey says: OOH OOH AH AH!
+    Can you say OOH OOH AH AH?
+    OOH OOH AH AH!
+
+[1:36] ELEPHANT
+    The big elephant is here!
+    The elephant says: TOOT! TOOT!
+    Can you say TOOT?
+    TOOT! TOOT! TOOT!
+
+[1:48] GUESS-COW
+    Guess who? Who says MOO?
+    It's the COW! MOO! MOO!
+
+[1:56] GUESS-DUCK
+    Guess who? Who says QUACK?
+    It's the DUCK! QUACK! QUACK!
+
+[2:04] GUESS-LION
+    Guess who? Who says ROAR?
+    It's the LION! ROAR! ROAR!
+
+[2:12] GUESS-FROG
+    Guess who? Who says RIBBIT?
+    It's the FROG! RIBBIT! RIBBIT!
+
+[2:20] CHORUS
+    Let's sing with all our friends!
+    Moo, quack, meow, woof!
+    Ribbit, roar, ooh-ooh, toot!
+    We are the animal friends!
+
+[2:36] OUTRO
+    You did it! Great job!
+    Thank you for watching!
+    See you next time! Bye bye!
+

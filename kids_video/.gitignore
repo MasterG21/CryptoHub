@@ -1,0 +1,6 @@
+# Rendered outputs - all regenerable with render/build.sh
+out/*.mp4
+out/*.wav
+out/_*
+assets/fonts/*.subset.woff2
+__pycache__/

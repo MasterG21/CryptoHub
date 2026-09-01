@@ -1,0 +1,200 @@
+1
+00:00:00,600 --> 00:00:04,200
+Welcome to the Animal Sounds Song!
+
+2
+00:00:04,500 --> 00:00:08,000
+Can you make the sounds with me?
+
+3
+00:00:08,300 --> 00:00:11,700
+Let's go! Here we go!
+
+4
+00:00:12,300 --> 00:00:15,000
+Here comes the cow!
+
+5
+00:00:15,200 --> 00:00:18,000
+The cow says: MOO! MOO!
+
+6
+00:00:18,200 --> 00:00:21,000
+Can you say MOO?
+
+7
+00:00:21,200 --> 00:00:23,800
+MOO! MOO! MOO!
+
+8
+00:00:24,300 --> 00:00:27,000
+Look! A little yellow duck!
+
+9
+00:00:27,200 --> 00:00:30,000
+The duck says: QUACK! QUACK!
+
+10
+00:00:30,200 --> 00:00:33,000
+Can you say QUACK?
+
+11
+00:00:33,200 --> 00:00:35,800
+QUACK! QUACK! QUACK!
+
+12
+00:00:36,300 --> 00:00:39,000
+Hello, little orange cat!
+
+13
+00:00:39,200 --> 00:00:42,000
+The cat says: MEOW! MEOW!
+
+14
+00:00:42,200 --> 00:00:45,000
+Can you say MEOW?
+
+15
+00:00:45,200 --> 00:00:47,800
+MEOW! MEOW! MEOW!
+
+16
+00:00:48,300 --> 00:00:51,000
+Who is that? It's the dog!
+
+17
+00:00:51,200 --> 00:00:54,000
+The dog says: WOOF! WOOF!
+
+18
+00:00:54,200 --> 00:00:57,000
+Can you say WOOF?
+
+19
+00:00:57,200 --> 00:00:59,800
+WOOF! WOOF! WOOF!
+
+20
+00:01:00,300 --> 00:01:03,000
+Hop, hop! It's the frog!
+
+21
+00:01:03,200 --> 00:01:06,000
+The frog says: RIBBIT! RIBBIT!
+
+22
+00:01:06,200 --> 00:01:09,000
+Can you say RIBBIT?
+
+23
+00:01:09,200 --> 00:01:11,800
+RIBBIT! RIBBIT! RIBBIT!
+
+24
+00:01:12,300 --> 00:01:15,000
+Meet the big, brave lion!
+
+25
+00:01:15,200 --> 00:01:18,000
+The lion says: ROAR! ROAR!
+
+26
+00:01:18,200 --> 00:01:21,000
+Can you say ROAR?
+
+27
+00:01:21,200 --> 00:01:23,800
+ROAR! ROAR! ROAR!
+
+28
+00:01:24,300 --> 00:01:27,000
+Swing, swing! Monkey time!
+
+29
+00:01:27,200 --> 00:01:30,000
+The monkey says: OOH OOH AH AH!
+
+30
+00:01:30,200 --> 00:01:33,000
+Can you say OOH OOH AH AH?
+
+31
+00:01:33,200 --> 00:01:35,800
+OOH OOH AH AH!
+
+32
+00:01:36,300 --> 00:01:39,000
+The big elephant is here!
+
+33
+00:01:39,200 --> 00:01:42,000
+The elephant says: TOOT! TOOT!
+
+34
+00:01:42,200 --> 00:01:45,000
+Can you say TOOT?
+
+35
+00:01:45,200 --> 00:01:47,800
+TOOT! TOOT! TOOT!
+
+36
+00:01:48,300 --> 00:01:51,600
+Guess who? Who says MOO?
+
+37
+00:01:52,000 --> 00:01:55,700
+It's the COW! MOO! MOO!
+
+38
+00:01:56,300 --> 00:01:59,600
+Guess who? Who says QUACK?
+
+39
+00:02:00,000 --> 00:02:03,700
+It's the DUCK! QUACK! QUACK!
+
+40
+00:02:04,300 --> 00:02:07,600
+Guess who? Who says ROAR?
+
+41
+00:02:08,000 --> 00:02:11,700
+It's the LION! ROAR! ROAR!
+
+42
+00:02:12,300 --> 00:02:15,600
+Guess who? Who says RIBBIT?
+
+43
+00:02:16,000 --> 00:02:19,700
+It's the FROG! RIBBIT! RIBBIT!
+
+44
+00:02:20,300 --> 00:02:23,800
+Let's sing with all our friends!
+
+45
+00:02:24,100 --> 00:02:27,700
+Moo, quack, meow, woof!
+
+46
+00:02:28,100 --> 00:02:31,700
+Ribbit, roar, ooh-ooh, toot!
+
+47
+00:02:32,100 --> 00:02:35,700
+We are the animal friends!
+
+48
+00:02:36,400 --> 00:02:39,900
+You did it! Great job!
+
+49
+00:02:40,300 --> 00:02:43,900
+Thank you for watching!
+
+50
+00:02:44,300 --> 00:02:47,700
+See you next time! Bye bye!
+

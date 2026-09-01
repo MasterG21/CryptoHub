@@ -1,0 +1,86 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Thumbnail</title>
+<link rel="stylesheet" href="fonts.css">
+<style>html,body{margin:0;background:#111}canvas{width:100%;display:block}</style>
+<canvas id="c" width="1280" height="720"></canvas>
+<script src="core.js"></script>
+<script src="animals.js"></script>
+<script src="animals2.js"></script>
+<script src="stage.js"></script>
+<script>
+/* Thumbnail: three characters, one huge title, nothing else competing.
+   Read at 210px wide (the mobile feed size) it still has to say "animals" and
+   "song" instantly - so the cast is big and the type is bigger. */
+const ctx = document.getElementById('c').getContext('2d');
+const W = 1280, H = 720;
+
+function draw() {
+  ctx.save();
+  ctx.scale(W / 1920, H / 1080);              // author at 1920x1080, downscale
+
+  const bg = { sky: ['#3fc0f5', '#ffe9a8'], hills: ['#8ce38f', '#57c46d', '#329b4d'],
+               accent: '#ffd23f', frame: '#ff5f8f' };
+  STAGE.sky(ctx, bg);
+  STAGE.sun(ctx, 1.2, bg.accent);
+  STAGE.clouds(ctx, 3);
+  STAGE.hills(ctx, bg, 0);
+  STAGE.meadow(ctx, bg, 0);
+  STAGE.floaties(ctx, 2, bg.accent);
+
+  // cast: big, overlapping, all facing the viewer
+  const cast = [['cow', 420, 1.26], ['lion', 980, 1.30], ['elephant', 1530, 1.22]];
+  for (const [key, x, s] of cast) {
+    ctx.save();
+    ctx.globalAlpha = 0.2;
+    K.ell(ctx, x, 1068, 210 * s, 40 * s, 0); ctx.fillStyle = '#1b2a1b'; ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.translate(x, 1062);
+    ctx.scale(s, s);
+    ANIMALS[key].draw(ctx, { t: 0.42, mouth: 0.85, blink: 0, look: 0, wave: 1 });
+    ctx.restore();
+  }
+
+  STAGE.burst(ctx, 0.75, 0, 300, 300, 3, 1.25);
+  STAGE.burst(ctx, 0.75, 0, 1640, 340, 21, 1.25);
+
+  // title
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = '800 220px Baloo2';
+  const title = 'ANIMAL', title2 = 'SOUNDS';
+  const rainbow = ['#ff4d6d', '#ff9d3f', '#ffd23f', '#5fd97a', '#3fc0f5', '#a86bf0'];
+  function rainbowText(text, cy) {
+    const widths = [...text].map(ch => ctx.measureText(ch).width);
+    let x = 960 - widths.reduce((a, b) => a + b, 0) / 2;
+    [...text].forEach((ch, i) => {
+      ctx.save();
+      ctx.translate(x + widths[i] / 2, cy + (i % 2 ? 9 : -9));
+      ctx.rotate((i % 2 ? 1 : -1) * 0.035);
+      ctx.shadowColor = 'rgba(40,20,70,0.45)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 12;
+      STAGE.strokeFill(ctx, ch, 0, 0, rainbow[i % rainbow.length], '#ffffff', 34);
+      ctx.shadowColor = 'transparent';
+      STAGE.strokeFill(ctx, ch, 0, 0, rainbow[i % rainbow.length], '#3b2358', 14);
+      ctx.restore();
+      x += widths[i];
+    });
+  }
+  rainbowText(title, 150);
+  rainbowText(title2, 352);
+
+  // badge
+  ctx.save();
+  ctx.translate(1560, 806); ctx.rotate(-0.14);
+  ctx.font = '800 86px Baloo2';
+  const label = 'SING ALONG!';
+  const bw = ctx.measureText(label).width + 96;
+  K.roundRect(ctx, -bw / 2, -66, bw, 132, 40);
+  ctx.fillStyle = '#ff3d77'; ctx.fill(); K.outline(ctx, 12, '#ffffff');
+  STAGE.strokeFill(ctx, label, 0, 4, '#ffffff', 'rgba(60,20,60,0.5)', 10);
+  ctx.restore();
+  ctx.restore();
+}
+
+window.__ready = document.fonts.load('800 100px Baloo2')
+  .then(() => document.fonts.ready).then(() => { draw(); return true; });
+</script>
