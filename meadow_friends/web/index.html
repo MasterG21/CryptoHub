@@ -1,0 +1,133 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Meadow Friends — preview</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+  html, body { margin: 0; background: #14122a; color: #fff;
+               font: 14px/1.5 Fredoka, system-ui, sans-serif; }
+  #wrap { max-width: 1180px; margin: 0 auto; padding: 14px; }
+  #stage { position: relative; width: 100%; aspect-ratio: 16/9; background: #000;
+           border-radius: 12px; overflow: hidden; box-shadow: 0 16px 46px rgba(0,0,0,.55); }
+  canvas { width: 100% !important; height: 100% !important; display: block; }
+  .bar { display: flex; gap: 10px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+  button { font: 700 14px Fredoka, sans-serif; background: #ff5f8f; color: #fff; border: 0;
+           padding: 9px 16px; border-radius: 999px; cursor: pointer; }
+  button.alt { background: #3a3466; }
+  input[type=range] { flex: 1; min-width: 200px; accent-color: #ff5f8f; }
+</style>
+<div id="wrap">
+  <div id="stage"></div>
+  <div class="bar">
+    <button id="play">▶ Play</button>
+    <input type="range" id="seek" min="0" max="10" step="0.02" value="0">
+    <span id="clock">0:00</span>
+  </div>
+  <div class="bar" id="jumps"></div>
+</div>
+<audio id="aud" src="../out/audio.wav" preload="auto"></audio>
+
+<script type="importmap">
+{ "imports": { "three": "./lib/three.module.min.js" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { QUALITY } from './rig.js';
+QUALITY.read();
+import { buildWorld } from './world.js';
+import { buildDirector } from './director.js';
+import { buildOverlay } from './overlay.js';
+
+const W = 1920, H = 1080;
+const Q = new URLSearchParams(location.search);
+const AA = Q.get('aa') !== '0';
+const renderer = new THREE.WebGLRenderer({ antialias: AA, powerPreference: 'high-performance' });
+renderer.setPixelRatio(1);
+renderer.setSize(W, H, false);
+renderer.shadowMap.enabled = Q.get('shadow') !== 'off';
+renderer.shadowMap.type = Q.get('shadow') === 'soft' ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.06;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.autoClear = false;
+document.getElementById('stage').appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const world = buildWorld(scene, renderer, +(Q.get('smap') || 1024));
+const overlay = buildOverlay();
+
+const [script, timeline] = await Promise.all([
+  fetch('../script.json').then(r => r.json()),
+  fetch('../out/timeline.json').then(r => r.json()),
+]);
+const director = buildDirector(scene, script, timeline, world);
+const DUR = timeline.duration;
+
+function drawAt(t) {
+  const cap = director.update(t);
+  window.__dbg = director.debug();
+  overlay.set(cap);
+  renderer.clear();
+  renderer.render(scene, director.camera);
+  renderer.clearDepth();
+  renderer.render(overlay.scene, overlay.cam);
+}
+
+window.__renderer = renderer;
+window.__scene = scene;
+window.__duration = DUR;
+window.__resize = (w, h) => { renderer.setSize(w, h, false);
+  director.camera.aspect = w / h; director.camera.updateProjectionMatrix(); };
+window.__drawAt = drawAt;
+window.__thumbAt = (t, title, sub, cam) => {
+  director.update(t);
+  if (cam) {
+    director.camera.position.set(cam.pos[0], cam.pos[1], cam.pos[2]);
+    director.camera.lookAt(cam.at[0], cam.at[1], cam.at[2]);
+    director.camera.fov = cam.fov || 36;
+    director.camera.updateProjectionMatrix();
+  }
+  overlay.thumb(title, sub);
+  renderer.clear();
+  renderer.render(scene, director.camera);
+  renderer.clearDepth();
+  renderer.render(overlay.scene, overlay.cam);
+};
+window.__ready = document.fonts.load('800 100px Baloo2')
+  .then(() => document.fonts.load('700 100px Fredoka'))
+  .then(() => document.fonts.ready)
+  .then(() => { drawAt(0); return true; });
+
+// ---- preview transport (ignored by the headless renderer) ----
+const seek = document.getElementById('seek'), playBtn = document.getElementById('play');
+const clock = document.getElementById('clock'), aud = document.getElementById('aud');
+seek.max = DUR;
+let playing = false, base = 0, t0 = 0;
+const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+function loop() {
+  if (playing) {
+    const t = Math.min(DUR, base + (performance.now() - t0) / 1000);
+    seek.value = t;
+    if (t >= DUR) { playing = false; playBtn.textContent = '▶ Play'; aud.pause(); }
+  }
+  drawAt(+seek.value);
+  clock.textContent = fmt(+seek.value) + ' / ' + fmt(DUR);
+  requestAnimationFrame(loop);
+}
+playBtn.onclick = () => {
+  playing = !playing;
+  playBtn.textContent = playing ? '❚❚ Pause' : '▶ Play';
+  if (playing) { base = +seek.value; t0 = performance.now(); aud.currentTime = base; aud.play().catch(() => {}); }
+  else aud.pause();
+};
+seek.oninput = () => { base = +seek.value; t0 = performance.now(); aud.currentTime = base; };
+const seen = new Set();
+for (const ev of timeline.events) {
+  if (seen.has(ev.scene)) continue;
+  seen.add(ev.scene);
+  const b = document.createElement('button');
+  b.className = 'alt'; b.textContent = ev.scene;
+  b.onclick = () => { seek.value = ev.start + 0.4; seek.oninput(); };
+  document.getElementById('jumps').appendChild(b);
+}
+window.__ready.then(loop);
+</script>

@@ -1,0 +1,212 @@
+1
+00:00:03,400 --> 00:00:06,270
+Milo: Ellie! Ellie! Wake up, sleepy elephant.
+
+2
+00:00:06,795 --> 00:00:07,777
+Ellie: Good morning, Milo!
+
+3
+00:00:08,302 --> 00:00:10,403
+Milo: Good morning, Ellie! What a sunny day.
+
+4
+00:00:10,928 --> 00:00:12,370
+Ellie: Shall we go and play in the meadow?
+
+5
+00:00:12,895 --> 00:00:14,607
+Ellie: The meadow is full of friends today.
+
+6
+00:00:15,219 --> 00:00:17,306
+Milo: Yes please! Let's go.
+
+7
+00:00:18,181 --> 00:00:20,858
+Milo: Wait. Listen, Ellie. Do you hear that?
+
+8
+00:00:23,196 --> 00:00:24,042
+Milo: What was that?
+
+9
+00:00:24,567 --> 00:00:26,660
+Ellie: I don't know. Let's go and find out!
+
+10
+00:00:27,710 --> 00:00:29,983
+Bella: Moo! Moo! Good morning, friends!
+
+11
+00:00:30,508 --> 00:00:32,551
+Ellie: Look, Milo. It is Bella the cow.
+
+12
+00:00:33,076 --> 00:00:35,244
+Ellie: Bella lives here in the big green field.
+
+13
+00:00:35,769 --> 00:00:37,967
+Milo: Hello Bella! What sound do you make?
+
+14
+00:00:38,492 --> 00:00:40,283
+Bella: I say moo! Moo! Moo!
+
+15
+00:00:40,983 --> 00:00:42,143
+Milo: Can you say moo with me?
+
+16
+00:00:44,893 --> 00:00:46,671
+Bella: Would you like to hear it one more time?
+
+17
+00:00:47,108 --> 00:00:47,892
+Bella: Moo! Moo!
+
+18
+00:00:48,592 --> 00:00:50,509
+Milo: Moo! Moo! That was wonderful.
+
+19
+00:00:52,671 --> 00:00:54,663
+Milo: Ellie, look! Down by the pond.
+
+20
+00:00:55,188 --> 00:00:57,656
+Pip: Quack! Quack! Hello everyone!
+
+21
+00:00:58,181 --> 00:01:00,436
+Ellie: That is Pip the duck. Pip loves to swim.
+
+22
+00:01:00,961 --> 00:01:03,133
+Pip: Come and see my lovely blue pond!
+
+23
+00:01:03,658 --> 00:01:05,457
+Milo: Pip, what sound do you make?
+
+24
+00:01:05,982 --> 00:01:08,055
+Pip: I say quack! Quack, quack!
+
+25
+00:01:08,580 --> 00:01:09,456
+Ellie: Can you say quack?
+
+26
+00:01:12,206 --> 00:01:14,356
+Pip: Quack! Quack! Very good!
+
+27
+00:01:16,491 --> 00:01:17,830
+Milo: Oh! Who said that?
+
+28
+00:01:18,355 --> 00:01:20,419
+Hop: Ribbit! Down here, on the lily pad!
+
+29
+00:01:20,944 --> 00:01:23,326
+Ellie: Hello Hop! Hop is a little green frog.
+
+30
+00:01:23,851 --> 00:01:25,996
+Hop: I say ribbit! And I love to jump.
+
+31
+00:01:26,521 --> 00:01:28,154
+Ellie: Frogs are wonderful jumpers.
+
+32
+00:01:28,679 --> 00:01:30,691
+Hop: Watch me go. Hop, hop, hop!
+
+33
+00:01:31,304 --> 00:01:32,857
+Milo: Can you jump and say ribbit?
+
+34
+00:01:35,607 --> 00:01:37,324
+Hop: Ribbit! Ribbit! Hooray!
+
+35
+00:01:40,037 --> 00:01:42,518
+Milo: Oh my! That was a very big sound.
+
+36
+00:01:43,043 --> 00:01:45,430
+Leo: Roar! Hello there. My name is Leo.
+
+37
+00:01:45,955 --> 00:01:48,703
+Ellie: Do not worry, Milo. Leo is a friendly lion.
+
+38
+00:01:49,228 --> 00:01:51,336
+Leo: I say roar! But I am very gentle.
+
+39
+00:01:51,861 --> 00:01:53,240
+Milo: Can you roar like Leo?
+
+40
+00:01:53,590 --> 00:01:55,089
+Leo: Would you like to try a big roar?
+
+41
+00:01:57,839 --> 00:01:59,404
+Leo: Roar! What a brave sound!
+
+42
+00:02:00,454 --> 00:02:02,248
+Ellie: Let us all make our sounds together!
+
+43
+00:02:02,861 --> 00:02:04,625
+Milo: One, two, three... everybody!
+
+44
+00:02:05,150 --> 00:02:05,425
+Bella: Moo!
+
+45
+00:02:05,687 --> 00:02:06,095
+Pip: Quack!
+
+46
+00:02:06,358 --> 00:02:06,845
+Hop: Ribbit!
+
+47
+00:02:07,108 --> 00:02:07,523
+Leo: Roar!
+
+48
+00:02:07,786 --> 00:02:09,724
+Milo: Squeak, squeak!
+
+49
+00:02:10,161 --> 00:02:12,011
+Ellie: And the elephant says toot, toot!
+
+50
+00:02:14,736 --> 00:02:16,417
+Ellie: Thank you for playing with us today.
+
+51
+00:02:16,942 --> 00:02:18,973
+Ellie: You did so well today. Well done!
+
+52
+00:02:19,585 --> 00:02:21,685
+Milo: Come back soon. Goodbye, friends!
+
+53
+00:02:22,210 --> 00:02:23,163
+Bye bye!
+

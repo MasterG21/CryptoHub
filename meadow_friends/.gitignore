@@ -1,0 +1,12 @@
+# Voice models (~200 MB) - fetch with render/fetch_voices.sh
+voices/*.onnx
+voices/*.onnx.json
+
+# Rendered output - rebuild with render/build.sh
+out/*.mp4
+out/*.wav
+out/_*
+out/audition_raw.json
+
+node_modules/
+__pycache__/
