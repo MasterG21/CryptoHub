@@ -12,6 +12,13 @@ footage, no sample packs, nothing that can pick up a Content ID claim.
     ./render/build.sh          # → out/animal-sounds-song.mp4 (+ subtitles, thumbnail)
     ./render/build.sh --quick  # 960×540 preview, for iterating on the animation
 
+The master renders at CRF 18, which is about 78 MB for the 2:48 cut. For a
+smaller copy that is still fine to upload:
+
+    ffmpeg -i out/animal-sounds-song.mp4 -c:v libx264 -crf 28.5 -preset medium \
+           -pix_fmt yuv420p -c:a aac -b:a 160k -movflags +faststart \
+           out/animal-sounds-song-compact.mp4     # ~26 MB
+
 Open `web/index.html` in a browser to scrub through the animation with a
 transport bar and per-scene jump buttons.
 
