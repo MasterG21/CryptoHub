@@ -72,7 +72,7 @@ def main():
     names = ', '.join(c['name'] for c in tl['cast'].values())
     with open(os.path.join(out_dir, 'description.txt'), 'w', encoding='utf-8') as f:
         f.write(
-            f"{script['meta']['title']} - {script['meta']['episode']}\n\n"
+            "Milo Meets His Meadow Friends - an episode of Meadow Friends.\n\n"
             "Milo the mouse hears a mystery sound in the meadow, so he and Ellie "
             "the elephant set off to find out who is making it. Along the way they "
             "meet Bella the cow, Pip the duck, Hop the frog and Leo the lion - and "
