@@ -18,9 +18,13 @@ await page.evaluate(() => window.__ready);
 
 // the finale, framed low and wide so the whole cast is in shot
 const T = +(process.argv[2] || 124);
-await page.evaluate(([t]) => window.__thumbAt(t, 'Meadow Friends', 'Animal Sounds!',
-  { pos: [0.2, 1.55, 7.4], at: [0.2, 0.95, 0.2], fov: 40 }), [T]);
-const data = await page.evaluate(() => document.querySelector('canvas').toDataURL('image/jpeg', 0.94));
+// draw and capture in ONE evaluate: a WebGL canvas without preserveDrawingBuffer
+// is cleared once the frame is presented, so a separate read comes back black
+const data = await page.evaluate(([t]) => {
+  window.__thumbAt(t, 'Meadow Friends', 'Animal Sounds!',
+    { pos: [0.4, 1.62, 8.4], at: [0.4, 0.95, 0.2], fov: 40 });
+  return document.querySelector('canvas').toDataURL('image/jpeg', 0.94);
+}, [T]);
 const buf = Buffer.from(data.slice(data.indexOf(',') + 1), 'base64');
 writeFileSync(resolve(ROOT, 'out/thumbnail-1920.jpg'), buf);
 console.log('wrote out/thumbnail-1920.jpg', (buf.length / 1024).toFixed(0), 'KB');

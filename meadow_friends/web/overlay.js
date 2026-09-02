@@ -131,7 +131,7 @@ export function buildOverlay() {
   function drawThumb(title, sub) {
     ctx.clearRect(0, 0, W, H);
     const g = ctx.createLinearGradient(0, 0, 0, 470);
-    g.addColorStop(0, 'rgba(20,16,50,0.42)');
+    g.addColorStop(0, 'rgba(20,16,50,0.26)');
     g.addColorStop(1, 'rgba(20,16,50,0)');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, 470);
