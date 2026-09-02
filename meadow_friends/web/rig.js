@@ -155,7 +155,7 @@ export function updateCharacter(c, s) {
   c.head.rotation.z = mood.tilt + Math.sin(t * 0.53 + c.seed * 2) * 0.02;
 
   // eyes
-  const blink = Math.max(blinkAmount(t, c.seed), s.forceBlink || 0);
+  const blink = s.noBlink ? 0 : Math.max(blinkAmount(t, c.seed), s.forceBlink || 0);
   for (const e of c.eyes) {
     const closed = Math.min(1, blink + mood.squint * 0.55);
     // parked behind the eyeball (inside the head) when open, concentric when shut

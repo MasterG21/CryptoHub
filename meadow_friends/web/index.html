@@ -31,7 +31,7 @@
 </script>
 <script type="module">
 import * as THREE from 'three';
-import { QUALITY } from './rig.js';
+import { QUALITY, updateCharacter } from './rig.js';
 QUALITY.read();
 import { buildWorld } from './world.js';
 import { buildDirector } from './director.js';
@@ -72,12 +72,67 @@ function drawAt(t) {
   renderer.render(overlay.scene, overlay.cam);
 }
 
+window.__pose = updateCharacter;
 window.__renderer = renderer;
 window.__scene = scene;
 window.__duration = DUR;
 window.__resize = (w, h) => { renderer.setSize(w, h, false);
   director.camera.aspect = w / h; director.camera.updateProjectionMatrix(); };
 window.__drawAt = drawAt;
+// Channel avatar, framed off the character itself: head straightened to face
+// the lens, a happy expression, eyes held open, camera on the body's forward
+// axis so it is always a portrait and never the back of a head.
+window.__avatarOf = (t, who, opt = {}) => {
+  director.update(t);
+  const c = director.cast[who];
+  if (!c) throw new Error('no such character: ' + who);
+  window.__pose(c, {
+    t, open: opt.open ?? 0, wide: 0.5, talking: false,
+    mood: opt.mood || 'happy', look: { x: 0, y: 0 }, hop: 0, gesture: 0, noBlink: true,
+  });
+  c.head.rotation.set(opt.tiltX ?? -0.02, 0, opt.tiltZ ?? 0.05);
+  const p = c.root.position;
+  const ang = c.root.rotation.y + (opt.side ?? 0.30);
+  const d = (opt.dist ?? 8.2) * c.headR;
+  const cam = director.camera;
+  cam.position.set(p.x + Math.sin(ang) * d,
+                   p.y + c.headY + c.headR * (opt.rise ?? 0.06),
+                   p.z + Math.cos(ang) * d);
+  cam.lookAt(p.x, p.y + c.headY - c.headR * (opt.drop ?? 0.02), p.z);
+  cam.fov = opt.fov ?? 34;
+  cam.updateProjectionMatrix();
+  renderer.clear();
+  renderer.render(scene, cam);
+};
+
+// YouTube crops the avatar to a circle - this returns that crop, so the
+// framing can be checked rather than guessed at.
+window.__circleCrop = () => {
+  const src = document.querySelector('canvas');
+  const n = src.width;
+  const c2 = document.createElement('canvas');
+  c2.width = n; c2.height = n;
+  const g = c2.getContext('2d');
+  g.save();
+  g.beginPath();
+  g.arc(n / 2, n / 2, n / 2, 0, Math.PI * 2);
+  g.clip();
+  g.drawImage(src, 0, 0);
+  g.restore();
+  return c2.toDataURL('image/png');
+};
+
+// Channel avatar: the scene only, no caption overlay, square aspect.
+window.__avatarShot = (t, cam) => {
+  director.update(t);
+  const c = director.camera;
+  c.position.set(cam.pos[0], cam.pos[1], cam.pos[2]);
+  c.lookAt(cam.at[0], cam.at[1], cam.at[2]);
+  c.fov = cam.fov || 34;
+  c.updateProjectionMatrix();
+  renderer.clear();
+  renderer.render(scene, c);
+};
 window.__thumbAt = (t, title, sub, cam) => {
   director.update(t);
   if (cam) {
