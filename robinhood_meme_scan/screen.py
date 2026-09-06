@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Sequence
 
 from .analyzer import (
     HealthReport,
@@ -17,15 +17,25 @@ from .analyzer import (
     score_verification,
 )
 from .blockscout import BlockscoutClient
-from .onchain import check_ownership, find_liquidity_pool, get_web3
+from .chains import UNISWAP_V3_FEE_TIERS
+from .onchain import FactoryUnavailable, check_ownership, find_liquidity_pool, get_web3
 
 
 @dataclass
 class ScreenOptions:
     rpc_url: str
     v3_factory: Optional[str] = None
-    weth: Optional[str] = None
+    quote_token: Optional[str] = None
     check_deployer: bool = True
+    # Chain-specific labels and tiers, defaulted so existing callers that
+    # only pass an RPC URL keep working.
+    fee_tiers: Sequence[int] = UNISWAP_V3_FEE_TIERS
+    dex_name: str = "Uniswap V3"
+    quote_symbol: str = "WETH"
+
+    @property
+    def liquidity_configured(self) -> bool:
+        return bool(self.v3_factory and self.quote_token)
 
 
 def hours_since(iso_timestamp: str) -> Optional[float]:
@@ -68,19 +78,33 @@ def analyze_token(
     liquidity_checked = False
     liquidity_found = False
     token_balance = None
-    if opts.v3_factory and opts.weth:
+    if opts.liquidity_configured:
         liquidity_checked = True
         try:
             w3 = get_web3(opts.rpc_url)
-            pool = find_liquidity_pool(w3, address, opts.v3_factory, opts.weth)
+            pool = find_liquidity_pool(
+                w3, address, opts.v3_factory, opts.quote_token, opts.fee_tiers
+            )
             if pool:
                 liquidity_found = True
                 lp_address = pool.pool_address
                 token_balance = pool.token_balance
+        except FactoryUnavailable as exc:
+            # A misconfigured factory tells us nothing about this token, so
+            # fall back to "not checked" rather than deducting for it.
+            warn(f"liquidity check skipped: {exc}")
+            liquidity_checked = False
         except Exception as exc:
             warn(f"liquidity check failed: {exc}")
             liquidity_checked = False
-    score_liquidity(report, liquidity_checked, liquidity_found, token_balance)
+    score_liquidity(
+        report,
+        liquidity_checked,
+        liquidity_found,
+        token_balance,
+        dex_name=opts.dex_name,
+        quote_symbol=opts.quote_symbol,
+    )
 
     score_holders(report, holders, token.total_supply, lp_address)
 

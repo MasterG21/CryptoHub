@@ -1,1 +1,1 @@
-"""Meme coin health-check tooling for Robinhood Chain."""
+"""Meme coin health-check tooling for Robinhood Chain and BNB Smart Chain."""

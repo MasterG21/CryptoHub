@@ -12,6 +12,7 @@ import pytest
 
 from robinhood_meme_scan.blockscout import BlockscoutError, Holder, TokenInfo
 from robinhood_meme_scan.cli import main
+from robinhood_meme_scan.onchain import FactoryUnavailable, LiquidityPool
 
 PLAIN_ABI = [
     {"type": "function", "name": n, "stateMutability": "view"}
@@ -52,6 +53,9 @@ def mocked_chain():
         # A real dict, not a MagicMock: .get("is_contract") on a MagicMock is
         # truthy, which would make every deployer look like a launchpad factory.
         instance.get_address_info.return_value = {"is_contract": False}
+        # Exposed so chain-selection tests can assert which explorer the CLI
+        # pointed the client at, without changing what this fixture yields.
+        instance.client_class = MockClient
         yield instance
 
 
@@ -182,3 +186,125 @@ def test_factory_deployer_not_flagged_via_cli(mocked_chain, capsys):
 
     result = json.loads(capsys.readouterr().out)["results"][0]
     assert not any("deployer" in f["label"] for f in result["flags"])
+
+
+# --- chain selection -------------------------------------------------------
+
+
+@pytest.fixture
+def mocked_liquidity():
+    """Patches the liquidity probe so chain tests don't touch web3."""
+    with patch("robinhood_meme_scan.screen.find_liquidity_pool") as find_pool:
+        find_pool.return_value = None
+        yield find_pool
+
+
+def test_chain_bsc_points_at_the_bnb_explorer(mocked_chain, mocked_liquidity, capsys):
+    mocked_chain.get_token.return_value = make_token()
+
+    assert main(["0xToken", "--chain", "bsc", "--json"]) == 0
+
+    base_url = mocked_chain.client_class.call_args.kwargs["base_url"]
+    assert "bnb.blockscout.com" in base_url
+    assert json.loads(capsys.readouterr().out)["chain"] == "bsc"
+
+
+def test_bnb_alias_selects_the_same_chain(mocked_chain, mocked_liquidity, capsys):
+    mocked_chain.get_token.return_value = make_token()
+
+    assert main(["0xToken", "--chain", "bnb", "--json"]) == 0
+
+    assert json.loads(capsys.readouterr().out)["chain"] == "bsc"
+
+
+def test_bsc_probes_pancakeswap_fee_tiers(mocked_chain, mocked_liquidity):
+    mocked_chain.get_token.return_value = make_token()
+
+    assert main(["0xToken", "--chain", "bsc", "--json"]) == 0
+
+    fee_tiers = mocked_liquidity.call_args.args[-1]
+    assert tuple(fee_tiers) == (100, 500, 2500, 10000)
+
+
+def test_default_chain_still_skips_the_liquidity_check(mocked_chain, mocked_liquidity, capsys):
+    """Robinhood Chain has no confirmed factory address, so nothing is probed
+    and nothing is deducted."""
+    mocked_chain.get_token.return_value = make_token()
+
+    assert main(["0xToken", "--json"]) == 0
+
+    mocked_liquidity.assert_not_called()
+    result = json.loads(capsys.readouterr().out)["results"][0]
+    assert result["liquidity_checked"] is False
+
+
+def test_misconfigured_factory_reads_as_unknown_not_as_no_liquidity(
+    mocked_chain, mocked_liquidity, capsys
+):
+    """The important one: a bad factory address must never cost a token
+    points, because that would be the tool's fault, not the token's."""
+    mocked_chain.get_token.return_value = make_token()
+    mocked_liquidity.side_effect = FactoryUnavailable("no contract code at V3 factory")
+
+    assert main(["0xToken", "--chain", "bsc", "--json"]) == 0
+
+    result = json.loads(capsys.readouterr().out)["results"][0]
+    assert result["liquidity_checked"] is False
+    assert not any(f["label"] == "no-liquidity-pool" for f in result["flags"])
+
+
+def test_genuine_absence_of_a_pool_is_still_flagged(mocked_chain, mocked_liquidity, capsys):
+    mocked_chain.get_token.return_value = make_token()
+    mocked_liquidity.return_value = None  # factory answered: no pool
+
+    assert main(["0xToken", "--chain", "bsc", "--json"]) == 0
+
+    result = json.loads(capsys.readouterr().out)["results"][0]
+    assert result["liquidity_checked"] is True
+    flag = next(f for f in result["flags"] if f["label"] == "no-liquidity-pool")
+    assert "PancakeSwap V3" in flag["detail"]
+    assert "WBNB" in flag["detail"]
+
+
+def test_single_report_names_the_chain_and_dex(mocked_chain, mocked_liquidity, capsys):
+    mocked_chain.get_token.return_value = make_token()
+    mocked_liquidity.return_value = LiquidityPool(
+        fee_tier=2500, pool_address="0xpool", token_balance=1_000
+    )
+
+    assert main(["0xToken", "--chain", "bsc"]) == 0
+
+    out = capsys.readouterr().out
+    assert "BNB Smart Chain" in out
+    assert "PancakeSwap V3 pool:" in out
+    assert "found" in out
+    assert "bscscan.com" in out
+
+
+def test_explicit_flags_override_the_chain_preset(mocked_chain, mocked_liquidity):
+    mocked_chain.get_token.return_value = make_token()
+
+    assert (
+        main([
+            "0xToken",
+            "--chain", "bsc",
+            "--explorer-api", "https://my-explorer.example/api/v2",
+            "--fee-tiers", "500,3000",
+            "--json",
+        ])
+        == 0
+    )
+
+    assert (
+        mocked_chain.client_class.call_args.kwargs["base_url"]
+        == "https://my-explorer.example/api/v2"
+    )
+    assert tuple(mocked_liquidity.call_args.args[-1]) == (500, 3000)
+
+
+def test_list_chains_exits_zero_without_addresses(capsys):
+    assert main(["--list-chains"]) == 0
+
+    out = capsys.readouterr().out
+    assert "BNB Smart Chain" in out
+    assert "Robinhood Chain" in out

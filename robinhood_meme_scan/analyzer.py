@@ -156,13 +156,32 @@ def score_ownership(report: HealthReport, renounced: Optional[bool]) -> None:
         _add(report, "owner-not-renounced", -10, "Contract owner has not renounced ownership")
 
 
-def score_liquidity(report: HealthReport, checked: bool, found: bool, token_balance: Optional[int] = None) -> None:
+def score_liquidity(
+    report: HealthReport,
+    checked: bool,
+    found: bool,
+    token_balance: Optional[int] = None,
+    dex_name: str = "Uniswap V3",
+    quote_symbol: str = "WETH",
+) -> None:
+    """Score the liquidity check.
+
+    `checked` must be False whenever the result is unknown — including
+    when the DEX factory was misconfigured or unreachable. Only a factory
+    that actually answered "no pool" should reach here as checked=True,
+    found=False; anything else would deduct points for a tooling problem.
+    """
     report.liquidity_checked = checked
     report.liquidity_found = found
     if not checked:
         return
     if not found:
-        _add(report, "no-liquidity-pool", -15, "No Uniswap V3 pool found for token/WETH at common fee tiers")
+        _add(
+            report,
+            "no-liquidity-pool",
+            -15,
+            f"No {dex_name} pool found for token/{quote_symbol} at common fee tiers",
+        )
     elif token_balance == 0:
         _add(report, "empty-liquidity-pool", -15, "Pool exists but holds zero balance of this token")
 

@@ -62,6 +62,13 @@
   }
   textarea:focus { outline: none; border-color: var(--accent); }
 
+  select {
+    background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; margin-left: 6px;
+  }
+  select:focus { outline: none; border-color: var(--accent); }
+
   button {
     background: var(--accent); color: #111; border: 0;
     padding: 11px 22px; border-radius: 8px; font-weight: 650; font-size: 15px;
@@ -107,8 +114,9 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Robinhood Chain Token Scanner</h1>
-  <p class="sub">Screens tokens for structural rug risk. Runs entirely in your browser.</p>
+  <h1>Meme Token Scanner</h1>
+  <p class="sub">Screens tokens for structural rug risk on Robinhood Chain and BNB Smart Chain.
+  Runs entirely in your browser.</p>
 
   <div class="card">
     <div class="step">
@@ -131,6 +139,14 @@
       <span>or click to choose a file &nbsp;·&nbsp; you can also paste addresses below</span>
       <input type="file" id="file" accept=".html,.htm,.txt" multiple hidden>
     </div>
+
+    <p style="margin:18px 0 8px;color:var(--muted);font-size:13px">
+      <label for="chain">Chain:</label>
+      <select id="chain">
+        <option value="robinhood">Robinhood Chain</option>
+        <option value="bsc">BNB Smart Chain</option>
+      </select>
+    </p>
 
     <p style="margin:18px 0 8px;color:var(--muted);font-size:13px">
       Addresses found (edit freely, one per line):
@@ -156,8 +172,26 @@
 </div>
 
 <script>
-const API = 'https://robinhoodchain.blockscout.com/api/v2';
-const EXPLORER = 'https://robinhoodchain.blockscout.com';
+// Explorer endpoints per chain. The BNB Blockscout host has not been
+// confirmed against the live network from the development environment, so
+// if a scan returns "not a token on this chain" for an address you know is
+// good, check this host before trusting the result.
+const CHAINS = {
+  robinhood: {
+    name: 'Robinhood Chain',
+    api: 'https://robinhoodchain.blockscout.com/api/v2',
+    explorer: 'https://robinhoodchain.blockscout.com',
+  },
+  bsc: {
+    name: 'BNB Smart Chain',
+    api: 'https://bnb.blockscout.com/api/v2',
+    explorer: 'https://bscscan.com',
+  },
+};
+
+// Read at call time rather than captured once, so switching the dropdown
+// between scans actually changes which chain is queried.
+function chain() { return CHAINS[$('chain').value] || CHAINS.robinhood; }
 const BURN = new Set([
   '0x0000000000000000000000000000000000000000',
   '0x000000000000000000000000000000000000dead'
@@ -165,6 +199,18 @@ const BURN = new Set([
 
 const $ = id => document.getElementById(id);
 const drop = $('drop'), fileInput = $('file'), addrs = $('addrs');
+
+// Remember the last chain used. Wrapped because storage throws outright in
+// some privacy modes, and a scanner that won't load is worse than one that
+// forgets.
+try {
+  const saved = localStorage.getItem('scanner.chain');
+  if (saved && CHAINS[saved]) $('chain').value = saved;
+} catch (e) { /* no storage available */ }
+$('chain').onchange = () => {
+  try { localStorage.setItem('scanner.chain', $('chain').value); } catch (e) {}
+  setStatus(`Scanning on ${chain().name}.`);
+};
 
 drop.onclick = () => fileInput.click();
 drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
@@ -200,7 +246,7 @@ function addAddresses(found) {
 function setStatus(msg) { $('status').textContent = msg; }
 
 async function api(path) {
-  const res = await fetch(API + path);
+  const res = await fetch(chain().api + path);
   if (res.status === 404) return null;
   if (!res.ok) throw new Error('HTTP ' + res.status);
   return res.json();
@@ -365,7 +411,7 @@ function render(results, failures) {
           <span class="addr">${label}</span></td>
       <td><span class="tok">${t.symbol || '?'}</span><br>
           <span class="addr">${t.name || ''}</span><br>
-          <a class="addr" href="${EXPLORER}/token/${r.address}" target="_blank" rel="noopener">${r.address.slice(0,10)}…${r.address.slice(-6)}</a></td>
+          <a class="addr" href="${chain().explorer}/token/${r.address}" target="_blank" rel="noopener">${r.address.slice(0,10)}…${r.address.slice(-6)}</a></td>
       <td class="num-cell">${r.top1 != null ? r.top1.toFixed(1) + '%' : '—'}</td>
       <td class="num-cell">${r.holderCount != null ? r.holderCount : '—'}</td>
       <td class="num-cell">${fmtDeploys(r)}</td>
@@ -419,7 +465,7 @@ $('scan').onclick = async () => {
           <strong>The browser blocked the connection to Blockscout.</strong><br><br>
           This is a CORS restriction, not a problem with the token. Try opening this
           file directly in Chrome (double-click it), and make sure
-          <a href="${EXPLORER}" target="_blank" rel="noopener">${EXPLORER}</a>
+          <a href="${chain().explorer}" target="_blank" rel="noopener">${chain().explorer}</a>
           loads normally in another tab. If it still fails, tell Claude — the explorer
           may need a different endpoint.</div>`;
         btn.disabled = false;

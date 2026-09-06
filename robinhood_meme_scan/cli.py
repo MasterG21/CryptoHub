@@ -1,12 +1,13 @@
-"""CLI: python -m robinhood_meme_scan <token_address> [more addresses...] [options]"""
+"""CLI: python -m robinhood_meme_scan [--chain bsc] <token_address> [...] [options]"""
 from __future__ import annotations
 
 import argparse
 import json
 import sys
+from dataclasses import replace
 
-from .blockscout import BlockscoutClient, BlockscoutError, DEFAULT_EXPLORER_API
-from .onchain import DEFAULT_RPC_URL
+from .blockscout import BlockscoutClient, BlockscoutError
+from .chains import CHAINS, DEFAULT_CHAIN, Chain, chain_choices, get_chain
 from .screen import ScreenOptions, analyze_token
 
 RED = "\033[31m"
@@ -50,6 +51,26 @@ def _read_addresses(args: argparse.Namespace) -> list[str]:
     return unique
 
 
+def _resolve_chain(args: argparse.Namespace) -> Chain:
+    """Chain preset with any explicitly passed flag taking precedence."""
+    chain = get_chain(args.chain)
+    overrides = {}
+    if args.explorer_api:
+        overrides["explorer_api"] = args.explorer_api
+        overrides["explorer_url"] = args.explorer_api.replace("/api/v2", "")
+    if args.rpc_url:
+        overrides["rpc_url"] = args.rpc_url
+    if args.v3_factory:
+        overrides["v3_factory"] = args.v3_factory
+    if args.quote_token:
+        overrides["quote_token"] = args.quote_token
+    if args.fee_tiers:
+        overrides["v3_fee_tiers"] = tuple(
+            int(t.strip()) for t in args.fee_tiers.split(",") if t.strip()
+        )
+    return replace(chain, **overrides) if overrides else chain
+
+
 def _report_to_dict(report) -> dict:
     t = report.token
     return {
@@ -74,11 +95,12 @@ def _report_to_dict(report) -> dict:
     }
 
 
-def _print_single(report, explorer_url: str) -> None:
+def _print_single(report, chain: Chain) -> None:
     t = report.token
     color = _color_for_score(report.score)
 
     print(f"\n{BOLD}{t.name or '?'} ({t.symbol or '?'}){RESET}  {t.address}")
+    print(f"{DIM}{chain.name}{RESET}")
     print(f"{color}{BOLD}Score: {report.score}/100 — {report.verdict}{RESET}\n")
 
     print(f"Verified contract:   {t.is_verified if t.is_verified is not None else 'unknown'}")
@@ -95,10 +117,11 @@ def _print_single(report, explorer_url: str) -> None:
         count = report.deployer_token_count
         suffix = f" ({count} tokens launched)" if count is not None else ""
         print(f"Deployer:            {report.deployer}{suffix}")
+    pool_label = f"{chain.dex_name} pool:"
     if report.liquidity_checked:
-        print(f"Uniswap V3 pool:     {'found' if report.liquidity_found else 'not found'}")
+        print(f"{pool_label:<21}{'found' if report.liquidity_found else 'not found'}")
     else:
-        print("Uniswap V3 pool:     not checked (pass --v3-factory and --weth to enable)")
+        print(f"{pool_label:<21}not checked (pass --v3-factory and --quote-token to enable)")
 
     if report.flags:
         print(f"\n{BOLD}Flags:{RESET}")
@@ -108,7 +131,7 @@ def _print_single(report, explorer_url: str) -> None:
         print(f"\n{GREEN}No flags raised.{RESET}")
 
     print(f"\n{DIM}{DISCLAIMER}{RESET}")
-    print(f"{DIM}Verify anything material yourself on {explorer_url}{RESET}\n")
+    print(f"{DIM}Verify anything material yourself on {chain.explorer_url}{RESET}\n")
 
 
 def _print_table(results: list, failures: list[tuple[str, str]]) -> None:
@@ -149,20 +172,45 @@ def _print_table(results: list, failures: list[tuple[str, str]]) -> None:
     print(f"\n{DIM}{DISCLAIMER}{RESET}\n")
 
 
+def _print_chains() -> None:
+    print(f"\n{BOLD}Built-in chain presets{RESET}\n")
+    for key, chain in sorted(CHAINS.items()):
+        default = "  (default)" if key == DEFAULT_CHAIN else ""
+        print(f"{BOLD}--chain {key}{RESET}{default}  {chain.name}")
+        print(f"  explorer  {chain.explorer_api}")
+        print(f"  rpc       {chain.rpc_url}")
+        if chain.liquidity_configured:
+            tiers = ",".join(str(t) for t in chain.v3_fee_tiers)
+            print(f"  liquidity {chain.dex_name} vs {chain.quote_symbol} at fee tiers {tiers}")
+            print(f"  factory   {chain.v3_factory}")
+            print(f"  {chain.quote_symbol:<9} {chain.quote_token}")
+        else:
+            print("  liquidity not configured — pass --v3-factory and --quote-token to enable")
+        print()
+    print(
+        f"{DIM}Preset DEX addresses have not been confirmed against a live chain from this\n"
+        f"repo's environment. A wrong one is reported as 'not checked', never as\n"
+        f"'no liquidity' — but confirm on the explorer before relying on the result.{RESET}\n"
+    )
+
+
 def run(args: argparse.Namespace) -> int:
     addresses = _read_addresses(args)
     if not addresses:
         print(f"{RED}No token addresses given.{RESET}", file=sys.stderr)
         return 1
 
-    explorer = BlockscoutClient(base_url=args.explorer_api)
+    chain = _resolve_chain(args)
+    explorer = BlockscoutClient(base_url=chain.explorer_api)
     opts = ScreenOptions(
-        rpc_url=args.rpc_url,
-        v3_factory=args.v3_factory,
-        weth=args.weth,
+        rpc_url=chain.rpc_url,
+        v3_factory=chain.v3_factory,
+        quote_token=chain.quote_token,
         check_deployer=not args.no_deployer_check,
+        fee_tiers=chain.v3_fee_tiers,
+        dex_name=chain.dex_name,
+        quote_symbol=chain.quote_symbol,
     )
-    explorer_url = args.explorer_api.replace("/api/v2", "")
     batch = len(addresses) > 1
 
     results = []
@@ -193,13 +241,14 @@ def run(args: argparse.Namespace) -> int:
         payload = {
             "results": [_report_to_dict(r) for r in results],
             "failures": [{"address": a, "error": e} for a, e in failures],
+            "chain": chain.key,
             "disclaimer": DISCLAIMER,
         }
         print(json.dumps(payload, indent=2))
     elif batch:
         _print_table(results, failures)
     else:
-        _print_single(results[0], explorer_url)
+        _print_single(results[0], chain)
 
     return 0
 
@@ -208,8 +257,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="robinhood-meme-scan",
         description=(
-            "Heuristic rug-risk screen for Robinhood Chain ERC-20 meme coins. "
-            "Pass one address for a detailed report, or several for a ranked table."
+            "Heuristic rug-risk screen for ERC-20 / BEP-20 meme coins on Robinhood "
+            "Chain and BNB Smart Chain. Pass one address for a detailed report, or "
+            "several for a ranked table."
         ),
     )
     parser.add_argument(
@@ -221,19 +271,36 @@ def main(argv: list[str] | None = None) -> int:
         help="File with one token address per line ('#' comments allowed)",
     )
     parser.add_argument("--json", action="store_true", help="Emit JSON instead of a table")
-    parser.add_argument("--rpc-url", default=DEFAULT_RPC_URL, help="Robinhood Chain JSON-RPC endpoint")
     parser.add_argument(
-        "--explorer-api", default=DEFAULT_EXPLORER_API, help="Blockscout v2 API base URL"
+        "--chain",
+        default=DEFAULT_CHAIN,
+        choices=chain_choices(),
+        metavar="{" + ",".join(sorted(CHAINS)) + "}",
+        help=f"Which chain to screen on (default: {DEFAULT_CHAIN}). 'bnb'/'binance' also select bsc.",
+    )
+    parser.add_argument(
+        "--list-chains", action="store_true", help="Print the built-in chain presets and exit"
+    )
+    parser.add_argument("--rpc-url", default=None, help="JSON-RPC endpoint (overrides the chain preset)")
+    parser.add_argument(
+        "--explorer-api", default=None, help="Blockscout v2 API base URL (overrides the chain preset)"
     )
     parser.add_argument(
         "--v3-factory",
         default=None,
-        help="Uniswap V3 factory address on this chain (omit to skip the liquidity check)",
+        help="V3 factory address on this chain (overrides the chain preset)",
     )
     parser.add_argument(
+        "--quote-token",
         "--weth",
+        dest="quote_token",
         default=None,
-        help="Wrapped ETH token address on this chain (omit to skip the liquidity check)",
+        help="Quote token the pool is paired against — WETH/WBNB (overrides the chain preset)",
+    )
+    parser.add_argument(
+        "--fee-tiers",
+        default=None,
+        help="Comma-separated V3 fee tiers to probe, e.g. 100,500,2500,10000 (overrides the preset)",
     )
     parser.add_argument(
         "--no-deployer-check",
@@ -241,6 +308,9 @@ def main(argv: list[str] | None = None) -> int:
         help="Skip the deployer / serial-launcher lookup (2 extra API calls per token)",
     )
     args = parser.parse_args(argv)
+    if args.list_chains:
+        _print_chains()
+        return 0
     return run(args)
 
 
