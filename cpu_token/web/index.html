@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Computing Power (CPU)</title>
+<meta name="description" content="Computing Power (CPU) — a fixed-supply BEP-20 on BNB Smart Chain with no mint, no blacklist, no pause and no owner. Rewards are distributed through a separate, verifiable Merkle claim contract.">
+<link rel="icon" href="../assets/cpu-logo.svg">
+<style>
+  :root{
+    --bg:#0A0D14; --panel:#10151F; --panel-2:#151B28; --line:#222B3D;
+    --text:#E6EAF2; --muted:#8D97AC; --cyan:#22D3EE; --blue:#4F7DF3; --violet:#A855F7;
+    --warn-bg:#1A1610; --warn-line:#3D3320; --warn-text:#D8C8A4;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:880px;margin:0 auto;padding:0 22px}
+  a{color:var(--cyan)}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:2px 6px}
+
+  header{padding:76px 0 56px;text-align:center;
+    background:radial-gradient(70% 90% at 50% -10%,rgba(59,130,246,.20),transparent 70%)}
+  header img{width:112px;height:112px}
+  h1{font-size:clamp(38px,7vw,60px);margin:22px 0 6px;letter-spacing:-.025em;line-height:1.05}
+  .ticker{display:inline-block;font:600 13px/1 ui-monospace,Menlo,monospace;letter-spacing:.18em;
+    color:#04121A;background:linear-gradient(100deg,var(--cyan),var(--blue));
+    padding:8px 14px;border-radius:99px;margin-bottom:20px}
+  .tagline{color:var(--muted);font-size:19px;max-width:560px;margin:0 auto}
+
+  .addr{margin:34px auto 0;max-width:640px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:16px 18px;text-align:left}
+  .addr .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .addr .val{font-family:ui-monospace,Menlo,monospace;font-size:13.5px;color:var(--cyan);
+    word-break:break-all;margin-top:5px}
+
+  section{padding:52px 0;border-top:1px solid var(--line)}
+  h2{font-size:27px;letter-spacing:-.02em;margin:0 0 10px}
+  .lede{color:var(--muted);margin:0 0 30px;max-width:640px}
+
+  .steps{display:grid;gap:14px;counter-reset:s}
+  .step{display:flex;gap:16px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:18px 20px}
+  .step::before{counter-increment:s;content:counter(s);flex:0 0 30px;height:30px;
+    display:grid;place-items:center;border-radius:8px;font:700 13px/1 ui-monospace,Menlo,monospace;
+    color:#04121A;background:linear-gradient(140deg,var(--cyan),var(--violet))}
+  .step h3{margin:2px 0 5px;font-size:16.5px}
+  .step p{margin:0;color:var(--muted);font-size:14.5px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}
+  .card h3{margin:0 0 7px;font-size:15.5px;display:flex;align-items:center;gap:9px}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  .tick{color:var(--cyan);font-weight:700}
+
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th,td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+  td:last-child{font-family:ui-monospace,Menlo,monospace;text-align:right}
+
+  .note{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-text);
+    border-radius:12px;padding:20px 22px;font-size:14.5px}
+  .note h3{margin:0 0 9px;font-size:15px;color:#EBD9AE}
+  .note p{margin:0 0 11px}
+  .note p:last-child{margin-bottom:0}
+  .note a{color:#EBD9AE}
+
+  footer{padding:40px 0 60px;color:var(--muted);font-size:13px;text-align:center;
+    border-top:1px solid var(--line)}
+  .ph{color:var(--violet)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <img src="../assets/cpu-logo.svg" alt="Computing Power logo">
+    <h1>Computing Power</h1>
+    <div class="ticker">CPU · BNB SMART CHAIN</div>
+    <p class="tagline">A fixed-supply token with nothing hidden in the contract —
+      and a reward mechanism you can check yourself rather than take on trust.</p>
+
+    <div class="addr">
+      <div class="lbl">CPU contract</div>
+      <div class="val ph">0x… paste the deployed address here before publishing</div>
+    </div>
+  </div>
+</header>
+
+<section class="wrap">
+  <h2>What the contract cannot do</h2>
+  <p class="lede">Most of the ways a token is used against the people holding it are visible
+    in its contract before you buy. CPU ships without those functions — not disabled, not
+    renounced later, simply never written.</p>
+  <div class="grid">
+    <div class="card"><h3><span class="tick">✓</span> No mint function</h3>
+      <p>Supply is created once, in the constructor. Nobody can print more and dilute you.</p></div>
+    <div class="card"><h3><span class="tick">✓</span> No blacklist</h3>
+      <p>No address can be frozen or blocked from selling. There is no honeypot switch.</p></div>
+    <div class="card"><h3><span class="tick">✓</span> No pause</h3>
+      <p>Trading cannot be halted. There is no <code>pause()</code> to pull.</p></div>
+    <div class="card"><h3><span class="tick">✓</span> No fees or limits</h3>
+      <p>No tax on transfers, no max wallet, no max transaction — and no setter to add one.</p></div>
+    <div class="card"><h3><span class="tick">✓</span> No owner at all</h3>
+      <p>The token has no admin role to renounce, because it never had one.</p></div>
+    <div class="card"><h3><span class="tick">✓</span> Rewards kept separate</h3>
+      <p>The reward contract holds no authority over the token. It cannot mint, move or freeze CPU.</p></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>How rewards work</h2>
+  <p class="lede">Rewards are paid in a separate BEP-20 held by a claim contract. The usual
+    "reflection" design pays the liquidity pool as if it were a holder, taxes every trade, and
+    needs an owner inside the token. This does none of that.</p>
+  <div class="steps">
+    <div class="step"><div>
+      <h3>Holder balances are snapshotted</h3>
+      <p>Balances are read from public chain data. The liquidity pool, burn addresses and the
+         treasury are excluded — a pool holds CPU for traders, not as a holder.</p></div></div>
+    <div class="step"><div>
+      <h3>A Merkle root is published on-chain</h3>
+      <p>Each holder's share is a leaf in a Merkle tree. Only the root goes on-chain. Anyone can
+         rebuild the tree from the same public data and confirm the root matches.</p></div></div>
+    <div class="step"><div>
+      <h3>The epoch is funded in the same transaction</h3>
+      <p>An epoch cannot be opened without the reward tokens arriving with it, and those funds
+         cannot be withdrawn again until the claim deadline passes.</p></div></div>
+    <div class="step"><div>
+      <h3>Holders claim their own share</h3>
+      <p>You submit your proof and the contract pays you directly. Payment always goes to the
+         entitled address, never to whoever sent the transaction.</p></div></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>Supply</h2>
+  <table>
+    <tr><th>Item</th><th>Value</th></tr>
+    <tr><td>Name / ticker</td><td>Computing Power / CPU</td></tr>
+    <tr><td>Chain</td><td>BNB Smart Chain</td></tr>
+    <tr><td>Total supply</td><td>1,000,000,000</td></tr>
+    <tr><td>Decimals</td><td>18</td></tr>
+    <tr><td>Mintable</td><td>No</td></tr>
+    <tr><td>Owner</td><td>None</td></tr>
+    <tr><td>Transfer tax</td><td>0%</td></tr>
+  </table>
+  <p class="lede" style="margin-top:26px">Allocation, the liquidity lock and its duration belong
+    here as well. Fill them in with the real figures before publishing —
+    <span class="ph">an empty or vague allocation section is itself a red flag to readers.</span></p>
+</section>
+
+<section class="wrap">
+  <h2>Check it yourself</h2>
+  <p class="lede">Nothing on this page needs to be taken on faith.</p>
+  <div class="grid">
+    <div class="card"><h3>Read the contract</h3>
+      <p>Verified source on <a href="https://bscscan.com" rel="noopener">BscScan</a>. The
+         function list is short enough to read in a minute.</p></div>
+    <div class="card"><h3>Rebuild the Merkle root</h3>
+      <p>Every epoch snapshot is published. Rebuild the tree from chain data and compare it to
+         the root stored on-chain.</p></div>
+    <div class="card"><h3>Screen it like any other token</h3>
+      <p>Run an independent rug-risk screen against the address —
+         don't grade it on the issuer's own scorecard.</p></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="note">
+    <h3>Please read before buying</h3>
+    <p><strong>Not affiliated with Micron Technology, Inc., with Binance, or with any
+      tokenized-securities issuer.</strong> No endorsement or relationship is claimed or implied,
+      and no trademark is used with permission.</p>
+    <p><strong>Rewards are discretionary and are not guaranteed.</strong> An epoch exists only
+      when one is funded. There is no obligation, promise or schedule of any kind, and nothing
+      here is a claim about future value.</p>
+    <p><strong>Tokenized equities carry their issuer's own restrictions.</strong> Where the
+      reward token is a tokenized security, its issuer's eligibility rules apply to every
+      recipient — notably, bStocks are not available to US persons. Being a CPU holder does not
+      exempt anyone from them, and receiving a distribution may be impossible in your
+      jurisdiction.</p>
+    <p><strong>Holding CPU conveys no share, equity, dividend right or claim</strong> on Micron
+      Technology, Inc. or on any company. It is not a security offering, and nothing here is
+      financial, legal or tax advice.</p>
+    <p>Buying a token like this can lose you all of your money. Never buy with funds you cannot
+      afford to lose entirely.</p>
+  </div>
+</section>
+
+<footer class="wrap">
+  Computing Power (CPU) · community project on BNB Smart Chain<br>
+  <span class="ph">Add your real links (X, Telegram, chart, contract) before publishing.</span>
+</footer>
+
+</body>
+</html>
