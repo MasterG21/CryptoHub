@@ -26,6 +26,57 @@ cpu_token/
 └── TOKEN.md                         # launchpad copy
 ```
 
+## Where each file actually goes
+
+Most of this repo is not pasted anywhere. Sorting out which is which saves a
+lot of hunting for a box to put it in.
+
+| File | Where it goes | Needed if you launch on a launchpad? |
+|---|---|---|
+| `contracts/ComputingPower.sol` | Nowhere — it *is* the token, and a launchpad deploys its own instead | **No.** It's the alternative to using one |
+| `contracts/flattened/MerkleRewardDistributor.sol` | Pasted into [Remix](https://remix.ethereum.org) and deployed from your wallet | Yes, if you want to pay rewards |
+| `web/claim.html` + `epoch.json` | Uploaded to any static host, so holders can claim | Yes, if you want to pay rewards |
+| `web/index.html` | Uploaded to any static host — the token's public page | Optional |
+| `assets/cpu-logo-512.png` | Uploaded into the launchpad's image field | Yes |
+| `TOKEN.md` | Copied into the launchpad's name/ticker/description fields | Yes |
+| `launch/`, `scripts/` | Run from a terminal; skip entirely if you used a launchpad | No |
+
+The token and the reward contract are independent. The distributor takes the
+token's address as a constructor argument and needs no cooperation from it, so
+a launchpad-created CPU works exactly the same as one deployed from here.
+
+### Deploying the distributor without a terminal
+
+`contracts/flattened/` holds single-file versions with the OpenZeppelin
+dependencies inlined. `scripts/check_flattened.js` proves they compile with no
+import resolver and produce bytecode identical to the originals, so what you
+paste is exactly the contract in this repo.
+
+1. Open [remix.ethereum.org](https://remix.ethereum.org) and create a new file.
+2. Paste all of `contracts/flattened/MerkleRewardDistributor.sol`.
+3. Under **Solidity Compiler**: version **0.8.24**, optimizer **on**, **200**
+   runs. These must match or explorer verification will fail later.
+4. Under **Deploy & Run**, set Environment to **Injected Provider** so it uses
+   your wallet, and check it says BNB Smart Chain.
+5. The constructor takes three addresses, in this order:
+   `rewardToken_` (the confirmed MUB address), `holdingsToken_` (your CPU
+   address from the launchpad), `owner_` (your wallet).
+6. Deploy, approve in your wallet, then copy the deployed address — it goes at
+   the top of `claim.html`.
+
+Then verify the source on the explorer, using the same compiler settings.
+
+### The step that still needs code
+
+Opening a reward epoch means snapshotting holders, computing each share and
+building a Merkle tree. That part has no click-through path today —
+`launch/run_epoch.py` does it in one command, but it is a command. Approving
+and calling `openEpoch` afterwards can be done from the explorer's **Write
+Contract** tab with a connected wallet; building the tree cannot.
+
+If you are not running scripts, that is the one place you need either a
+developer or a browser tool that does it for you.
+
 ## Read this before you launch
 
 **Paying token holders in a tokenized equity is very probably a securities offering, and
