@@ -483,7 +483,14 @@ def cmd_serve(cfg: DeskConfig, args: argparse.Namespace) -> int:
             return 1
 
     runner = DeskRunner(desk)
-    httpd = serve_http(runner, host=args.host, port=args.port)
+    from pathlib import Path
+
+    httpd = serve_http(
+        runner,
+        host=args.host,
+        port=args.port,
+        config_path=Path(args.config) if args.config else None,
+    )
 
     mode = cfg.execution.mode
     colour = RED if mode == "live" else CYAN

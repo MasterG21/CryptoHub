@@ -61,6 +61,16 @@ which is the honest summary of this trade.
 None of this stops the desk from running. It is here so the numbers are visible before
 real money is, rather than after.
 
+### Getting started without a terminal
+
+If you don't code, read **[START-HERE.md](START-HERE.md)** instead of this file. It is
+the same software, explained from zero: install Python, double-click `start.command`
+(Mac) or `start.bat` (Windows), and everything else happens in the browser.
+
+`start.py` builds a private Python environment, installs the libraries, writes a
+default config and opens the dashboard. It always starts in paper mode — real trading
+is a deliberate change in Settings, and still needs `--arm` to broadcast.
+
 ### Usage
 
 ```bash
@@ -83,7 +93,13 @@ python -m trading_desk serve          # then open http://127.0.0.1:8787
 
 Shows equity and the curve, open positions, the committee's verdict on every
 candidate in the last tick, an activity log attributing each refusal to the agent
-that made it, closed trades, and the risk state. Pause and Flatten-all are wired.
+that made it, closed trades, and the risk state. Pause, Flatten-all and Settings
+are wired — mode, starting capital, risk preset, chains and wallet keys are all
+editable from the browser, so no file needs to be hand-edited.
+
+A plain-language strip at the top narrates the state in two sentences for people who
+do not read candlestick charts: what you started with, what you have now, whether it
+is practice money, and what the desk is doing right now.
 
 Two details it reports that most dashboards do not:
 
@@ -307,7 +323,7 @@ forgets it is down 20% today because it was restarted has no daily loss limit at
 python -m pytest tests/
 ```
 
-267 tests, no network: the feeds are replaced at their seams with canned responses
+275 tests, no network: the feeds are replaced at their seams with canned responses
 shaped like the real APIs. That includes end-to-end ticks of the desk — entries, stops,
 scale-outs, halts, restarts, feed outages — the committee's vetoes and the audit
 trail they produce, the dashboard's snapshot and controls, and the signer rails:

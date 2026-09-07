@@ -14,16 +14,19 @@ import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from .runner import DeskRunner
+from .settings import read_settings, write_settings
 
 STATIC_DIR = Path(__file__).parent / "static"
-MAX_BODY_BYTES = 4096
+MAX_BODY_BYTES = 8192
 
 
 class DeskHandler(BaseHTTPRequestHandler):
     runner: DeskRunner  # injected by make_server
+    config_path: Path
+    env_path: Path
     server_version = "TradingDesk"
 
     def log_message(self, fmt: str, *args: Any) -> None:
@@ -39,11 +42,15 @@ class DeskHandler(BaseHTTPRequestHandler):
             return self._send_json(self.runner.snapshot())
         if route == "/api/health":
             return self._send_json({"ok": True, "ticks": self.runner.snapshot()["tick"]["count"]})
+        if route == "/api/settings":
+            return self._send_json(
+                read_settings(self.runner.desk.config, self.config_path, self.env_path)
+            )
         return self._send_json({"error": "not found"}, status=404)
 
     def do_POST(self) -> None:  # noqa: N802
         route = self.path.split("?", 1)[0]
-        if route != "/api/control":
+        if route not in ("/api/control", "/api/settings"):
             return self._send_json({"error": "not found"}, status=404)
 
         try:
@@ -57,6 +64,12 @@ class DeskHandler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(length) or b"{}")
         except (json.JSONDecodeError, UnicodeDecodeError):
             return self._send_json({"error": "bad JSON"}, status=400)
+
+        if route == "/api/settings":
+            result = write_settings(
+                payload, self.runner.desk.config, self.config_path, self.env_path
+            )
+            return self._send_json(result, status=200 if result.get("ok") else 400)
 
         action = payload.get("action")
         actions = {
@@ -99,14 +112,35 @@ class DeskHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
 
-def make_server(runner: DeskRunner, host: str = "127.0.0.1", port: int = 8787) -> ThreadingHTTPServer:
-    handler = type("BoundDeskHandler", (DeskHandler,), {"runner": runner})
+def make_server(
+    runner: DeskRunner,
+    host: str = "127.0.0.1",
+    port: int = 8787,
+    config_path: Optional[Path] = None,
+    env_path: Optional[Path] = None,
+) -> ThreadingHTTPServer:
+    root = Path.cwd()
+    handler = type(
+        "BoundDeskHandler",
+        (DeskHandler,),
+        {
+            "runner": runner,
+            "config_path": Path(config_path) if config_path else root / "desk.config.json",
+            "env_path": Path(env_path) if env_path else root / ".env",
+        },
+    )
     return ThreadingHTTPServer((host, port), handler)
 
 
-def serve(runner: DeskRunner, host: str = "127.0.0.1", port: int = 8787) -> ThreadingHTTPServer:
+def serve(
+    runner: DeskRunner,
+    host: str = "127.0.0.1",
+    port: int = 8787,
+    config_path: Optional[Path] = None,
+    env_path: Optional[Path] = None,
+) -> ThreadingHTTPServer:
     """Start the desk thread and the HTTP server. Returns the running server."""
     runner.start()
-    httpd = make_server(runner, host, port)
+    httpd = make_server(runner, host, port, config_path, env_path)
     threading.Thread(target=httpd.serve_forever, name="dashboard", daemon=True).start()
     return httpd

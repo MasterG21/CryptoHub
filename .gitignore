@@ -7,3 +7,8 @@ venv/
 
 # Trading journals
 *.sqlite3
+
+# Wallet keys — never commit this file
+.env
+desk.config.json
+.venv/

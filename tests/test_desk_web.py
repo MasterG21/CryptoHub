@@ -6,6 +6,7 @@ request thread. These tests drive the runner directly, without threads, so the
 assertions are deterministic.
 """
 import json
+import os
 import threading
 import urllib.error
 import urllib.request
@@ -270,3 +271,122 @@ def test_a_changed_verdict_is_logged_again(runner):
 
     after = len([a for a in run._activity if "THIN" in a["message"]])
     assert after > before
+
+
+# ------------------------------------------------------------------ settings
+
+
+@pytest.fixture
+def settings_paths(tmp_path):
+    config = tmp_path / "desk.config.json"
+    config.write_text('{"starting_capital_usd": 100.0}')
+    return config, tmp_path / ".env"
+
+
+def test_settings_report_the_current_config(settings_paths):
+    from trading_desk.web.settings import read_settings
+
+    config, env = settings_paths
+    out = read_settings(DeskConfig(), config, env)
+
+    assert out["mode"] == "paper"
+    assert out["preset"] == "normal"
+    assert len(out["presets"]) == 3
+    assert [p["id"] for p in out["presets"]] == ["cautious", "normal", "bold"]
+
+
+def test_settings_never_return_key_material(settings_paths, monkeypatch):
+    """An open dashboard tab must not be able to read the wallet."""
+    from trading_desk.execution.signers import EVM_KEY_ENV
+    from trading_desk.web.settings import read_settings
+
+    secret = "0x" + "ab" * 32
+    monkeypatch.setenv(EVM_KEY_ENV, secret)
+    config, env = settings_paths
+    out = read_settings(DeskConfig(), config, env)
+
+    assert out["keys"]["evm"] is True
+    assert secret not in json.dumps(out)
+
+
+def test_a_preset_applies_to_the_running_desk_immediately(settings_paths):
+    from trading_desk.web.settings import write_settings
+
+    config, env = settings_paths
+    cfg = DeskConfig()
+    result = write_settings({"preset": "cautious"}, cfg, config, env)
+
+    assert result["ok"] and result["applied_now"]
+    assert cfg.risk.risk_per_trade_pct == 0.01
+    assert cfg.strategy.stop_loss_pct == 0.25
+    assert json.loads(config.read_text())["risk"]["risk_per_trade_pct"] == 0.01
+
+
+def test_mode_and_capital_changes_ask_for_a_restart(settings_paths):
+    from trading_desk.web.settings import write_settings
+
+    config, env = settings_paths
+    result = write_settings(
+        {"mode": "live", "starting_capital_usd": 500}, DeskConfig(), config, env
+    )
+
+    assert set(result["needs_restart"]) == {"mode", "starting_capital_usd"}
+    stored = json.loads(config.read_text())
+    assert stored["execution"]["mode"] == "live"
+    # Choosing live here flips the second switch; --arm is still required.
+    assert stored["execution"]["allow_live_trading"] is True
+
+
+def test_bad_settings_are_refused_with_plain_reasons(settings_paths):
+    from trading_desk.web.settings import write_settings
+
+    config, env = settings_paths
+    result = write_settings(
+        {"starting_capital_usd": -5, "chains": ["dogechain"], "preset": "reckless"},
+        DeskConfig(), config, env,
+    )
+
+    assert result["ok"] is False
+    assert len(result["problems"]) == 3
+    assert any("more than zero" in p for p in result["problems"])
+
+
+def test_keys_are_written_with_owner_only_permissions(settings_paths, monkeypatch):
+    import platform
+
+    from trading_desk.execution.signers import EVM_KEY_ENV
+    from trading_desk.web.settings import write_settings
+
+    monkeypatch.delenv(EVM_KEY_ENV, raising=False)
+    config, env = settings_paths
+    result = write_settings({"evm_key": "0x" + "cd" * 32}, DeskConfig(), config, env)
+
+    assert "wallet keys" in result["needs_restart"]
+    assert env.exists()
+    assert os.environ[EVM_KEY_ENV] == "0x" + "cd" * 32
+    if platform.system() != "Windows":
+        assert oct(env.stat().st_mode)[-3:] == "600"
+
+
+def test_an_empty_key_clears_it(settings_paths, monkeypatch):
+    from trading_desk.execution.signers import EVM_KEY_ENV
+    from trading_desk.web.settings import write_settings
+
+    config, env = settings_paths
+    write_settings({"evm_key": "0x" + "ef" * 32}, DeskConfig(), config, env)
+    write_settings({"evm_key": ""}, DeskConfig(), config, env)
+
+    assert EVM_KEY_ENV not in os.environ
+    assert "ef" * 32 not in env.read_text()
+
+
+def test_the_closed_settings_sheet_cannot_swallow_clicks():
+    """`display: flex` outranks [hidden], so the rule below must exist.
+
+    Without it the closed overlay stays laid out, invisible and full-screen,
+    and every click on Pause or Flatten all lands on it instead.
+    """
+    from pathlib import Path
+
+    page = (Path("trading_desk/web/static/index.html")).read_text()
+    assert ".sheet[hidden] { display: none; }" in page

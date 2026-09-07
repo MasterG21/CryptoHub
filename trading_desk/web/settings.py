@@ -1,0 +1,241 @@
+"""Reads and writes the desk's settings from the browser.
+
+Two files are involved and they are deliberately different:
+
+``desk.config.json``  ordinary settings. Safe to read back, safe to show.
+``.env``              wallet keys. Written, never read back to the browser —
+                      the API reports only *whether* a key is set, never its
+                      value, so an open dashboard tab cannot leak the wallet.
+
+Risk is exposed to the UI as three presets rather than sixteen numbers,
+because someone who does not want to think about ``risk_per_trade_pct``
+should not have to, and a wrong guess at that number is expensive.
+"""
+from __future__ import annotations
+
+import json
+import os
+import platform
+from pathlib import Path
+from typing import Any, Optional
+
+from ..config import DeskConfig
+from ..execution.signers import EVM_KEY_ENV, SOLANA_KEY_ENV
+from ..models import Chain
+
+# Each preset is a complete, coherent risk stance. The labels are honest:
+# "bold" is not "better", it is a larger bet with a correspondingly larger
+# chance of ending the account, and the UI says so.
+PRESETS: dict[str, dict[str, Any]] = {
+    "cautious": {
+        "label": "Cautious",
+        "blurb": "Small bets, tight stops, fewer coins at once. Slowest, survives longest.",
+        "risk": {"risk_per_trade_pct": 0.01, "max_concurrent_positions": 3,
+                 "max_positions_per_chain": 2, "daily_loss_limit_pct": 0.15},
+        "strategy": {"stop_loss_pct": 0.25, "min_entry_score": 0.60},
+    },
+    "normal": {
+        "label": "Normal",
+        "blurb": "The shipped defaults. Still above the mathematically optimal bet size.",
+        "risk": {"risk_per_trade_pct": 0.02, "max_concurrent_positions": 4,
+                 "max_positions_per_chain": 2, "daily_loss_limit_pct": 0.25},
+        "strategy": {"stop_loss_pct": 0.30, "min_entry_score": 0.55},
+    },
+    "bold": {
+        "label": "Bold",
+        "blurb": "Bigger bets. Faster either way — and far more likely to end at zero.",
+        "risk": {"risk_per_trade_pct": 0.04, "max_concurrent_positions": 5,
+                 "max_positions_per_chain": 3, "daily_loss_limit_pct": 0.35},
+        "strategy": {"stop_loss_pct": 0.35, "min_entry_score": 0.50},
+    },
+}
+
+CHAIN_LABELS = {
+    Chain.SOLANA.value: "Solana",
+    Chain.BNB.value: "BNB Chain",
+    Chain.ROBINHOOD.value: "Robinhood Chain",
+}
+
+# Changing these mid-flight would leave the running desk inconsistent with its
+# own book, so they are written to disk and applied on the next start.
+RESTART_REQUIRED = ("mode", "chains", "starting_capital_usd")
+
+
+def detect_preset(cfg: DeskConfig) -> Optional[str]:
+    for name, preset in PRESETS.items():
+        if (
+            abs(cfg.risk.risk_per_trade_pct - preset["risk"]["risk_per_trade_pct"]) < 1e-9
+            and abs(cfg.strategy.stop_loss_pct - preset["strategy"]["stop_loss_pct"]) < 1e-9
+        ):
+            return name
+    return None
+
+
+def read_settings(cfg: DeskConfig, config_path: Path, env_path: Path) -> dict:
+    """Current settings for the browser. Never includes key material."""
+    return {
+        "mode": cfg.execution.mode,
+        "armed": cfg.execution.allow_live_trading,
+        "starting_capital_usd": cfg.starting_capital_usd,
+        "target_usd": cfg.target_usd,
+        "chains": [c.value for c in cfg.chains],
+        "available_chains": [
+            {"id": value, "label": label} for value, label in CHAIN_LABELS.items()
+        ],
+        "preset": detect_preset(cfg),
+        "presets": [
+            {"id": name, "label": p["label"], "blurb": p["blurb"],
+             "risk_pct": p["risk"]["risk_per_trade_pct"],
+             "stop_pct": p["strategy"]["stop_loss_pct"]}
+            for name, p in PRESETS.items()
+        ],
+        "risk_per_trade_pct": cfg.risk.risk_per_trade_pct,
+        "stop_loss_pct": cfg.strategy.stop_loss_pct,
+        "poll_interval_seconds": cfg.poll_interval_seconds,
+        # Presence only. The values never cross this boundary.
+        "keys": {
+            "solana": bool(os.environ.get(SOLANA_KEY_ENV)),
+            "evm": bool(os.environ.get(EVM_KEY_ENV)),
+        },
+        "config_path": str(config_path),
+        "env_path": str(env_path),
+    }
+
+
+def _validate(payload: dict) -> list[str]:
+    problems: list[str] = []
+
+    preset = payload.get("preset")
+    if preset is not None and preset not in PRESETS:
+        problems.append(f"unknown risk preset {preset!r}")
+
+    mode = payload.get("mode")
+    if mode is not None and mode not in ("paper", "live"):
+        problems.append("mode must be 'paper' or 'live'")
+
+    if "starting_capital_usd" in payload:
+        try:
+            if float(payload["starting_capital_usd"]) <= 0:
+                problems.append("starting money must be more than zero")
+        except (TypeError, ValueError):
+            problems.append("starting money must be a number")
+
+    chains = payload.get("chains")
+    if chains is not None:
+        if not isinstance(chains, list) or not chains:
+            problems.append("pick at least one chain")
+        else:
+            unknown = [c for c in chains if c not in CHAIN_LABELS]
+            if unknown:
+                problems.append(f"unknown chain(s): {', '.join(map(str, unknown))}")
+
+    for field in ("solana_key", "evm_key"):
+        value = payload.get(field)
+        if value is not None and not isinstance(value, str):
+            problems.append(f"{field} must be text")
+    return problems
+
+
+def write_settings(payload: dict, cfg: DeskConfig, config_path: Path, env_path: Path) -> dict:
+    """Apply settings: to the running desk where safe, to disk always."""
+    problems = _validate(payload)
+    if problems:
+        return {"ok": False, "problems": problems}
+
+    stored = _load_json(config_path)
+    needs_restart: list[str] = []
+
+    preset = payload.get("preset")
+    if preset:
+        chosen = PRESETS[preset]
+        stored.setdefault("risk", {}).update(chosen["risk"])
+        stored.setdefault("strategy", {}).update(chosen["strategy"])
+        # Numbers only — safe to apply to the live desk immediately.
+        for key, value in chosen["risk"].items():
+            setattr(cfg.risk, key, value)
+        for key, value in chosen["strategy"].items():
+            setattr(cfg.strategy, key, value)
+
+    if "mode" in payload and payload["mode"] != cfg.execution.mode:
+        stored.setdefault("execution", {})["mode"] = payload["mode"]
+        needs_restart.append("mode")
+
+    if payload.get("mode") == "live":
+        # Arming the second switch is what the operator is asking for by
+        # choosing live here; --arm is still required to broadcast.
+        stored.setdefault("execution", {})["allow_live_trading"] = True
+
+    if "starting_capital_usd" in payload:
+        amount = float(payload["starting_capital_usd"])
+        if amount != cfg.starting_capital_usd:
+            stored["starting_capital_usd"] = amount
+            needs_restart.append("starting_capital_usd")
+
+    if payload.get("chains"):
+        chains = list(dict.fromkeys(payload["chains"]))
+        if chains != [c.value for c in cfg.chains]:
+            stored["chains"] = chains
+            needs_restart.append("chains")
+
+    _write_json(config_path, stored)
+
+    key_written = _write_keys(payload, env_path)
+    if key_written:
+        needs_restart.append("wallet keys")
+
+    return {
+        "ok": True,
+        "needs_restart": sorted(set(needs_restart)),
+        "applied_now": bool(preset),
+    }
+
+
+def _write_keys(payload: dict, env_path: Path) -> bool:
+    """Write wallet keys to .env, replacing any previous value.
+
+    An empty string clears a key. The file is written 0600 because it is, in
+    effect, the wallet itself.
+    """
+    updates: dict[str, str] = {}
+    for field, env_name in (("solana_key", SOLANA_KEY_ENV), ("evm_key", EVM_KEY_ENV)):
+        if field in payload and payload[field] is not None:
+            updates[env_name] = str(payload[field]).strip()
+    if not updates:
+        return False
+
+    existing: dict[str, str] = {}
+    if env_path.exists():
+        for raw in env_path.read_text().splitlines():
+            line = raw.strip()
+            if line and not line.startswith("#") and "=" in line:
+                key, _, value = line.partition("=")
+                existing[key.strip()] = value.strip()
+    existing.update(updates)
+
+    lines = ["# Wallet keys. Anyone with this file can spend the money.",
+             "# Never share it, never commit it, never paste it anywhere."]
+    for key, value in existing.items():
+        if value:
+            lines.append(f"{key}={value}")
+            os.environ[key] = value
+        else:
+            os.environ.pop(key, None)
+    env_path.write_text("\n".join(lines) + "\n")
+    if platform.system() != "Windows":
+        try:
+            env_path.chmod(0o600)
+        except OSError:
+            pass
+    return True
+
+
+def _load_json(path: Path) -> dict:
+    try:
+        data = json.loads(path.read_text())
+        return data if isinstance(data, dict) else {}
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _write_json(path: Path, data: dict) -> None:
+    path.write_text(json.dumps(data, indent=2) + "\n")

@@ -110,6 +110,63 @@
   .banner.red { border-color: #4a1f1f; background: #2a1414; color: var(--red); }
   .banner b { color: inherit; }
   footer { color: var(--faint); font-size: 11px; margin: 16px 0 8px; }
+
+  /* Plain-language strip: the one thing a non-trader should be able to read. */
+  .plain {
+    background: linear-gradient(180deg, #171b22, #14171c);
+    border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 14px;
+  }
+  .plain .headline { font-size: 17px; line-height: 1.45; }
+  .plain .headline b { font-weight: 700; }
+  .plain .detail { color: var(--dim); margin-top: 6px; font-size: 12.5px; }
+
+  /* Settings sheet */
+  .sheet {
+    position: fixed; inset: 0; background: rgba(0,0,0,.72);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 24px; overflow-y: auto; z-index: 40;
+  }
+  /* `display: flex` above outranks the browser's default for [hidden], so the
+     closed sheet stayed laid out — invisible, full-screen, and swallowing every
+     click on the page including Pause and Flatten all. */
+  .sheet[hidden] { display: none; }
+  .sheet-inner {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    width: 100%; max-width: 620px; padding: 22px;
+  }
+  .sheet h3 { margin: 0 0 4px; font-size: 18px; }
+  .sheet .lead { color: var(--dim); margin: 0 0 18px; font-size: 13px; }
+  .field { margin-bottom: 18px; }
+  .field > label { display: block; font-weight: 600; margin-bottom: 4px; }
+  .field .hint { color: var(--faint); font-size: 12px; margin-bottom: 8px; }
+  .choices { display: grid; gap: 8px; }
+  .choice {
+    display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px;
+    background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 8px; cursor: pointer;
+  }
+  .choice:hover { border-color: #39414d; }
+  .choice.on { border-color: var(--blue); background: #131b2b; }
+  .choice.on.danger { border-color: var(--red); background: #2a1414; }
+  .choice input { margin-top: 3px; }
+  /* Both are spans inside one wrapper, so they need to be blocks or the title
+     and its description run together as "PracticePretend money". */
+  .choice > span { display: block; min-width: 0; }
+  .choice .t { display: block; font-weight: 600; }
+  .choice .d { display: block; color: var(--dim); font-size: 12px; margin-top: 2px; }
+  .sheet input[type=text], .sheet input[type=number], .sheet input[type=password] {
+    width: 100%; padding: 9px 11px; background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 7px; font: inherit;
+  }
+  .sheet input[type=password] { font-family: var(--mono); }
+  .actions { display: flex; gap: 10px; align-items: center; margin-top: 22px; }
+  .actions .spacer { flex: 1; }
+  .save-note { font-size: 12px; }
+  .keybox { border: 1px solid #4a1f1f; background: #1e1111; border-radius: 9px; padding: 14px; }
+  .keybox h4 { margin: 0 0 6px; font-size: 13px; color: var(--red); }
+  .keybox p { margin: 0 0 12px; font-size: 12px; color: var(--dim); }
+  .keystate { font: 600 11px/1 var(--mono); color: var(--faint); margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -119,11 +176,17 @@
     <div id="badges"></div>
     <div class="spacer"></div>
     <div class="muted" id="clock"></div>
+    <button id="btn-settings">Settings</button>
     <button id="btn-pause">Pause</button>
     <button id="btn-panic" class="danger">Flatten all</button>
   </header>
 
   <div id="banners"></div>
+
+  <div class="plain">
+    <div class="headline" id="plain-headline">Starting up…</div>
+    <div class="detail" id="plain-detail"></div>
+  </div>
 
   <div class="grid">
     <div class="card span-3">
@@ -186,6 +249,59 @@
   </div>
 
   <footer id="foot"></footer>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-inner">
+    <h3>Settings</h3>
+    <p class="lead">Everything the desk needs. You can change these any time.</p>
+
+    <div class="field">
+      <label>Is this real money?</label>
+      <div class="hint">Start with practice. Nothing can be lost in practice mode.</div>
+      <div class="choices" id="set-mode"></div>
+    </div>
+
+    <div class="field">
+      <label>How much are you starting with?</label>
+      <div class="hint">In dollars. Used to size every trade.</div>
+      <input type="number" id="set-capital" min="1" step="1">
+    </div>
+
+    <div class="field">
+      <label>How careful should it be?</label>
+      <div class="choices" id="set-preset"></div>
+    </div>
+
+    <div class="field">
+      <label>Which chains?</label>
+      <div class="hint">Where it looks for coins.</div>
+      <div class="choices" id="set-chains"></div>
+    </div>
+
+    <div class="field" id="set-keys-field" hidden>
+      <div class="keybox">
+        <h4>Wallet key — read this bit</h4>
+        <p>This text <b>is</b> the money. Anyone who gets it can empty the wallet,
+           instantly, and it cannot be undone. Use a brand-new wallet holding only
+           what you would shrug at losing. Never paste your main wallet's key.</p>
+        <label for="set-evm-key">BNB Chain wallet key</label>
+        <input type="password" id="set-evm-key" placeholder="starts with 0x — leave blank to keep">
+        <div class="keystate" id="evm-key-state"></div>
+        <div style="height:12px"></div>
+        <label for="set-sol-key">Solana wallet key</label>
+        <input type="password" id="set-sol-key" placeholder="leave blank to keep what's saved">
+        <div class="keystate" id="sol-key-state"></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="set-save">Save</button>
+      <button id="set-close">Close</button>
+      <div class="spacer"></div>
+      <span class="save-note" id="set-note"></span>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -282,6 +398,49 @@ function curve(points) {
     `${points.length} ticks · low ${usd(lo)} · high ${usd(hi)}`;
 }
 
+// Turn the snapshot into two sentences someone who has never traded can read.
+// Deliberately plain: no jargon, no percentages where a dollar figure will do,
+// and it never says a losing desk is doing fine.
+function plainEnglish(s) {
+  const e = s.equity, t = s.tick, open = s.positions.length;
+  const practice = s.mode.execution !== "live" || !s.mode.armed;
+  const change = e.usd - e.start_usd;
+
+  let headline;
+  if (t.count === 0) {
+    headline = "Getting started — looking at the market for the first time.";
+  } else if (e.room_to_floor_pct <= 0) {
+    headline = `<b>It has to stop here.</b> ${usd(e.usd)} is too little to place
+      another trade, so the desk is finished rather than losing.`;
+  } else if (change > 0) {
+    headline = `You started with ${usd(e.start_usd)}. You now have
+      <b class="up">${usd(e.usd)}</b> — up ${usd(Math.abs(change))}.`;
+  } else if (change < 0) {
+    headline = `You started with ${usd(e.start_usd)}. You now have
+      <b class="down">${usd(e.usd)}</b> — down ${usd(Math.abs(change))}.`;
+  } else {
+    headline = `You started with ${usd(e.start_usd)} and still have ${usd(e.usd)}.`;
+  }
+
+  const bits = [];
+  bits.push(practice
+    ? "This is practice money — nothing real is at risk."
+    : "This is <b class='down'>real money</b>.");
+  if (t.count > 0) {
+    bits.push(open === 0
+      ? `It looked at ${t.scanned} coins this round and bought none — most get refused.`
+      : `It owns ${open} coin${open === 1 ? "" : "s"} right now.`);
+  }
+  if (s.performance.trades > 0) {
+    bits.push(`${s.performance.trades} finished trade${s.performance.trades === 1 ? "" : "s"}:
+      ${s.performance.wins} up, ${s.performance.losses} down.`);
+  }
+  if (s.mode.paused) bits.push("You have it paused, so it will not buy anything new.");
+  else if (s.risk.halted_reason) bits.push("It has stopped buying for safety.");
+
+  return { headline, detail: bits.join(" ") };
+}
+
 async function refresh() {
   let s;
   try {
@@ -290,6 +449,10 @@ async function refresh() {
     $("clock").textContent = "disconnected";
     return;
   }
+
+  const plain = plainEnglish(s);
+  $("plain-headline").innerHTML = plain.headline;
+  $("plain-detail").innerHTML = plain.detail;
 
   $("chains").textContent = s.mode.chains.join(" · ");
   $("badges").innerHTML = badges(s.mode);
@@ -388,6 +551,128 @@ async function control(action) {
   });
   refresh();
 }
+
+// ---------------------------------------------------------------- settings
+
+let settings = null;
+
+function choice(name, id, title, detail, checked, danger) {
+  return `<label class="choice ${checked ? "on" : ""} ${danger ? "danger" : ""}">
+    <input type="radio" name="${name}" value="${esc(id)}" ${checked ? "checked" : ""}>
+    <span><span class="t">${title}</span><span class="d">${detail}</span></span>
+  </label>`;
+}
+
+function checkbox(name, id, title, detail, checked) {
+  return `<label class="choice ${checked ? "on" : ""}">
+    <input type="checkbox" name="${name}" value="${esc(id)}" ${checked ? "checked" : ""}>
+    <span><span class="t">${title}</span><span class="d">${detail}</span></span>
+  </label>`;
+}
+
+function paintSettings(cfg) {
+  settings = cfg;
+  const live = cfg.mode === "live";
+
+  $("set-mode").innerHTML =
+    choice("mode", "paper", "Practice", "Pretend money. Everything works, nothing can be lost.", !live) +
+    choice("mode", "live", "Real money", "Trades your actual wallet. Needs a wallet key below.", live, true);
+
+  $("set-capital").value = cfg.starting_capital_usd;
+
+  $("set-preset").innerHTML = cfg.presets.map((p) =>
+    choice("preset", p.id, esc(p.label),
+      `${esc(p.blurb)} Risks ${pct(p.risk_pct)} per trade.`,
+      cfg.preset === p.id, p.id === "bold")).join("");
+
+  $("set-chains").innerHTML = cfg.available_chains.map((c) =>
+    checkbox("chain", c.id, esc(c.label),
+      c.id === "robinhood" ? "Needs extra setup — leave off for now." : "",
+      cfg.chains.includes(c.id))).join("");
+
+  $("set-keys-field").hidden = !live;
+  $("evm-key-state").textContent = cfg.keys.evm ? "A key is saved." : "No key saved yet.";
+  $("sol-key-state").textContent = cfg.keys.solana ? "A key is saved." : "No key saved yet.";
+
+  // Selecting "real money" reveals the key box immediately.
+  $("set-mode").querySelectorAll("input").forEach((input) => {
+    input.onchange = () => {
+      $("set-keys-field").hidden = input.value !== "live" || !input.checked;
+      $("set-mode").querySelectorAll(".choice").forEach((el) =>
+        el.classList.toggle("on", el.querySelector("input").checked));
+    };
+  });
+  document.querySelectorAll(".choice input").forEach((input) => {
+    input.addEventListener("change", () => {
+      const group = input.closest(".choices");
+      if (input.type === "radio") {
+        group.querySelectorAll(".choice").forEach((el) =>
+          el.classList.toggle("on", el.querySelector("input").checked));
+      } else {
+        input.closest(".choice").classList.toggle("on", input.checked);
+      }
+    });
+  });
+}
+
+async function openSettings() {
+  const cfg = await (await fetch("/api/settings")).json();
+  paintSettings(cfg);
+  $("set-note").textContent = "";
+  $("sheet").hidden = false;
+}
+
+async function saveSettings() {
+  const picked = (name) => {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? el.value : null;
+  };
+  const chains = [...document.querySelectorAll('input[name="chain"]:checked')].map((i) => i.value);
+  const body = {
+    mode: picked("mode"),
+    preset: picked("preset"),
+    starting_capital_usd: Number($("set-capital").value),
+    chains,
+  };
+  const evm = $("set-evm-key").value.trim();
+  const sol = $("set-sol-key").value.trim();
+  if (evm) body.evm_key = evm;
+  if (sol) body.solana_key = sol;
+
+  const note = $("set-note");
+  note.textContent = "Saving…";
+  note.className = "save-note muted";
+
+  const res = await fetch("/api/settings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const out = await res.json();
+
+  // Clear the key fields the moment they are sent; nothing keeps them around.
+  $("set-evm-key").value = "";
+  $("set-sol-key").value = "";
+
+  if (!out.ok) {
+    note.className = "save-note down";
+    note.textContent = (out.problems || ["Could not save."]).join(" ");
+    return;
+  }
+  if (out.needs_restart && out.needs_restart.length) {
+    note.className = "save-note warn";
+    note.textContent = "Saved. Close this window and start the desk again to apply.";
+  } else {
+    note.className = "save-note up";
+    note.textContent = "Saved and applied.";
+  }
+  refresh();
+}
+
+$("btn-settings").onclick = openSettings;
+$("set-close").onclick = () => { $("sheet").hidden = true; };
+$("set-save").onclick = saveSettings;
+$("sheet").onclick = (e) => { if (e.target.id === "sheet") $("sheet").hidden = true; };
 
 $("btn-pause").onclick = () =>
   control($("btn-pause").textContent === "Pause" ? "pause" : "resume");
