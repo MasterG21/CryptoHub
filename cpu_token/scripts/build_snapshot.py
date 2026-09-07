@@ -56,7 +56,9 @@ def build_epoch(
     payouts = []
     for address, balance in eligible:
         amount = total_reward * balance // eligible_supply
-        if amount >= min_payout:
+        # Skip zero payouts as well as sub-threshold ones: a zero-value leaf
+        # costs tree space and would have a holder pay gas to receive nothing.
+        if amount >= min_payout and amount > 0:
             payouts.append((address, amount))
 
     if not payouts:

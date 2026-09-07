@@ -66,16 +66,54 @@ paste is exactly the contract in this repo.
 
 Then verify the source on the explorer, using the same compiler settings.
 
-### The step that still needs code
+### Running an epoch without a terminal
 
-Opening a reward epoch means snapshotting holders, computing each share and
-building a Merkle tree. That part has no click-through path today —
-`launch/run_epoch.py` does it in one command, but it is a command. Approving
-and calling `openEpoch` afterwards can be done from the explorer's **Write
-Contract** tab with a connected wallet; building the tree cannot.
+`web/epoch-builder.html` closes the last gap. Open it in a browser — no server, no
+install — and it fetches your holders from the explorer (or takes a pasted list),
+works out each share, builds the Merkle tree locally, and hands you the three
+values `openEpoch` wants plus the `epoch.json` to publish. Nothing is sent
+anywhere and nothing is signed.
 
-If you are not running scripts, that is the one place you need either a
-developer or a browser tool that does it for you.
+1. Open `web/epoch-builder.html`. Fill in the CPU and distributor addresses, the
+   reward amount, and the claim window.
+2. List the addresses to exclude — at minimum your liquidity pool. It refuses to
+   build without them.
+3. Fetch or paste holders, then **Build the epoch**. Read the largest payouts.
+4. On the explorer: your **reward token → Write Contract → approve**, with the
+   distributor as spender and the `totalAmount` shown.
+5. Then the **distributor → Write Contract → openEpoch**, pasting `merkleRoot`,
+   `totalAmount` and `claimWindow`.
+6. Download `epoch.json` and publish it next to `claim.html`.
+
+That is the whole reward cycle with no command line at all.
+
+#### Why this one is worth trusting
+
+It reimplements keccak-256, EIP-55 checksumming and the Merkle tree in the
+browser, with no dependencies — for the same reason as the claim page, and
+because cdnjs could not be reached from this environment to confirm a library
+path even existed. A root is published on-chain and cannot be corrected
+afterwards, so agreement with the Python implementation is checked rather than
+assumed, at three levels:
+
+```bash
+python cpu_token/web/make_builder_vectors.py > /tmp/bv.json
+node cpu_token/web/test_epoch_builder.js /tmp/bv.json        # 34 checks
+NODE_MODULES=$PWD/node_modules \
+  python cpu_token/web/test_browser_epoch_onchain.py         # 8 checks
+```
+
+- **keccak-256** against `eth_utils.keccak`, including every message-padding
+  boundary (135/136/137 bytes and beyond), where a hand-written implementation
+  is most likely to be subtly wrong.
+- **Whole epochs** — 1 to 63 holders — against the Python builder: identical
+  roots, identical allocations, and every claim and proof identical byte for
+  byte.
+- **End to end**: an epoch built by the page's own JavaScript is opened on a real
+  EVM and claimed by every holder, with a tampered amount still rejected.
+
+That last one is the one that counts. It proves a root this page produces is one
+the deployed contract accepts and pays out on.
 
 ## Read this before you launch
 

@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build a reward epoch</title>
+<link rel="icon" href="../assets/cpu-logo.svg">
+<style>
+  :root{
+    --bg:#0A0D14; --card:#10151F; --sunk:#151B28; --line:#222B3D;
+    --fg:#E6EAF2; --dim:#8D97AC; --cyan:#22D3EE; --violet:#A855F7;
+    --ok:#34D399; --warn:#F0B44A; --stop:#FB7185;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font:15.5px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:660px;margin:0 auto;padding:30px 18px 70px}
+  h1{font-size:25px;letter-spacing:-.02em;margin:0 0 5px}
+  h2{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);
+    margin:26px 0 10px;font-weight:600}
+  p{margin:0}
+  a{color:var(--cyan)}
+  .sub{color:var(--dim);font-size:14.5px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  label{display:block;font-size:13px;color:var(--dim);margin-bottom:5px}
+  label b{color:var(--fg);font-weight:600}
+  input,textarea{width:100%;background:var(--sunk);color:var(--fg);border:1px solid var(--line);
+    border-radius:8px;padding:10px 11px;font-family:var(--mono);font-size:13px}
+  input:focus,textarea:focus{outline:none;border-color:var(--cyan)}
+  textarea{min-height:88px;resize:vertical;line-height:1.5}
+  .grid{display:grid;gap:13px}
+  .two{grid-template-columns:1fr 1fr}
+  @media (max-width:520px){.two{grid-template-columns:1fr}}
+  .hint{font-size:12.5px;color:var(--dim);margin-top:5px}
+
+  button{font:600 15px/1 inherit;cursor:pointer;border:0;border-radius:9px;padding:13px 18px;
+    color:#04121A;background:linear-gradient(100deg,var(--cyan),var(--violet))}
+  button.ghost{background:none;border:1px solid var(--line);color:var(--fg);
+    padding:8px 13px;font-size:13px;border-radius:7px}
+  button:disabled{opacity:.45;cursor:default}
+  button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+  .wide{width:100%;margin-top:16px}
+
+  .msg{border-radius:9px;padding:12px 14px;font-size:14px;margin-top:13px;display:none}
+  .msg.show{display:block}
+  .msg.info{background:#0E1A22;border:1px solid #1D3A47;color:#A8D8E6}
+  .msg.good{background:#0B1F17;border:1px solid #1B4636;color:var(--ok)}
+  .msg.warn{background:#1E1809;border:1px solid #3F3316;color:var(--warn)}
+  .msg.bad{background:#210F13;border:1px solid #4A1F27;color:var(--stop)}
+
+  .out{margin-top:9px;border:1px solid var(--line);border-radius:9px;background:var(--sunk)}
+  .out-top{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:7px 9px 7px 12px;border-bottom:1px solid var(--line)}
+  .out-top span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
+    font-weight:600}
+  .out .v{font-family:var(--mono);font-size:12.5px;padding:10px 12px;word-break:break-all;
+    white-space:pre-wrap;max-height:220px;overflow:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px;font-family:var(--mono)}
+  td{padding:6px 4px;border-bottom:1px solid var(--line)}
+  td:last-child{text-align:right}
+  .stat{display:flex;justify-content:space-between;padding:7px 0;font-size:14px}
+  .stat + .stat{border-top:1px solid var(--line)}
+  .stat span:first-child{color:var(--dim)}
+  .stat span:last-child{font-family:var(--mono);font-size:13px}
+  .hide{display:none}
+  ol{padding-left:20px;margin:0;font-size:14px;color:var(--dim)}
+  ol li{margin-bottom:8px}
+  ol b{color:var(--fg)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Build a reward epoch</h1>
+<p class="sub">Works out who gets what, builds the Merkle tree here in your browser, and gives
+  you the two values to paste into the explorer. Nothing is sent anywhere and nothing is signed.</p>
+
+<h2>1 · What you're distributing</h2>
+<div class="card grid">
+  <div class="two grid">
+    <div>
+      <label><b>CPU token address</b></label>
+      <input id="token" placeholder="0x…" spellcheck="false">
+    </div>
+    <div>
+      <label><b>Distributor address</b></label>
+      <input id="dist" placeholder="0x…" spellcheck="false">
+    </div>
+  </div>
+  <div class="two grid">
+    <div>
+      <label><b>Reward amount</b> — whole tokens, e.g. 50</label>
+      <input id="amount" placeholder="50" spellcheck="false">
+      <p class="hint">MUB has 18 decimals; that's assumed unless you change it below.</p>
+    </div>
+    <div>
+      <label><b>Reward decimals</b> / <b>symbol</b></label>
+      <div class="two grid">
+        <input id="decimals" value="18" spellcheck="false">
+        <input id="symbol" value="MUB" spellcheck="false">
+      </div>
+    </div>
+  </div>
+  <div>
+    <label><b>Claim window</b> — days holders have to claim (minimum 30)</label>
+    <input id="days" value="60" spellcheck="false">
+  </div>
+</div>
+
+<h2>2 · Who to leave out</h2>
+<div class="card">
+  <label><b>Excluded addresses</b>, one per line</label>
+  <textarea id="exclude" spellcheck="false" placeholder="0x… your liquidity pool&#10;0x… your treasury"></textarea>
+  <p class="hint">The liquidity pool holds CPU on behalf of traders, not as a holder — paying it
+    sends rewards to a contract where nobody can claim them. Burn addresses and the distributor
+    are removed automatically.</p>
+</div>
+
+<h2>3 · Holders</h2>
+<div class="card">
+  <button class="ghost" id="fetch">Fetch holders from the explorer</button>
+  <p class="hint" id="fetchHint">Or paste them below as <code>address,balance</code> per line —
+    balances in base units, exactly as the explorer shows them.</p>
+  <textarea id="holders" spellcheck="false" style="margin-top:11px"
+    placeholder="0xabc…,1000000000000000000&#10;0xdef…,500000000000000000"></textarea>
+</div>
+
+<button class="wide" id="build">Build the epoch</button>
+<div id="msg" class="msg"></div>
+
+<div id="results" class="hide">
+  <h2>Result</h2>
+  <div class="card">
+    <div class="stat"><span>Holders paid</span><span id="r-count">—</span></div>
+    <div class="stat"><span>Total allocated</span><span id="r-alloc">—</span></div>
+    <div class="stat"><span>Rounding dust left over</span><span id="r-dust">—</span></div>
+  </div>
+
+  <h2>Paste these into the distributor</h2>
+  <div class="card">
+    <ol>
+      <li>On the explorer, open your <b>reward token</b> → <b>Write Contract</b> → <b>Connect</b>,
+        then <b>approve</b> with the distributor address as spender and the amount below.</li>
+      <li>Open the <b>distributor</b> → <b>Write Contract</b> → <b>openEpoch</b>, paste the three
+        values, and write.</li>
+    </ol>
+  </div>
+  <div class="out">
+    <div class="out-top"><span>merkleRoot</span><button class="ghost copy" data-src="o-root">Copy</button></div>
+    <div class="v" id="o-root">—</div>
+  </div>
+  <div class="out">
+    <div class="out-top"><span>totalAmount (base units)</span><button class="ghost copy" data-src="o-amount">Copy</button></div>
+    <div class="v" id="o-amount">—</div>
+  </div>
+  <div class="out">
+    <div class="out-top"><span>claimWindow (seconds)</span><button class="ghost copy" data-src="o-window">Copy</button></div>
+    <div class="v" id="o-window">—</div>
+  </div>
+
+  <h2>Largest payouts</h2>
+  <div class="card"><table id="top"></table></div>
+
+  <h2>Publish this file</h2>
+  <p class="sub">Save it as <code>epoch.json</code> next to <code>claim.html</code>. Holders need
+    it to claim, and publishing it is what lets anyone rebuild the tree and check it against the
+    root on-chain.</p>
+  <div class="out">
+    <div class="out-top"><span>epoch.json</span>
+      <span><button class="ghost" id="download">Download</button>
+      <button class="ghost copy" data-src="o-json">Copy</button></span></div>
+    <div class="v" id="o-json">—</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+"use strict";
+
+// ---------------------------------------------------------------------------
+// Keccak-256 (Ethereum's variant: 0x01 padding, not SHA3's 0x06).
+//
+// Written out here rather than loaded from a CDN for the same reason as the
+// claim page: this computes the root that decides who gets paid what, and a
+// script tag pointing somewhere else is a dependency that can be unreachable
+// or changed. Checked against Python's eth_utils.keccak in test_epoch_builder.js,
+// including every message-padding boundary.
+// ---------------------------------------------------------------------------
+var MASK64 = (1n << 64n) - 1n;
+var RC = [
+  0x0000000000000001n, 0x0000000000008082n, 0x800000000000808An, 0x8000000080008000n,
+  0x000000000000808Bn, 0x0000000080000001n, 0x8000000080008081n, 0x8000000000008009n,
+  0x000000000000008An, 0x0000000000000088n, 0x0000000080008009n, 0x000000008000000An,
+  0x000000008000808Bn, 0x800000000000008Bn, 0x8000000000008089n, 0x8000000000008003n,
+  0x8000000000008002n, 0x8000000000000080n, 0x000000000000800An, 0x800000008000000An,
+  0x8000000080008081n, 0x8000000000008080n, 0x0000000080000001n, 0x8000000080008008n
+];
+var ROT = [0,1,62,28,27, 36,44,6,55,20, 3,10,43,25,39, 41,45,15,21,8, 18,2,61,56,14];
+var RATE = 136;
+
+function rotl64(v, n){
+  if(n === 0) return v;
+  var b = BigInt(n);
+  return ((v << b) | (v >> (64n - b))) & MASK64;
+}
+
+function permute(A){
+  var C = new Array(5), D = new Array(5), B = new Array(25), x, y;
+  for(var round = 0; round < 24; round++){
+    for(x = 0; x < 5; x++) C[x] = A[x] ^ A[x+5] ^ A[x+10] ^ A[x+15] ^ A[x+20];
+    for(x = 0; x < 5; x++){
+      D[x] = C[(x+4) % 5] ^ rotl64(C[(x+1) % 5], 1);
+      for(y = 0; y < 5; y++) A[x + 5*y] ^= D[x];
+    }
+    for(x = 0; x < 5; x++)
+      for(y = 0; y < 5; y++)
+        B[y + 5*((2*x + 3*y) % 5)] = rotl64(A[x + 5*y], ROT[x + 5*y]);
+    for(x = 0; x < 5; x++)
+      for(y = 0; y < 5; y++)
+        A[x + 5*y] = B[x + 5*y] ^ ((~B[(x+1)%5 + 5*y] & MASK64) & B[(x+2)%5 + 5*y]);
+    A[0] ^= RC[round];
+  }
+  return A;
+}
+
+function keccak256(bytes){
+  var A = new Array(25).fill(0n), i, b;
+  var padded = new Uint8Array((Math.floor(bytes.length / RATE) + 1) * RATE);
+  padded.set(bytes);
+  padded[bytes.length] = 0x01;
+  padded[padded.length - 1] |= 0x80;
+  for(var off = 0; off < padded.length; off += RATE){
+    for(i = 0; i < RATE / 8; i++){
+      var lane = 0n;
+      for(b = 7; b >= 0; b--) lane = (lane << 8n) | BigInt(padded[off + i*8 + b]);
+      A[i] ^= lane;
+    }
+    permute(A);
+  }
+  var out = new Uint8Array(32);
+  for(i = 0; i < 4; i++){
+    var v = A[i];
+    for(b = 0; b < 8; b++){ out[i*8 + b] = Number(v & 0xffn); v >>= 8n; }
+  }
+  return out;
+}
+
+function fromHex(hex){
+  hex = String(hex).replace(/^0x/i, "");
+  var out = new Uint8Array(hex.length / 2);
+  for(var i = 0; i < out.length; i++) out[i] = parseInt(hex.substr(i*2, 2), 16);
+  return out;
+}
+function toHex(bytes){
+  var s = "";
+  for(var i = 0; i < bytes.length; i++) s += bytes[i].toString(16).padStart(2, "0");
+  return s;
+}
+
+// EIP-55 mixed-case checksum, so the file this page writes is byte-identical
+// to the one the Python builder writes for the same inputs.
+function checksumAddress(address){
+  var lower = String(address).replace(/^0x/i, "").toLowerCase();
+  if(!/^[0-9a-f]{40}$/.test(lower)) throw new Error("bad address: " + address);
+  var hash = toHex(keccak256(new TextEncoder().encode(lower)));
+  var out = "";
+  for(var i = 0; i < 40; i++)
+    out += parseInt(hash[i], 16) >= 8 ? lower[i].toUpperCase() : lower[i];
+  return "0x" + out;
+}
+
+// ---------------------------------------------------------------------------
+// Merkle tree — must match cpu_token/scripts/merkle.py exactly.
+//   leaf     = keccak(keccak(abi.encode(index, account, amount)))
+//   internal = keccak(left ++ right), pair sorted bytewise
+// The leaf is hashed twice so it can never be mistaken for an internal node.
+// ---------------------------------------------------------------------------
+function encodeLeaf(index, account, amount){
+  var buf = new Uint8Array(96);
+  buf.set(fromHex(BigInt(index).toString(16).padStart(64, "0")), 0);
+  buf.set(fromHex(String(account).replace(/^0x/i, "").toLowerCase().padStart(64, "0")), 32);
+  buf.set(fromHex(BigInt(amount).toString(16).padStart(64, "0")), 64);
+  return buf;
+}
+function leafHash(index, account, amount){
+  return keccak256(keccak256(encodeLeaf(index, account, amount)));
+}
+function hashPair(a, b){
+  var cmp = 0;
+  for(var i = 0; i < 32; i++){ if(a[i] !== b[i]){ cmp = a[i] < b[i] ? -1 : 1; break; } }
+  var joined = new Uint8Array(64);
+  if(cmp <= 0){ joined.set(a, 0); joined.set(b, 32); }
+  else { joined.set(b, 0); joined.set(a, 32); }
+  return keccak256(joined);
+}
+function buildTree(leaves){
+  if(!leaves.length) throw new Error("cannot build a Merkle tree with no leaves");
+  var levels = [leaves];
+  while(levels[levels.length - 1].length > 1){
+    var cur = levels[levels.length - 1], next = [];
+    for(var i = 0; i + 1 < cur.length; i += 2) next.push(hashPair(cur[i], cur[i+1]));
+    // An odd node is promoted unchanged, never paired with itself: self-pairing
+    // is what allows a duplicate-leaf forgery.
+    if(cur.length % 2) next.push(cur[cur.length - 1]);
+    levels.push(next);
+  }
+  return levels;
+}
+function proofFor(levels, index){
+  var proof = [], idx = index;
+  for(var l = 0; l < levels.length - 1; l++){
+    var sibling = idx ^ 1;
+    if(sibling < levels[l].length) proof.push("0x" + toHex(levels[l][sibling]));
+    idx = Math.floor(idx / 2);
+  }
+  return proof;
+}
+function buildClaims(entries){
+  var rows = entries.map(function(e, i){
+    return { index: i, account: checksumAddress(e[0]), amount: BigInt(e[1]) };
+  });
+  var levels = buildTree(rows.map(function(r){ return leafHash(r.index, r.account, r.amount); }));
+  return {
+    root: "0x" + toHex(levels[levels.length - 1][0]),
+    claims: rows.map(function(r){
+      return { index: r.index, account: r.account, amount: r.amount.toString(),
+               proof: proofFor(levels, r.index) };
+    })
+  };
+}
+
+// Pro-rata split. Floor division throughout, so the total allocated is always
+// at or below the pot and never above it; the dust stays in the contract and
+// is recoverable after the deadline.
+function computeSplit(holders, totalReward, excluded, minPayout){
+  var BURN = ["0x0000000000000000000000000000000000000000",
+              "0x000000000000000000000000000000000000dead"];
+  var skip = {};
+  excluded.concat(BURN).forEach(function(a){
+    if(a) skip[String(a).replace(/^0x/i, "").toLowerCase()] = true;
+  });
+
+  var eligible = holders.filter(function(h){
+    return !skip[String(h[0]).replace(/^0x/i, "").toLowerCase()] && BigInt(h[1]) > 0n;
+  });
+  if(!eligible.length) throw new Error("No eligible holders after exclusions.");
+
+  var supply = eligible.reduce(function(s, h){ return s + BigInt(h[1]); }, 0n);
+  var total = BigInt(totalReward);
+  var payouts = [];
+  eligible.forEach(function(h){
+    var amount = total * BigInt(h[1]) / supply;
+    if(amount >= BigInt(minPayout) && amount > 0n) payouts.push([h[0], amount]);
+  });
+  if(!payouts.length) throw new Error("Every payout rounded to zero. Raise the reward amount.");
+
+  payouts.sort(function(a, b){ return a[1] === b[1] ? 0 : (a[1] > b[1] ? -1 : 1); });
+  var allocated = payouts.reduce(function(s, p){ return s + p[1]; }, 0n);
+  return { payouts: payouts, allocated: allocated, supply: supply, dust: total - allocated };
+}
+
+if(typeof module !== "undefined" && module.exports){
+  module.exports = { keccak256: keccak256, toHex: toHex, fromHex: fromHex,
+                     checksumAddress: checksumAddress, buildClaims: buildClaims,
+                     computeSplit: computeSplit };
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+if(typeof window !== "undefined") (function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var EXPLORER_API = "https://bnb.blockscout.com/api/v2";
+  var built = null;
+
+  function say(kind, text){
+    var m = $("msg");
+    m.className = "msg show " + kind;
+    m.textContent = text;
+  }
+  function clear(){ $("msg").className = "msg"; }
+
+  function lines(id){
+    return $(id).value.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
+  }
+
+  function units(whole, decimals){
+    // Parse "12.5" into base units without floating point, which silently
+    // loses precision on token amounts.
+    var parts = String(whole).trim().split(".");
+    if(parts.length > 2 || !/^\d*$/.test(parts[0]) || (parts[1] && !/^\d*$/.test(parts[1])))
+      throw new Error("Reward amount must be a plain number, e.g. 50 or 12.5");
+    var frac = (parts[1] || "").slice(0, decimals).padEnd(decimals, "0");
+    return BigInt((parts[0] || "0") + (decimals ? frac : ""));
+  }
+
+  function fmt(base, decimals){
+    var s = BigInt(base).toString().padStart(decimals + 1, "0");
+    var w = s.slice(0, s.length - decimals);
+    var f = decimals ? s.slice(s.length - decimals).replace(/0+$/, "") : "";
+    return w + (f ? "." + f.slice(0, 6) : "");
+  }
+
+  $("fetch").addEventListener("click", function(){
+    var token = $("token").value.trim();
+    if(!/^0x[0-9a-fA-F]{40}$/.test(token)){ say("bad", "Enter the CPU token address first."); return; }
+    clear();
+    $("fetch").disabled = true;
+    $("fetch").textContent = "Fetching…";
+    fetch(EXPLORER_API + "/tokens/" + token + "/holders")
+      .then(function(r){ if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function(data){
+        var items = (data && data.items) || [];
+        if(!items.length) throw new Error("no holders returned");
+        $("holders").value = items.map(function(it){
+          var a = it.address && it.address.hash ? it.address.hash : it.address;
+          return a + "," + (it.value != null ? it.value : it.balance);
+        }).join("\n");
+        say("good", items.length + " holders loaded. Check the list, then build.");
+      })
+      .catch(function(err){
+        say("warn", "Couldn't fetch holders (" + err.message + "). Copy them from the token's "
+          + "Holders tab on the explorer and paste them below instead.");
+      })
+      .finally(function(){
+        $("fetch").disabled = false;
+        $("fetch").textContent = "Fetch holders from the explorer";
+      });
+  });
+
+  $("build").addEventListener("click", function(){
+    clear();
+    try {
+      var decimals = parseInt($("decimals").value, 10);
+      if(!(decimals >= 0 && decimals <= 36)) throw new Error("Decimals must be between 0 and 36.");
+      var days = parseInt($("days").value, 10);
+      if(!(days >= 30)) throw new Error("The claim window must be at least 30 days — the "
+        + "contract rejects anything shorter.");
+
+      var dist = $("dist").value.trim();
+      var token = $("token").value.trim();
+      if(!/^0x[0-9a-fA-F]{40}$/.test(dist)) throw new Error("Enter the distributor address.");
+      if(!/^0x[0-9a-fA-F]{40}$/.test(token)) throw new Error("Enter the CPU token address.");
+
+      var excluded = lines("exclude");
+      if(!excluded.length) throw new Error("Add at least your liquidity pool address to the "
+        + "exclusions — paying the pool sends rewards where nobody can claim them.");
+      excluded.push(dist);
+
+      var holders = lines("holders").map(function(line, n){
+        var parts = line.split(/[,\s]+/);
+        if(parts.length < 2 || !/^0x[0-9a-fA-F]{40}$/.test(parts[0]) || !/^\d+$/.test(parts[1]))
+          throw new Error("Line " + (n+1) + " of holders isn't 'address,balance': " + line);
+        return [parts[0], parts[1]];
+      });
+      if(!holders.length) throw new Error("No holders yet — fetch or paste them first.");
+
+      var total = units($("amount").value, decimals);
+      if(total <= 0n) throw new Error("Enter a reward amount above zero.");
+
+      var split = computeSplit(holders, total, excluded, 0);
+      var tree = buildClaims(split.payouts.map(function(p){ return [p[0], p[1]]; }));
+
+      var epoch = {
+        generated_at: new Date().toISOString(),
+        merkle_root: tree.root,
+        total_reward: total.toString(),
+        allocated: split.allocated.toString(),
+        dust_remainder: split.dust.toString(),
+        eligible_supply: split.supply.toString(),
+        holder_count: tree.claims.length,
+        excluded: excluded.map(function(a){ return a.toLowerCase(); }).sort(),
+        distributor: checksumAddress(dist),
+        cpu_token: checksumAddress(token),
+        reward_symbol: $("symbol").value.trim() || null,
+        reward_decimals: decimals,
+        claims: tree.claims
+      };
+      built = epoch;
+
+      $("r-count").textContent = epoch.holder_count;
+      $("r-alloc").textContent = fmt(split.allocated, decimals) + " " + ($("symbol").value || "");
+      $("r-dust").textContent = split.dust.toString() + " base units";
+      $("o-root").textContent = tree.root;
+      $("o-amount").textContent = split.allocated.toString();
+      $("o-window").textContent = String(days * 24 * 3600);
+      $("o-json").textContent = JSON.stringify(epoch, null, 1);
+
+      $("top").innerHTML = tree.claims.slice(0, 8).map(function(c){
+        return "<tr><td>" + c.account.slice(0, 10) + "…" + c.account.slice(-6) + "</td><td>"
+             + fmt(c.amount, decimals) + "</td></tr>";
+      }).join("");
+
+      $("results").classList.remove("hide");
+      say("good", "Built. Read the largest payouts before you publish the root — once it is "
+        + "on-chain it cannot be changed.");
+      $("results").scrollIntoView({behavior: "smooth", block: "start"});
+    } catch(err){
+      $("results").classList.add("hide");
+      say("bad", err.message);
+    }
+  });
+
+  document.querySelectorAll("button.copy").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var text = $(btn.dataset.src).textContent;
+      var done = function(){
+        btn.textContent = "Copied";
+        setTimeout(function(){ btn.textContent = "Copy"; }, 1500);
+      };
+      if(navigator.clipboard) navigator.clipboard.writeText(text).then(done, done);
+    });
+  });
+
+  $("download").addEventListener("click", function(){
+    if(!built) return;
+    var blob = new Blob([JSON.stringify(built, null, 1)], {type: "application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "epoch.json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  });
+})();
+</script>
+</body>
+</html>
