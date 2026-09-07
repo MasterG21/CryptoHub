@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claim your CPU rewards</title>
+<link rel="icon" href="../assets/cpu-logo.svg">
+<style>
+  :root{
+    --bg:#0A0D14; --card:#10151F; --sunk:#151B28; --line:#222B3D;
+    --fg:#E6EAF2; --dim:#8D97AC; --cyan:#22D3EE; --violet:#A855F7;
+    --ok:#34D399; --warn:#F0B44A; --stop:#FB7185;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:540px;margin:0 auto;padding:34px 18px 64px}
+  h1{font-size:27px;letter-spacing:-.02em;margin:14px 0 6px;text-wrap:balance}
+  p{margin:0}
+  a{color:var(--cyan)}
+  header{text-align:center;margin-bottom:26px}
+  header img{width:66px;height:66px}
+  .sub{color:var(--dim);font-size:15px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:13px;
+    padding:18px;margin-top:14px}
+  .row{display:flex;justify-content:space-between;gap:12px;font-size:14.5px;padding:7px 0}
+  .row + .row{border-top:1px solid var(--line)}
+  .row span:first-child{color:var(--dim)}
+  .row span:last-child{font-family:var(--mono);font-size:13px;text-align:right;
+    word-break:break-all}
+  .big{font-family:var(--mono);font-size:27px;color:var(--cyan);text-align:center;
+    padding:12px 0 4px;word-break:break-all}
+  .big small{display:block;font-family:inherit;font-size:12.5px;color:var(--dim);
+    letter-spacing:.1em;text-transform:uppercase;margin-top:6px}
+
+  button{width:100%;font:600 15.5px/1 inherit;cursor:pointer;border:0;border-radius:10px;
+    padding:15px;color:#04121A;background:linear-gradient(100deg,var(--cyan),var(--violet));
+    transition:opacity .15s}
+  button:disabled{opacity:.4;cursor:default}
+  button.ghost{background:none;border:1px solid var(--line);color:var(--fg)}
+  button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+  button + button{margin-top:9px}
+
+  .msg{border-radius:10px;padding:13px 15px;font-size:14.5px;margin-top:14px;display:none}
+  .msg.show{display:block}
+  .msg.info{background:#0E1A22;border:1px solid #1D3A47;color:#A8D8E6}
+  .msg.good{background:#0B1F17;border:1px solid #1B4636;color:var(--ok)}
+  .msg.warn{background:#1E1809;border:1px solid #3F3316;color:var(--warn)}
+  .msg.bad{background:#210F13;border:1px solid #4A1F27;color:var(--stop)}
+  .msg code{font-family:var(--mono);font-size:12.5px;word-break:break-all}
+
+  .note{color:var(--dim);font-size:13px;margin-top:20px;text-align:center}
+  .hide{display:none}
+  input[type=file]{font-size:14px;color:var(--dim);width:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <img src="../assets/cpu-logo.svg" alt="Computing Power">
+  <h1>Claim your rewards</h1>
+  <p class="sub">Connect the wallet that held CPU at the snapshot. Your reward is paid to that
+    address — never to whoever sends the transaction.</p>
+</header>
+
+<div id="epochCard" class="card hide">
+  <div class="row"><span>Epoch</span><span id="e-id">—</span></div>
+  <div class="row"><span>Snapshot</span><span id="e-when">—</span></div>
+  <div class="row"><span>Holders</span><span id="e-holders">—</span></div>
+  <div class="row"><span>Distributor</span><span id="e-dist">—</span></div>
+</div>
+
+<div id="loadCard" class="card">
+  <p style="font-size:14.5px;color:var(--dim)">Loading this epoch's claim list…</p>
+  <div id="filePick" class="hide" style="margin-top:12px">
+    <p style="font-size:14.5px;margin-bottom:10px">Couldn't load it automatically. Choose the
+      epoch file you were given:</p>
+    <input type="file" id="file" accept=".json">
+  </div>
+</div>
+
+<div id="claimCard" class="card hide">
+  <div class="big"><span id="amount">—</span><small id="sym">reward</small></div>
+  <div class="row"><span>Your address</span><span id="you">—</span></div>
+  <div class="row"><span>Status</span><span id="status">—</span></div>
+</div>
+
+<div id="actions" class="hide" style="margin-top:16px">
+  <button id="connect">Connect wallet</button>
+  <button id="claim" class="hide">Claim</button>
+  <button id="switch" class="ghost hide">Switch to BNB Smart Chain</button>
+</div>
+
+<div id="msg" class="msg"></div>
+
+<p class="note">This page never asks for your seed phrase or private key, and no page ever
+  should. It only asks your wallet to approve one transaction, which you can read before you
+  accept.</p>
+
+</div>
+
+<script>
+"use strict";
+
+// ---------------------------------------------------------------------------
+// Set these two after deploying, then host this file next to the epoch JSON.
+// ---------------------------------------------------------------------------
+var CONFIG = {
+  distributor: "0x0000000000000000000000000000000000000000",
+  epochUrl: "epoch.json",
+  epochId: 0,
+  chainIdHex: "0x38",              // 56 — BNB Smart Chain
+  chainName: "BNB Smart Chain",
+  explorer: "https://bscscan.com"
+};
+
+// ---------------------------------------------------------------------------
+// Minimal ABI encoding.
+//
+// Hand-rolled on purpose: this page moves other people's money, and a script
+// tag pointing at a CDN is one more thing that can be unreachable, changed, or
+// wrong on the day someone tries to claim. Two function signatures do not
+// justify that risk. These encoders are checked byte-for-byte against a
+// reference implementation in test_claim_encoding.js.
+// ---------------------------------------------------------------------------
+var SELECTOR = {
+  // claim(uint256,uint256,address,uint256,bytes32[])
+  claim: "5d4df3bf",
+  // isClaimed(uint256,uint256)
+  isClaimed: "f364c90c"
+};
+
+function encUint(value){
+  var hex = BigInt(value).toString(16);
+  if(hex.length > 64) throw new Error("value too large to encode");
+  return hex.padStart(64, "0");
+}
+function encAddress(value){
+  var hex = String(value).replace(/^0x/i, "").toLowerCase();
+  if(!/^[0-9a-f]{40}$/.test(hex)) throw new Error("bad address: " + value);
+  return hex.padStart(64, "0");
+}
+function encBytes32(value){
+  var hex = String(value).replace(/^0x/i, "").toLowerCase();
+  if(!/^[0-9a-f]{64}$/.test(hex)) throw new Error("bad bytes32: " + value);
+  return hex;
+}
+function encodeClaim(epochId, index, account, amount, proof){
+  // Four static head slots, then the offset to the dynamic bytes32[] tail.
+  var head = encUint(epochId) + encUint(index) + encAddress(account)
+           + encUint(amount) + encUint(5 * 32);
+  var tail = encUint(proof.length) + proof.map(encBytes32).join("");
+  return "0x" + SELECTOR.claim + head + tail;
+}
+function encodeIsClaimed(epochId, index){
+  return "0x" + SELECTOR.isClaimed + encUint(epochId) + encUint(index);
+}
+
+if(typeof module !== "undefined" && module.exports){
+  module.exports = { encodeClaim: encodeClaim, encodeIsClaimed: encodeIsClaimed };
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+if(typeof window !== "undefined") (function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var epoch = null, mine = null, account = null;
+
+  function say(kind, html){
+    var m = $("msg");
+    m.className = "msg show " + kind;
+    m.innerHTML = html;
+  }
+  function clear(){ $("msg").className = "msg"; }
+
+  function fmt(raw, decimals){
+    // Format base units without floating point, which loses precision on
+    // token amounts long before it looks like it has.
+    var s = BigInt(raw).toString().padStart(decimals + 1, "0");
+    var whole = s.slice(0, s.length - decimals);
+    var frac = decimals ? s.slice(s.length - decimals).replace(/0+$/, "") : "";
+    return whole + (frac ? "." + frac.slice(0, 6) : "");
+  }
+  var short = function(a){ return a.slice(0, 8) + "…" + a.slice(-6); };
+
+  function showEpoch(data){
+    epoch = data;
+    $("loadCard").classList.add("hide");
+    $("epochCard").classList.remove("hide");
+    $("actions").classList.remove("hide");
+    $("e-id").textContent = (data.epoch_id != null ? data.epoch_id : CONFIG.epochId);
+    $("e-when").textContent = (data.generated_at || "—").slice(0, 10);
+    $("e-holders").textContent = data.holder_count != null ? data.holder_count : "—";
+    var dist = data.distributor || CONFIG.distributor;
+    CONFIG.distributor = dist;
+    if(data.epoch_id != null) CONFIG.epochId = data.epoch_id;
+    $("e-dist").innerHTML = '<a href="' + CONFIG.explorer + '/address/' + dist +
+      '" target="_blank" rel="noopener">' + short(dist) + '</a>';
+    if(data.reward_symbol) $("sym").textContent = data.reward_symbol;
+  }
+
+  fetch(CONFIG.epochUrl, {cache: "no-store"})
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(showEpoch)
+    .catch(function(){
+      $("filePick").classList.remove("hide");
+      $("loadCard").querySelector("p").textContent =
+        "Couldn't load the claim list automatically.";
+    });
+
+  $("file").addEventListener("change", function(e){
+    var f = e.target.files[0];
+    if(!f) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try { showEpoch(JSON.parse(reader.result)); clear(); }
+      catch(err){ say("bad", "That file isn't a valid epoch file."); }
+    };
+    reader.readAsText(f);
+  });
+
+  function provider(){
+    return (typeof window !== "undefined" && window.ethereum) ? window.ethereum : null;
+  }
+
+  $("connect").addEventListener("click", function(){
+    var eth = provider();
+    if(!eth){
+      say("warn", "No wallet detected. Open this page inside your wallet app's browser " +
+                  "(Trust Wallet, MetaMask or Binance Wallet all have one).");
+      return;
+    }
+    clear();
+    $("connect").disabled = true;
+    eth.request({method: "eth_requestAccounts"})
+      .then(function(accounts){
+        account = accounts[0];
+        return eth.request({method: "eth_chainId"});
+      })
+      .then(function(chainId){
+        if(chainId !== CONFIG.chainIdHex){
+          $("switch").classList.remove("hide");
+          $("connect").disabled = false;
+          throw {handled: true, msg: "This wallet is on another network. Switch to " +
+            CONFIG.chainName + " to claim."};
+        }
+        return lookUp();
+      })
+      .catch(function(err){
+        $("connect").disabled = false;
+        if(err && err.handled) say("warn", err.msg);
+        else if(err && err.code === 4001) say("warn", "Connection cancelled.");
+        else say("bad", "Couldn't connect: " + ((err && err.message) || err));
+      });
+  });
+
+  $("switch").addEventListener("click", function(){
+    provider().request({
+      method: "wallet_switchEthereumChain",
+      params: [{chainId: CONFIG.chainIdHex}]
+    }).then(function(){
+      $("switch").classList.add("hide");
+      clear();
+      return lookUp();
+    }).catch(function(err){
+      say("bad", "Couldn't switch network: " + ((err && err.message) || err));
+    });
+  });
+
+  function lookUp(){
+    var claims = (epoch && epoch.claims) || [];
+    var lower = account.toLowerCase();
+    mine = null;
+    for(var i = 0; i < claims.length; i++){
+      if(String(claims[i].account).toLowerCase() === lower){ mine = claims[i]; break; }
+    }
+
+    $("connect").classList.add("hide");
+    $("claimCard").classList.remove("hide");
+    $("you").textContent = short(account);
+
+    if(!mine){
+      $("amount").textContent = "0";
+      $("status").textContent = "not in this epoch";
+      say("info", "This address isn't in this epoch's snapshot. That means it held no CPU " +
+                  "when the snapshot was taken, or it was excluded — a liquidity pool or the " +
+                  "treasury, for instance. A later epoch may include it.");
+      return Promise.resolve();
+    }
+
+    var decimals = epoch.reward_decimals != null ? epoch.reward_decimals : 18;
+    $("amount").textContent = fmt(mine.amount, decimals);
+
+    return provider().request({
+      method: "eth_call",
+      params: [{to: CONFIG.distributor,
+                data: encodeIsClaimed(CONFIG.epochId, mine.index)}, "latest"]
+    }).then(function(result){
+      // A bool comes back as a single 32-byte word; anything non-zero is true.
+      var claimed = /[1-9a-f]/i.test(String(result).replace(/^0x/, ""));
+      if(claimed){
+        $("status").textContent = "already claimed";
+        say("good", "This reward has already been claimed and is in your wallet. " +
+                    "Nothing left to do.");
+      } else {
+        $("status").textContent = "ready to claim";
+        $("claim").classList.remove("hide");
+      }
+    }).catch(function(){
+      // Reading failed, but the contract still rejects a duplicate claim, so
+      // let them try rather than blocking on a read.
+      $("status").textContent = "ready to claim";
+      $("claim").classList.remove("hide");
+      say("warn", "Couldn't check whether this was already claimed. You can still try — " +
+                  "the contract refuses a second claim, so nothing is at risk.");
+    });
+  }
+
+  $("claim").addEventListener("click", function(){
+    clear();
+    $("claim").disabled = true;
+    $("claim").textContent = "Confirm in your wallet…";
+
+    var data;
+    try {
+      data = encodeClaim(CONFIG.epochId, mine.index, mine.account, mine.amount, mine.proof);
+    } catch(err){
+      $("claim").disabled = false;
+      $("claim").textContent = "Claim";
+      say("bad", "This claim record looks malformed, so nothing was sent. " + err.message);
+      return;
+    }
+
+    provider().request({
+      method: "eth_sendTransaction",
+      params: [{from: account, to: CONFIG.distributor, data: data}]
+    }).then(function(txHash){
+      $("claim").classList.add("hide");
+      $("status").textContent = "claim sent";
+      say("good", 'Claim sent. It usually confirms within a few seconds.<br><br>' +
+        '<a href="' + CONFIG.explorer + '/tx/' + txHash + '" target="_blank" ' +
+        'rel="noopener">View it on the explorer</a>');
+    }).catch(function(err){
+      $("claim").disabled = false;
+      $("claim").textContent = "Claim";
+      if(err && err.code === 4001) say("warn", "You cancelled the transaction. Nothing was sent.");
+      else say("bad", "The claim failed: " + ((err && err.message) || err));
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -20,7 +20,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from build_snapshot import build_epoch  # noqa: E402
-from compile import compile_contracts  # noqa: E402
 from config import ConfigError, load_config  # noqa: E402
 from launch import BOLD, CYAN, DIM, GREEN, RED, RESET, YELLOW, LaunchError, _h, _row  # noqa: E402
 
@@ -28,6 +27,50 @@ from robinhood_meme_scan.blockscout import BURN_ADDRESSES, BlockscoutClient  # n
 from robinhood_meme_scan.chains import get_chain  # noqa: E402
 
 MIN_CLAIM_WINDOW = 30 * 24 * 3600
+
+# Declared inline rather than compiled: running an epoch then needs only
+# Python and an RPC, no Node or solc.
+ERC20_ABI = [
+    {"name": "name", "outputs": [{"type": "string"}], "inputs": [],
+     "stateMutability": "view", "type": "function"},
+    {"name": "symbol", "outputs": [{"type": "string"}], "inputs": [],
+     "stateMutability": "view", "type": "function"},
+    {"name": "decimals", "outputs": [{"type": "uint8"}], "inputs": [],
+     "stateMutability": "view", "type": "function"},
+    {"name": "balanceOf", "outputs": [{"type": "uint256"}],
+     "inputs": [{"name": "a", "type": "address"}],
+     "stateMutability": "view", "type": "function"},
+    {"name": "approve", "outputs": [{"type": "bool"}],
+     "inputs": [{"name": "s", "type": "address"}, {"name": "v", "type": "uint256"}],
+     "stateMutability": "nonpayable", "type": "function"},
+]
+
+DISTRIBUTOR_ABI = [
+    {"name": "rewardToken", "outputs": [{"type": "address"}], "inputs": [],
+     "stateMutability": "view", "type": "function"},
+    {"name": "epochCount", "outputs": [{"type": "uint256"}], "inputs": [],
+     "stateMutability": "view", "type": "function"},
+    {"name": "openEpoch", "outputs": [{"type": "uint256"}],
+     "inputs": [{"name": "merkleRoot", "type": "bytes32"},
+                {"name": "totalAmount", "type": "uint256"},
+                {"name": "claimWindow", "type": "uint64"}],
+     "stateMutability": "nonpayable", "type": "function"},
+]
+
+
+def read_token(w3, address):
+    """Best-effort ERC-20 metadata, so the operator can eyeball the reward
+    token before funding rather than trusting an address they pasted."""
+    from web3 import Web3
+
+    token = w3.eth.contract(address=Web3.to_checksum_address(address), abi=ERC20_ABI)
+    meta = {"address": Web3.to_checksum_address(address), "decimals": 18}
+    for key in ("name", "symbol", "decimals"):
+        try:
+            meta[key] = getattr(token.functions, key)().call()
+        except Exception:
+            meta.setdefault(key, None)
+    return meta
 
 
 def load_deployment(path: str) -> dict:
@@ -96,6 +139,31 @@ def main(argv=None) -> int:
                     | {distributor.lower()})
         epoch = build_epoch(holders, args.amount, excluded, args.min_payout)
 
+        # Connect before printing the plan so the reward token can be named
+        # and the epoch id recorded, both of which the claim page needs.
+        w3 = Web3(Web3.HTTPProvider(cfg.rpc_url, request_kwargs={"timeout": 60}))
+        if not w3.is_connected():
+            raise LaunchError(f"Cannot reach the RPC at {cfg.rpc_url}")
+        if w3.eth.chain_id != cfg.chain_id:
+            raise LaunchError(
+                f"Chain id mismatch: expected {cfg.chain_id}, RPC reports {w3.eth.chain_id}"
+            )
+
+        dist = w3.eth.contract(
+            address=Web3.to_checksum_address(distributor), abi=DISTRIBUTOR_ABI
+        )
+        reward_meta = read_token(w3, dist.functions.rewardToken().call())
+        next_epoch_id = dist.functions.epochCount().call()
+
+        epoch.update({
+            "epoch_id": next_epoch_id,
+            "distributor": Web3.to_checksum_address(distributor),
+            "cpu_token": Web3.to_checksum_address(cpu),
+            "reward_token": reward_meta["address"],
+            "reward_symbol": reward_meta.get("symbol"),
+            "reward_decimals": reward_meta.get("decimals", 18),
+        })
+
         with open(args.out, "w") as fh:
             json.dump(epoch, fh, indent=1)
 
@@ -103,7 +171,10 @@ def main(argv=None) -> int:
         _row("Network", cfg.network_name)
         _row("CPU token", cpu)
         _row("Distributor", distributor)
-        _row("Reward token", cfg.reward_token or "(from deployment)", CYAN)
+        _row("Reward token", f"{reward_meta.get('name') or '?'} "
+                             f"({reward_meta.get('symbol') or '?'})", CYAN)
+        _row("  address", reward_meta["address"])
+        _row("Epoch id", str(next_epoch_id))
         _row("Holders paid", str(epoch["holder_count"]))
         _row("Total allocated", epoch["allocated"])
         _row("Dust remainder", epoch["dust_remainder"])
@@ -122,22 +193,9 @@ def main(argv=None) -> int:
             return 0
 
         # --- broadcast ---
-        artifacts = compile_contracts(args.node_modules)["contracts"]
-        w3 = Web3(Web3.HTTPProvider(cfg.rpc_url, request_kwargs={"timeout": 60}))
-        if w3.eth.chain_id != cfg.chain_id:
-            raise LaunchError(
-                f"Chain id mismatch: expected {cfg.chain_id}, RPC reports {w3.eth.chain_id}"
-            )
-
-        dist = w3.eth.contract(
-            address=Web3.to_checksum_address(distributor),
-            abi=artifacts["MerkleRewardDistributor"]["abi"],
-        )
-        reward_address = dist.functions.rewardToken().call()
         reward = w3.eth.contract(
-            address=reward_address, abi=artifacts["MockERC20"]["abi"]  # standard ERC20 surface
+            address=Web3.to_checksum_address(reward_meta["address"]), abi=ERC20_ABI
         )
-
         allocated = int(epoch["allocated"])
         balance = reward.functions.balanceOf(account.address).call()
         if balance < allocated:
@@ -170,6 +228,9 @@ def main(argv=None) -> int:
             "opening the epoch",
         )
         epoch_id = dist.functions.epochCount().call() - 1
+        if epoch_id != next_epoch_id:
+            print(f"  {YELLOW}note: this epoch landed at id {epoch_id}, not {next_epoch_id};{RESET}")
+            print(f"  {YELLOW}update epoch_id in {args.out} before publishing it.{RESET}")
         print(f"\n  {GREEN}✓{RESET} epoch {BOLD}{epoch_id}{RESET} is live "
               f"({receipt.transactionHash.hex()})")
         print(f"  Publish {args.out} so holders can claim, and so anyone can rebuild")

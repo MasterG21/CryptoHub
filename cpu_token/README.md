@@ -156,6 +156,82 @@ python cpu_token/scripts/build_snapshot.py 0xCpuToken \
 The script refuses to run with no exclusions: a liquidity pool holds CPU on behalf of
 traders, and paying it sends rewards to a contract where nobody can claim them.
 
+## Paying rewards in tokenized MU (MUB)
+
+This is what the distributor was built for, and it works: bStocks are ordinary
+BEP-20 tokens with no on-chain transfer gate — they trade on PancakeSwap and are
+used as DeFi collateral — so a contract can hold and pay them out like any other
+token. Eligibility is enforced at the application layer, not in the token
+contract.
+
+**Confirm the reward token address yourself before funding anything.** MUB is
+reported at `0xcdf2f3e0fa43c47a6662a91c9e4a7c5f69762699`, but that came from a
+search result, not from the chain: the BSC explorer and RPC endpoints are
+blocked from this repo's development environment, so nothing here has read it.
+Open it on [BscScan](https://bscscan.com), check the name, symbol and decimals,
+and only then put it in `.env`. `run_epoch.py` prints the token's on-chain name
+and symbol in the plan for exactly this reason — if it doesn't say Micron, stop.
+
+Two constraints that don't go away because the code works:
+
+- **bStocks are not available to US persons.** A public token that rewards in MUB
+  will reach holders who cannot lawfully receive it, and holding CPU exempts
+  nobody. Claims from those addresses are your problem to think about, not the
+  contract's.
+- **Paying holders in a tokenized equity is very probably a securities
+  offering.** Settle that with a lawyer in your jurisdiction. No amount of test
+  coverage substitutes.
+
+### Running an epoch
+
+1. **Get MUB into the deployer wallet.** Acquire it, then withdraw to your
+   self-custody BSC address — the same address as `PRIVATE_KEY` in `.env`.
+2. **Set it as the reward token.** Put the confirmed address in
+   `REWARD_TOKEN_ADDRESS` and deploy the distributor (`launch.sh --confirm`).
+   Already deployed without one? The reward token is immutable, so deploy a
+   second distributor; the CPU token is untouched either way.
+3. **Dry-run the epoch.** Nothing is broadcast, and you get the exact split:
+
+   ```bash
+   python cpu_token/launch/run_epoch.py --amount 50000000000000000000 \
+       --exclude 0xYourPancakePair --exclude 0xYourTreasury
+   ```
+
+   `--amount` is in base units — MUB has 18 decimals, so the example is 50 MUB.
+   Read the largest payouts and the token name before going further.
+4. **Open it.** Add `--confirm`. This approves the distributor and calls
+   `openEpoch` in two transactions, funding the epoch as it opens.
+5. **Publish `epoch.json`** next to `claim.html` so holders can claim.
+
+### The claim page
+
+`web/claim.html` is what holders actually use: they connect a wallet, it finds
+their proof in `epoch.json`, and one transaction pays them. Set `distributor`
+and `epochUrl` at the top of the file, then host it anywhere static —
+`epoch.json` beside it.
+
+It has no dependencies at all. The ABI encoding is hand-rolled rather than
+pulled from a CDN, because a page that moves other people's money should not
+have a runtime dependency that can be unreachable or changed on the day someone
+tries to claim. `test_claim_encoding.js` checks that encoding byte-for-byte
+against Python's `eth_abi`, and `test_claim_page.py` drives the real page in a
+browser against a mock wallet:
+
+```bash
+python cpu_token/web/make_vectors.py > /tmp/vectors.json
+node cpu_token/web/test_claim_encoding.js /tmp/vectors.json   # 8 checks
+python cpu_token/web/test_claim_page.py                       # 22 checks
+```
+
+The checks that matter most are that the transaction goes to the distributor and
+that the encoded recipient and amount are the holder's own — not the sender's,
+and not merely what the page displays.
+
+Publishing the epoch file is not optional bookkeeping. It is what lets anyone
+rebuild the tree from public chain data and check it against the root on-chain,
+which is the whole reason to distribute this way instead of just sending
+transfers and asking people to trust the arithmetic.
+
 ## Build and test
 
 ```bash
