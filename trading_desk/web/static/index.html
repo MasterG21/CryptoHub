@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trading Desk</title>
+<style>
+  :root {
+    --bg: #0b0d10; --panel: #14171c; --panel-2: #191d23; --line: #262b33;
+    --text: #e6e9ef; --dim: #8b93a1; --faint: #5b636f;
+    --green: #35d07f; --red: #ff5c5c; --amber: #ffb020; --blue: #5b9bff;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  a { color: var(--blue); }
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 16px; }
+
+  header {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 12px 16px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; margin-bottom: 14px;
+  }
+  .brand { font-weight: 700; letter-spacing: .04em; font-size: 15px; }
+  .brand span { color: var(--faint); font-weight: 400; }
+  .badge {
+    font: 600 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    padding: 5px 9px; border-radius: 5px; border: 1px solid var(--line); color: var(--dim);
+  }
+  .badge.paper  { color: var(--blue);  border-color: #23375e; background: #131b2b; }
+  .badge.unarmed{ color: var(--amber); border-color: #4a3a12; background: #241c0a; }
+  .badge.armed  { color: #fff; background: var(--red); border-color: var(--red); }
+  .badge.paused { color: var(--amber); border-color: #4a3a12; background: #241c0a; }
+  .spacer { flex: 1; }
+  button {
+    font: 600 12px/1 inherit; color: var(--text); background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; cursor: pointer;
+  }
+  button:hover { border-color: #39414d; }
+  button.danger { color: var(--red); border-color: #4a1f1f; }
+  button.danger:hover { background: #2a1414; }
+
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(12, 1fr); }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px; min-width: 0;
+  }
+  .card h2 {
+    margin: 0 0 10px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--faint); font-weight: 600;
+  }
+  .span-3 { grid-column: span 3; } .span-4 { grid-column: span 4; }
+  .span-5 { grid-column: span 5; } .span-6 { grid-column: span 6; }
+  .span-7 { grid-column: span 7; } .span-8 { grid-column: span 8; }
+  .span-12 { grid-column: span 12; }
+  @media (max-width: 1000px) { .grid > * { grid-column: span 12 !important; } }
+
+  .stat { font: 700 26px/1.1 var(--mono); letter-spacing: -.02em; }
+  .stat.sm { font-size: 18px; }
+  .sub { color: var(--dim); font-size: 12px; margin-top: 3px; }
+  .up { color: var(--green); } .down { color: var(--red); } .warn { color: var(--amber); }
+  .muted { color: var(--faint); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th {
+    text-align: left; font: 600 10px/1 var(--mono); letter-spacing: .07em;
+    text-transform: uppercase; color: var(--faint); padding: 0 8px 7px 0;
+  }
+  td { padding: 6px 8px 6px 0; border-top: 1px solid var(--line); font-family: var(--mono); }
+  td.sym { font-family: inherit; font-weight: 600; }
+  .num { text-align: right; }
+  .empty { color: var(--faint); padding: 14px 0; font-style: italic; }
+
+  .agents { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  @media (max-width: 760px) { .agents { grid-template-columns: repeat(2, 1fr); } }
+  .agent {
+    background: var(--panel-2); border: 1px solid var(--line); border-left-width: 3px;
+    border-radius: 7px; padding: 9px 10px; min-width: 0;
+  }
+  .agent.ok    { border-left-color: var(--green); }
+  .agent.veto  { border-left-color: var(--red); }
+  .agent.idle  { border-left-color: #333a45; }
+  .agent .n { font: 700 11px/1 var(--mono); letter-spacing: .06em; }
+  .agent .r { color: var(--faint); font-size: 10px; margin-top: 2px; text-transform: uppercase; letter-spacing: .05em; }
+  .agent .t { margin-top: 7px; font-size: 11px; color: var(--dim);
+              overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .agent .c { margin-top: 5px; font: 600 10px/1 var(--mono); color: var(--faint); }
+
+  .log { max-height: 330px; overflow-y: auto; font-family: var(--mono); font-size: 11.5px; }
+  .log div { padding: 4px 0; border-top: 1px solid var(--line); display: flex; gap: 8px; }
+  .log .ts { color: var(--faint); flex: none; }
+  .log .ag { flex: none; font-weight: 700; min-width: 68px; }
+  .log .msg { color: var(--dim); overflow: hidden; text-overflow: ellipsis; }
+  .k-entry .ag, .k-approved .ag { color: var(--green); }
+  .k-exit .ag { color: var(--blue); }
+  .k-veto .ag { color: var(--red); }
+  .k-error .ag { color: var(--amber); }
+
+  .bar { height: 5px; background: var(--panel-2); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+  .bar > i { display: block; height: 100%; background: var(--green); }
+  .bar > i.warn { background: var(--amber); } .bar > i.down { background: var(--red); }
+
+  .banner {
+    padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 12.5px;
+    border: 1px solid #4a3a12; background: #241c0a; color: var(--amber);
+  }
+  .banner.red { border-color: #4a1f1f; background: #2a1414; color: var(--red); }
+  .banner b { color: inherit; }
+  footer { color: var(--faint); font-size: 11px; margin: 16px 0 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">TRADING DESK <span id="chains"></span></div>
+    <div id="badges"></div>
+    <div class="spacer"></div>
+    <div class="muted" id="clock"></div>
+    <button id="btn-pause">Pause</button>
+    <button id="btn-panic" class="danger">Flatten all</button>
+  </header>
+
+  <div id="banners"></div>
+
+  <div class="grid">
+    <div class="card span-3">
+      <h2>Equity</h2>
+      <div class="stat" id="equity">—</div>
+      <div class="sub" id="equity-sub"></div>
+      <div class="bar"><i id="floor-bar"></i></div>
+      <div class="sub muted" id="floor-note"></div>
+    </div>
+
+    <div class="card span-3">
+      <h2>Open P&amp;L</h2>
+      <div class="stat" id="pnl">—</div>
+      <div class="sub" id="pnl-sub"></div>
+    </div>
+
+    <div class="card span-3">
+      <h2>Record</h2>
+      <div class="stat sm" id="record">—</div>
+      <div class="sub" id="record-sub"></div>
+    </div>
+
+    <div class="card span-3">
+      <h2>Risk</h2>
+      <div class="stat sm" id="risk">—</div>
+      <div class="sub" id="risk-sub"></div>
+    </div>
+
+    <div class="card span-12">
+      <h2>The committee — last tick</h2>
+      <div class="agents" id="agents"></div>
+    </div>
+
+    <div class="card span-7">
+      <h2>Equity curve</h2>
+      <svg id="curve" viewBox="0 0 800 150" preserveAspectRatio="none"
+           style="width:100%;height:150px"></svg>
+      <div class="sub muted" id="curve-note"></div>
+    </div>
+
+    <div class="card span-5">
+      <h2>Open positions</h2>
+      <div id="positions"></div>
+    </div>
+
+    <div class="card span-7">
+      <h2>Activity</h2>
+      <div class="log" id="activity"></div>
+    </div>
+
+    <div class="card span-5">
+      <h2>Last decisions</h2>
+      <div id="reviews"></div>
+    </div>
+
+    <div class="card span-12">
+      <h2>Closed trades</h2>
+      <div id="trades"></div>
+    </div>
+  </div>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const usd = (v, d = 2) =>
+  (v < 0 ? "-$" : "$") + Math.abs(Number(v) || 0).toLocaleString("en-US",
+    { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = (v, d = 1) => ((Number(v) || 0) * 100).toFixed(d) + "%";
+const signed = (v) => (v >= 0 ? "+" : "") + usd(v);
+const cls = (v) => (v > 0 ? "up" : v < 0 ? "down" : "");
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
+  (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const clock = (ts) => new Date(ts * 1000).toLocaleTimeString("en-GB");
+
+function badges(m) {
+  const out = [];
+  if (m.execution === "live" && m.armed) out.push(['armed', 'live · armed']);
+  else if (m.execution === "live") out.push(['unarmed', 'live · not armed']);
+  else out.push(['paper', 'paper']);
+  if (m.paused) out.push(['paused', 'paused']);
+  return out.map(([c, t]) => `<span class="badge ${c}">${t}</span>`).join(" ");
+}
+
+function banners(s) {
+  const out = [];
+  if (s.mode.execution === "live" && s.mode.armed) {
+    out.push(`<div class="banner red"><b>Armed.</b> Real transactions are being
+      broadcast from ${esc(Object.values(s.mode.wallets).join(", ") || "an unknown wallet")}.</div>`);
+  }
+  if (s.risk.halted_reason) {
+    out.push(`<div class="banner"><b>Entries halted:</b> ${esc(s.risk.halted_reason)}.
+      Open positions are still being managed.</div>`);
+  }
+  const room = s.equity.room_to_floor_pct;
+  if (room <= 0) {
+    out.push(`<div class="banner red"><b>Below the tradeable floor.</b> At
+      ${usd(s.equity.usd)} the desk cannot place a position that meets the
+      ${usd(s.equity.untradeable_below_usd)} minimum. It is finished, not merely losing.</div>`);
+  } else if (room < 0.1) {
+    out.push(`<div class="banner"><b>${pct(room)} from the floor.</b> Below
+      ${usd(s.equity.untradeable_below_usd)} no valid trade exists at this risk setting.</div>`);
+  }
+  if (s.tick.last_error) {
+    out.push(`<div class="banner"><b>Last tick errored:</b> ${esc(s.tick.last_error)}</div>`);
+  }
+  return out.join("");
+}
+
+function agents(list) {
+  return list.map((a) => {
+    const state = a.vetoed > 0 ? "veto" : a.passed > 0 ? "ok" : "idle";
+    const tally = [
+      a.passed ? `${a.passed} pass` : "",
+      a.vetoed ? `${a.vetoed} veto` : "",
+      a.skipped ? `${a.skipped} skipped` : "",
+    ].filter(Boolean).join(" · ") || "not consulted";
+    return `<div class="agent ${state}">
+      <div class="n">${esc(a.name)}</div>
+      <div class="r">${esc(a.role)}</div>
+      <div class="t" title="${esc(a.last)}">${esc(a.last || "—")}</div>
+      <div class="c">${esc(tally)}</div>
+    </div>`;
+  }).join("");
+}
+
+function table(cols, rows, emptyText) {
+  if (!rows.length) return `<div class="empty">${esc(emptyText)}</div>`;
+  const head = cols.map((c) => `<th class="${c.num ? "num" : ""}">${esc(c.label)}</th>`).join("");
+  const body = rows.map((r) =>
+    "<tr>" + cols.map((c) => `<td class="${c.num ? "num " : ""}${c.cls ? c.cls(r) : ""}">${c.get(r)}</td>`).join("") + "</tr>"
+  ).join("");
+  return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+}
+
+function curve(points) {
+  const svg = $("curve");
+  if (points.length < 2) {
+    svg.innerHTML = "";
+    $("curve-note").textContent = "Not enough history yet — one point per tick.";
+    return;
+  }
+  const vals = points.map((p) => p[1]);
+  const lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || 1;
+  const x = (i) => (i / (points.length - 1)) * 800;
+  const y = (v) => 145 - ((v - lo) / span) * 140;
+  const line = points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p[1]).toFixed(1)}`).join("");
+  const rising = vals[vals.length - 1] >= vals[0];
+  const stroke = rising ? "#35d07f" : "#ff5c5c";
+  svg.innerHTML =
+    `<path d="${line}L800,150L0,150Z" fill="${stroke}" opacity="0.08"/>` +
+    `<path d="${line}" fill="none" stroke="${stroke}" stroke-width="2"
+      vector-effect="non-scaling-stroke"/>`;
+  $("curve-note").textContent =
+    `${points.length} ticks · low ${usd(lo)} · high ${usd(hi)}`;
+}
+
+async function refresh() {
+  let s;
+  try {
+    s = await (await fetch("/api/state")).json();
+  } catch (e) {
+    $("clock").textContent = "disconnected";
+    return;
+  }
+
+  $("chains").textContent = s.mode.chains.join(" · ");
+  $("badges").innerHTML = badges(s.mode);
+  $("banners").innerHTML = banners(s);
+  $("btn-pause").textContent = s.mode.paused ? "Resume" : "Pause";
+
+  const e = s.equity;
+  $("equity").textContent = usd(e.usd);
+  $("equity").className = "stat " + cls(e.usd - e.start_usd);
+  $("equity-sub").innerHTML =
+    `from ${usd(e.start_usd)} · <span class="${cls(e.return_pct)}">${pct(e.return_pct)}</span>
+     · cash ${usd(e.cash_usd)}`;
+  const room = Math.max(0, Math.min(1, e.room_to_floor_pct));
+  const bar = $("floor-bar");
+  bar.style.width = (room * 100).toFixed(1) + "%";
+  bar.className = room > 0.4 ? "" : room > 0.15 ? "warn" : "down";
+  $("floor-note").textContent =
+    `${pct(room)} of drawdown before ${usd(e.untradeable_below_usd)}, where trading stops`;
+
+  const open = e.unrealized_usd;
+  $("pnl").textContent = signed(open);
+  $("pnl").className = "stat " + cls(open);
+  $("pnl-sub").innerHTML =
+    `realised <span class="${cls(e.realized_usd)}">${signed(e.realized_usd)}</span>
+     · fees ${usd(e.fees_usd)} · ${pct(e.pct_of_target, 4)} of target`;
+
+  const p = s.performance;
+  $("record").textContent = p.trades ? `${p.wins}W / ${p.losses}L` : "no trades yet";
+  $("record-sub").innerHTML = p.trades
+    ? `${pct(p.win_rate, 0)} win rate · PF ${p.profit_factor ? p.profit_factor.toFixed(2) : "∞"}
+       · best <span class="up">${signed(p.best_usd)}</span>
+       · worst <span class="down">${signed(p.worst_usd)}</span>`
+    : "the desk has not closed a position";
+
+  const r = s.risk;
+  $("risk").textContent = `${r.slots_used}/${r.slots_total} slots`;
+  $("risk-sub").innerHTML =
+    `${r.consecutive_losses}/${r.max_consecutive_losses} losing streak ·
+     daily limit ${pct(r.daily_loss_limit_pct, 0)} ·
+     tick ${s.tick.count} scanned ${s.tick.scanned}, blocked ${s.tick.blocked}`;
+
+  $("agents").innerHTML = agents(s.agents);
+  curve(s.equity_curve);
+
+  $("positions").innerHTML = table([
+    { label: "Token", get: (x) => `<span class="sym">${esc(x.symbol)}</span>` },
+    { label: "Mult", num: true, cls: (x) => cls(x.multiple - 1),
+      get: (x) => x.multiple.toFixed(2) + "x" },
+    { label: "Value", num: true, get: (x) => usd(x.value_usd) },
+    { label: "P&L", num: true, cls: (x) => cls(x.unrealized_usd),
+      get: (x) => signed(x.unrealized_usd) },
+    { label: "Age", num: true, get: (x) => Math.round(x.age_minutes) + "m" },
+  ], s.positions, "Nothing open.");
+
+  $("activity").innerHTML = s.activity.length
+    ? s.activity.map((a) => `<div class="k-${esc(a.kind)}">
+        <span class="ts">${clock(a.at)}</span>
+        <span class="ag">${esc(a.agent || a.kind)}</span>
+        <span class="msg">${esc(a.message)}</span></div>`).join("")
+    : `<div class="empty">Waiting for the first tick.</div>`;
+
+  $("reviews").innerHTML = table([
+    { label: "Token", get: (x) => `<span class="sym">${esc(x.symbol)}</span>` },
+    { label: "Score", num: true, get: (x) => (x.score || 0).toFixed(2) },
+    { label: "Verdict", cls: (x) => (x.approved ? "up" : ""),
+      get: (x) => x.approved
+        ? "approved"
+        : `<span class="down">${esc(x.blocked_by || "blocked")}</span>` },
+    { label: "Reason", get: (x) => `<span class="muted">${esc(x.summary)}</span>` },
+  ], s.reviews, "No candidates reviewed yet.");
+
+  $("trades").innerHTML = table([
+    { label: "Token", get: (x) => `<span class="sym">${esc(x.symbol)}</span>` },
+    { label: "Chain", get: (x) => `<span class="muted">${esc(x.chain)}</span>` },
+    { label: "P&L", num: true, cls: (x) => cls(x.pnl_usd), get: (x) => signed(x.pnl_usd) },
+    { label: "Return", num: true, cls: (x) => cls(x.return_pct), get: (x) => pct(x.return_pct) },
+    { label: "Held", num: true, get: (x) => Math.round(x.minutes) + "m" },
+    { label: "Exit", get: (x) => `<span class="muted">${esc(x.reason)}</span>` },
+    { label: "Closed", num: true, get: (x) => clock(x.closed_at) },
+  ], s.trades, "No closed trades.");
+
+  const up = s.tick.uptime_seconds;
+  $("clock").textContent =
+    `tick ${s.tick.count} · up ${Math.floor(up / 3600)}h ${Math.floor((up % 3600) / 60)}m`;
+  $("foot").textContent =
+    `Every ${s.tick.interval_seconds}s. Paper mode risks nothing; live mode is only armed
+     with --arm. This dashboard binds to localhost and has no authentication — anyone who
+     can reach this port can flatten the book.`;
+}
+
+async function control(action) {
+  await fetch("/api/control", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action }),
+  });
+  refresh();
+}
+
+$("btn-pause").onclick = () =>
+  control($("btn-pause").textContent === "Pause" ? "pause" : "resume");
+$("btn-panic").onclick = () => {
+  if (confirm("Sell every open position at market, now?")) control("panic");
+};
+
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>

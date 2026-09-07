@@ -23,18 +23,27 @@ import time
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
+from .committee import Committee, Review, ReviewContext
 from .config import DeskConfig
 from .execution.base import Executor, ExecutionError, SlippageExceeded
 from .journal import Journal
 from .marketdata.base import MultiChainFeed
 from .marketdata.history import PriceHistory
-from .models import Candidate, ExitReason, Fill, Order, Pair, Position, Side
+from .models import (
+    Candidate,
+    ExitReason,
+    Fill,
+    Order,
+    Pair,
+    Position,
+    SafetyVerdict,
+    Side,
+)
 from .portfolio import Portfolio
 from .risk import RiskManager, size_position
 from .safety import SafetyGate
 from .strategy import (
     apply_post_exit_adjustments,
-    evaluate_entry,
     evaluate_exit,
     initial_stop_price,
 )
@@ -60,6 +69,7 @@ class TickResult:
     halted_reason: Optional[str] = None
     errors: list[str] = field(default_factory=list)
     top_candidates: list[Candidate] = field(default_factory=list)
+    reviews: list[Review] = field(default_factory=list)
 
     @property
     def duration_seconds(self) -> float:
@@ -78,6 +88,7 @@ class TradingDesk:
         safety_gate: Optional[SafetyGate] = None,
         history: Optional[PriceHistory] = None,
         clock: Callable[[], float] = time.time,
+        committee: Optional[Committee] = None,
     ):
         self.config = config
         self.feed = feed
@@ -86,6 +97,10 @@ class TradingDesk:
         self.history = history or PriceHistory()
         self.safety = safety_gate or SafetyGate(config.safety, history=self.history)
         self.clock = clock
+        self.committee = committee or Committee()
+        # Operator pause. Stops new entries only; exits keep running, because
+        # a paused desk that cannot cut a loser is worse than no desk.
+        self.paused = False
 
         if journal is not None:
             self.portfolio = journal.load_portfolio(config.starting_capital_usd)
@@ -115,7 +130,9 @@ class TradingDesk:
         self.risk.sync_day(equity)
         result.halted_reason = self.risk.check_halt(equity)
 
-        if result.halted_reason is None:
+        if self.paused:
+            result.halted_reason = result.halted_reason or "paused by operator"
+        elif result.halted_reason is None:
             self._process_entries(result)
 
         result.equity_usd = self.portfolio.equity_usd
@@ -208,6 +225,13 @@ class TradingDesk:
             )
 
     def _process_entries(self, result: TickResult) -> None:
+        """Put every discovered pair to the committee, then act on approvals.
+
+        The committee owns the entry decision end to end — capacity, safety,
+        authenticity, momentum, exposure, cost and exit depth are all its
+        agents' jobs. This method only discovers candidates and executes what
+        comes back approved.
+        """
         capacity = self.risk.capacity(self.portfolio.open_positions)
         if capacity <= 0:
             return
@@ -217,36 +241,38 @@ class TradingDesk:
         result.scanned = len(pairs)
 
         cooling_off = self._cooling_off()
-        candidates: list[Candidate] = []
+        reviews: list[Review] = []
         for pair in pairs:
             if pair.price_usd:
                 self.history.observe(pair.key, pair.price_usd, pair.liquidity_usd)
-            if self.portfolio.holds(pair.chain, pair.base_address):
-                continue
-            if pair.key in cooling_off:
-                continue
-            try:
-                verdict = self.safety.evaluate(pair)
-            except Exception as exc:  # noqa: BLE001
-                result.errors.append(f"safety check failed for {pair.base_symbol}: {exc}")
-                continue
-            if not verdict.passed:
-                result.safety_rejected += 1
-                continue
-            candidates.append(evaluate_entry(pair, verdict, self.config.strategy))
+            context = ReviewContext(
+                pair=pair,
+                config=self.config,
+                portfolio=self.portfolio,
+                risk=self.risk,
+                safety_gate=self.safety,
+                history=self.history,
+                cooling_off=cooling_off,
+                feed=self.feed,
+            )
+            reviews.append(self.committee.review(context))
 
-        result.scored = len(candidates)
-        tradeable = sorted(
-            (c for c in candidates if c.tradeable), key=lambda c: c.score, reverse=True
-        )
-        result.top_candidates = sorted(candidates, key=lambda c: c.score, reverse=True)[:5]
+        # "Rejected on structure" means the charts were never consulted, which
+        # is a different thing from a token that was looked at and passed over.
+        result.safety_rejected = sum(1 for r in reviews if not r.consulted_agent("RIO"))
+        result.scored = sum(1 for r in reviews if r.consulted_agent("RIO"))
+        result.reviews = sorted(reviews, key=lambda r: (r.approved, r.score), reverse=True)
+        result.top_candidates = [
+            Candidate(pair=r.pair, safety=SafetyVerdict(passed=r.approved, score=0), score=r.score)
+            for r in result.reviews[:5]
+        ]
 
-        for candidate in tradeable:
+        for review in result.reviews:
             if capacity <= 0:
                 break
-            if not self.risk.chain_has_room(candidate.pair.chain, self.portfolio.open_positions):
+            if not review.approved:
                 continue
-            if self._enter(candidate, result):
+            if self._enter(review, result):
                 capacity -= 1
 
     def _cooling_off(self) -> set[str]:
@@ -257,13 +283,28 @@ class TradingDesk:
 
     # ------------------------------------------------------------------ trades
 
-    def _enter(self, candidate: Candidate, result: TickResult) -> bool:
-        pair = candidate.pair
-        price = pair.price_usd
+    def _enter(self, review: Review, result: TickResult) -> bool:
+        """Place the order the committee approved.
+
+        Size is recomputed here rather than reused from the review: cash moves
+        as earlier entries in this same tick fill, and a stale size would let
+        the last approval of a tick overdraw the account.
+        """
+        pair = review.pair
+        price = review.entry_price or pair.price_usd
         if not price:
             return False
 
-        stop = initial_stop_price(price, self.config.strategy)
+        # HELSINKI cleared exposure when the committee sat, but every fill in
+        # this same tick changes the book underneath that verdict. Re-check the
+        # two constraints that move: the name may now be held, and the chain
+        # may have just reached its limit.
+        if self.portfolio.holds(pair.chain, pair.base_address):
+            return False
+        if not self.risk.chain_has_room(pair.chain, self.portfolio.open_positions):
+            return False
+
+        stop = review.stop_price or initial_stop_price(price, self.config.strategy)
         sizing = size_position(
             equity_usd=self.portfolio.equity_usd,
             cash_usd=self.portfolio.cash_usd,
@@ -283,7 +324,7 @@ class TradingDesk:
             usd_amount=sizing.usd_amount,
             reference_price=price,
             pair=pair,
-            reason=f"score {candidate.score:.2f} ({sizing.binding_constraint}-capped)",
+            reason=f"score {review.score:.2f} ({sizing.binding_constraint}-capped)",
             max_slippage_pct=self.config.execution.max_slippage_pct,
         )
         try:
@@ -300,7 +341,7 @@ class TradingDesk:
             self.journal.record_fill(fill)
         result.entries.append(
             f"{pair.base_symbol} on {pair.chain.label} ${sizing.usd_amount:.2f} "
-            f"@ ${fill.price:.8g} (score {candidate.score:.2f})"
+            f"@ ${fill.price:.8g} (score {review.score:.2f})"
         )
         return True
 

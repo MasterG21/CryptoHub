@@ -4,6 +4,7 @@ Commands
     plan      What $100 -> $1,000,000 requires, in numbers. Start here.
     scan      One pass of discovery, safety screening and scoring. No trading.
     run       The autonomous loop. Paper by default.
+    serve     Run the desk behind a local web dashboard.
     status    Portfolio, open positions and realised performance.
     simulate  Monte-Carlo the strategy forward under an assumed distribution.
     panic     Flatten every open position now.
@@ -462,6 +463,58 @@ def cmd_run(cfg: DeskConfig, args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_serve(cfg: DeskConfig, args: argparse.Namespace) -> int:
+    """Run the desk with a local dashboard in front of it."""
+    from .web.runner import DeskRunner
+    from .web.server import serve as serve_http
+
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.WARNING,
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
+    desk = build_desk(cfg, args)
+
+    if cfg.execution.mode == "live":
+        blockers = desk.executor.preflight() if isinstance(desk.executor, LiveExecutor) else []
+        if blockers:
+            print(f"{RED}Live mode is not armed:{RESET}")
+            for blocker in blockers:
+                print(f"  - {blocker}")
+            return 1
+
+    runner = DeskRunner(desk)
+    httpd = serve_http(runner, host=args.host, port=args.port)
+
+    mode = cfg.execution.mode
+    colour = RED if mode == "live" else CYAN
+    print(f"\n{BOLD}Trading desk{RESET}  mode={colour}{mode}{RESET}  "
+          f"chains={', '.join(c.label for c in cfg.chains)}")
+    print(f"{BOLD}Dashboard{RESET}  http://{args.host}:{args.port}")
+    if args.host not in ("127.0.0.1", "localhost"):
+        print(f"{RED}Warning:{RESET} bound to {args.host} with no authentication — "
+              f"anyone who can reach this port can flatten your book.")
+    if mode == "live" and getattr(args, "arm", False):
+        print(f"{RED}{BOLD}ARMED — real transactions will be broadcast.{RESET}")
+    for line in _risk_banner(cfg):
+        print(line)
+    print(f"\n{DIM}Ctrl-C to stop. Open positions are left in place.{RESET}\n")
+
+    try:
+        while True:
+            # The desk runs on its own thread; this one only waits for Ctrl-C.
+            runner._stop.wait(3600)
+    except KeyboardInterrupt:
+        print(f"\n{DIM}Stopping...{RESET}")
+    finally:
+        httpd.shutdown()
+        runner.stop()
+        if desk.journal:
+            desk.journal.close()
+
+    _print_stats(desk.portfolio.stats(), cfg)
+    return 0
+
+
 def cmd_status(cfg: DeskConfig, args: argparse.Namespace) -> int:
     with Journal(cfg.journal_path) as journal:
         portfolio = journal.load_portfolio(cfg.starting_capital_usd)
@@ -667,6 +720,23 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--max-errors", type=int, default=3, help="Errors to print per tick")
     run.add_argument("-v", "--verbose", action="store_true")
     run.set_defaults(func=cmd_run)
+
+    serve_cmd = sub.add_parser("serve", help="Run the desk with a local web dashboard")
+    serve_cmd.add_argument("--host", default="127.0.0.1", help="Bind address (default: localhost)")
+    serve_cmd.add_argument("--port", type=int, default=8787, help="Dashboard port")
+    serve_cmd.add_argument("--interval", type=float, help="Seconds between ticks")
+    serve_cmd.add_argument("--live", action="store_true", help="Attempt live mode")
+    serve_cmd.add_argument(
+        "--arm",
+        action="store_true",
+        help="Broadcast real transactions (live mode only)",
+    )
+    serve_cmd.add_argument("--max-order-usd", type=float, default=25.0,
+                           help="Hard per-order ceiling enforced by the signer")
+    serve_cmd.add_argument("--failure-rate", type=float, default=0.0,
+                           help="Simulate this share of failed transactions in paper mode")
+    serve_cmd.add_argument("-v", "--verbose", action="store_true")
+    serve_cmd.set_defaults(func=cmd_serve)
 
     status = sub.add_parser("status", help="Portfolio and performance")
     status.add_argument("--limit", type=int, default=10)

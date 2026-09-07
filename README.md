@@ -69,10 +69,64 @@ pip install -r requirements.txt
 python -m trading_desk plan                      # the math above
 python -m trading_desk doctor                    # config + connectivity check
 python -m trading_desk scan                      # one screening pass, no trading
-python -m trading_desk run --ticks 20            # the loop, paper mode
+python -m trading_desk serve                     # the loop + web dashboard
+python -m trading_desk run --ticks 20            # the loop, terminal only
 python -m trading_desk status                    # portfolio and performance
 python -m trading_desk panic                     # flatten every position now
 ```
+
+### The dashboard
+
+```bash
+python -m trading_desk serve          # then open http://127.0.0.1:8787
+```
+
+Shows equity and the curve, open positions, the committee's verdict on every
+candidate in the last tick, an activity log attributing each refusal to the agent
+that made it, closed trades, and the risk state. Pause and Flatten-all are wired.
+
+Two details it reports that most dashboards do not:
+
+- **How far you are from the floor.** Not the equity floor — the point at which
+  no valid position can be funded at all. On $100 at the shipped settings that is
+  $75, so the bar shows 25% of room, not 100%.
+- **Who blocked what, and who never got asked.** A veto stops the committee, so
+  agents after it are shown as "not consulted" rather than silently passing.
+
+It is served by the standard library, binds to `127.0.0.1`, and **has no
+authentication** — anyone who can reach the port can flatten your book. Tunnel over
+SSH if you need it remotely; do not put it on the internet.
+
+### The committee
+
+Entry decisions run through ten named specialists, in order, and any one of them
+can veto:
+
+| | | |
+|---|---|---|
+| `PROFESSOR` | router | mandate, capacity, kill switches |
+| `TOKYO` | scout | is this a real, quotable pool |
+| `BERLIN` | conditions | the full structural safety gate |
+| `DENVER` | noise filter | is the volume people, or one bot cycling inventory |
+| `NAIROBI` | briefs | what the contract can do to a holder |
+| `RIO` | charts | momentum score |
+| `HELSINKI` | ledger | already held, in cooldown, chain at its limit |
+| `STOCKHOLM` | depth | does the round trip eat the stop |
+| `LISBON` | recheck | has the price moved since it was scored |
+| `PALERMO` | approval | could this position actually be sold |
+
+These are deterministic functions, not language-model calls. A model adds nothing
+to "is pool depth above the floor" — it would be slower, cost money per token per
+tick, and answer differently on Tuesday. What the structure buys is the audit
+trail and the independent vetoes, and those work better when each agent is small,
+testable and reproducible.
+
+Cheap local checks run first; the two gates that decide whether a position can be
+*exited* run last, closest to commitment. `STOCKHOLM` refuses trades whose round
+trip costs more than a quarter of the distance to the stop. `PALERMO` refuses
+anything it could not sell — the screenshot-famous "exit too thin". An agent that
+raises an exception vetoes rather than approving by omission: an unanswered
+question is not a yes.
 
 Configuration is a JSON file (see `desk.config.example.json`), with environment
 overrides for the things you change often:
@@ -95,8 +149,8 @@ Every poll interval, in this order:
    halted*, because a circuit breaker must never trap the desk in a losing position.
 3. **Check the kill switches** (daily loss limit, losing streak, equity floor). If one
    has tripped, the tick ends here and nothing new is opened.
-4. **Discover** candidates, run the safety gate, score the survivors.
-5. **Size and enter** the best of them, up to capacity.
+4. **Discover** candidates and put each one to the committee.
+5. **Size and enter** whatever cleared all ten, up to capacity.
 6. **Snapshot** equity and persist everything to SQLite.
 
 A failure in one chain, one feed or one token cannot stop the others; failures are
@@ -253,10 +307,12 @@ forgets it is down 20% today because it was restarted has no daily loss limit at
 python -m pytest tests/
 ```
 
-221 tests, no network: the feeds are replaced at their seams with canned responses
+267 tests, no network: the feeds are replaced at their seams with canned responses
 shaped like the real APIs. That includes end-to-end ticks of the desk — entries, stops,
-scale-outs, halts, restarts, feed outages — and the signer rails: caps, key redaction,
-approval handling, and the guarantee that a dry run broadcasts nothing.
+scale-outs, halts, restarts, feed outages — the committee's vetoes and the audit
+trail they produce, the dashboard's snapshot and controls, and the signer rails:
+caps, key redaction, approval handling, and the guarantee that a dry run broadcasts
+nothing.
 
 ### Honest limitations
 

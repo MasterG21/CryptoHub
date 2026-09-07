@@ -148,3 +148,44 @@ def test_starting_capital_is_remembered_not_re_read_from_config(journal_path):
     with Journal(journal_path) as journal:
         restored = journal.load_portfolio(999.0)
     assert restored.starting_cash_usd == 100.0
+
+
+def test_the_journal_works_across_threads(journal_path):
+    """The dashboard reads on HTTP threads while the desk writes on its own.
+
+    SQLite connections default to refusing cross-thread use, which made every
+    write from the desk thread fail silently in serve mode — no equity curve,
+    and no restart safety.
+    """
+    import threading
+
+    journal = Journal(journal_path)
+    portfolio = Portfolio(100.0)
+    errors = []
+
+    def write():
+        try:
+            for i in range(20):
+                portfolio.cash_usd = 100.0 + i
+                journal.snapshot_equity(portfolio, ts=1000.0 + i)
+                journal.save_state(portfolio, RiskState())
+        except Exception as exc:  # noqa: BLE001
+            errors.append(exc)
+
+    def read():
+        try:
+            for _ in range(20):
+                journal.equity_curve()
+                journal.load_risk_state()
+        except Exception as exc:  # noqa: BLE001
+            errors.append(exc)
+
+    threads = [threading.Thread(target=write), threading.Thread(target=read)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=10)
+
+    assert errors == []
+    assert len(journal.equity_curve()) == 20
+    journal.close()
