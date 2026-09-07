@@ -1,0 +1,62 @@
+{
+  "starting_capital_usd": 100.0,
+  "target_usd": 1000000.0,
+  "chains": ["solana", "bsc"],
+  "poll_interval_seconds": 60,
+  "max_candidates_per_chain": 30,
+  "journal_path": "desk_journal.sqlite3",
+
+  "risk": {
+    "risk_per_trade_pct": 0.02,
+    "max_position_pct": 0.25,
+    "max_pool_impact_pct": 0.01,
+    "max_concurrent_positions": 4,
+    "max_positions_per_chain": 2,
+    "min_position_usd": 5.0,
+    "cash_reserve_pct": 0.10,
+    "daily_loss_limit_pct": 0.25,
+    "max_consecutive_losses": 6,
+    "equity_floor_usd": 15.0
+  },
+
+  "strategy": {
+    "stop_loss_pct": 0.30,
+    "trail_arm_multiple": 1.6,
+    "trail_giveback_pct": 0.25,
+    "scale_out_levels": [2.0, 4.0, 10.0],
+    "scale_out_fractions": [0.4, 0.3, 0.2],
+    "time_stop_minutes": 180,
+    "time_stop_min_multiple": 1.15,
+    "liquidity_drain_pct": 0.40,
+    "momentum_dead_change_1h": -0.25,
+    "reentry_cooldown_minutes": 120,
+    "min_entry_score": 0.55,
+    "max_change_5m": 1.0,
+    "min_change_1h": 0.02
+  },
+
+  "safety": {
+    "min_liquidity_usd": 15000.0,
+    "min_age_minutes": 20,
+    "max_age_minutes": 20160,
+    "min_txns_1h": 30,
+    "min_volume_1h_usd": 5000.0,
+    "max_volume_to_liquidity": 40.0,
+    "min_liquidity_to_fdv": 0.01,
+    "max_sell_starvation_ratio": 0.97,
+    "min_robinhood_health_score": 60,
+    "require_robinhood_screen": true
+  },
+
+  "execution": {
+    "mode": "paper",
+    "dex_fee_pct": 0.003,
+    "max_slippage_pct": 0.15,
+    "allow_live_trading": false,
+    "gas_usd": {
+      "solana": 0.03,
+      "bsc": 0.35,
+      "robinhood": 0.05
+    }
+  }
+}

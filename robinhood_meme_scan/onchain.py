@@ -112,3 +112,99 @@ def find_liquidity_pool(
                 fee_tier=fee, pool_address=pool_address, token_balance=token_balance
             )
     return None
+
+
+_V3_POOL_ABI = [
+    {
+        "inputs": [],
+        "name": "slot0",
+        "outputs": [
+            {"internalType": "uint160", "name": "sqrtPriceX96", "type": "uint160"},
+            {"internalType": "int24", "name": "tick", "type": "int24"},
+            {"internalType": "uint16", "name": "observationIndex", "type": "uint16"},
+            {"internalType": "uint16", "name": "observationCardinality", "type": "uint16"},
+            {"internalType": "uint16", "name": "observationCardinalityNext", "type": "uint16"},
+            {"internalType": "uint8", "name": "feeProtocol", "type": "uint8"},
+            {"internalType": "bool", "name": "unlocked", "type": "bool"},
+        ],
+        "stateMutability": "view",
+        "type": "function",
+    },
+    {
+        "inputs": [],
+        "name": "token0",
+        "outputs": [{"internalType": "address", "name": "", "type": "address"}],
+        "stateMutability": "view",
+        "type": "function",
+    },
+]
+
+_Q96 = 2**96
+
+
+@dataclass
+class PoolState:
+    """Spot price and both sides of a V3 pool's balance.
+
+    ``price_in_quote`` is one whole token priced in whole quote units (e.g.
+    TOKEN/WETH), decimals already applied. It is a spot read of slot0, so it
+    is the marginal price, not the price a real order would average.
+    """
+
+    pool_address: str
+    fee_tier: int
+    price_in_quote: Optional[float]
+    token_balance: int
+    quote_balance: int
+
+
+def read_pool_state(
+    w3: Web3,
+    pool_address: str,
+    token_address: str,
+    quote_address: str,
+    token_decimals: int = 18,
+    quote_decimals: int = 18,
+    fee_tier: int = 0,
+) -> PoolState:
+    """Read spot price and reserves from a Uniswap V3 pool.
+
+    Price comes from slot0's sqrtPriceX96, which is token1-per-token0 scaled by
+    2**96; which of the two the memecoin is depends on address ordering, so
+    token0() decides whether to invert. A pool that can't be read returns a
+    None price rather than a guessed one — callers treat that as "unknown".
+    """
+    pool = Web3.to_checksum_address(pool_address)
+    token = Web3.to_checksum_address(token_address)
+    quote = Web3.to_checksum_address(quote_address)
+
+    price: Optional[float] = None
+    try:
+        contract = w3.eth.contract(address=pool, abi=_V3_POOL_ABI)
+        sqrt_price_x96 = contract.functions.slot0().call()[0]
+        token0 = contract.functions.token0().call()
+        if sqrt_price_x96:
+            # (sqrtP / 2**96)**2 is token1 per token0 in raw units.
+            ratio = (sqrt_price_x96 / _Q96) ** 2
+            if Web3.to_checksum_address(token0) == token:
+                price = ratio * (10 ** (token_decimals - quote_decimals))
+            elif ratio > 0:
+                price = (1 / ratio) * (10 ** (token_decimals - quote_decimals))
+    except Exception:
+        price = None
+
+    balances = []
+    for asset in (token, quote):
+        try:
+            erc20 = w3.eth.contract(address=asset, abi=_ERC20_BALANCE_ABI)
+            balances.append(int(erc20.functions.balanceOf(pool).call()))
+        except Exception:
+            balances.append(0)
+
+    return PoolState(
+        pool_address=pool_address,
+        fee_tier=fee_tier,
+        price_in_quote=price,
+        token_balance=balances[0],
+        quote_balance=balances[1],
+    )

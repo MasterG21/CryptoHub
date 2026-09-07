@@ -1,5 +1,222 @@
 # CryptoHub
 
+Two tools that work together:
+
+- **`trading_desk`** — an autonomous memecoin trading desk for Solana, BNB Chain and
+  Robinhood Chain. Paper trading by default.
+- **`robinhood_meme_scan`** — the contract-level rug-risk screen the desk uses as its
+  safety gate on Robinhood Chain, also usable on its own.
+
+---
+
+## trading_desk
+
+An autonomous desk that discovers new memecoin pools, screens them for traps, scores
+what is left for momentum, sizes positions against a stop, and manages exits — on a
+loop, unattended.
+
+**It runs in paper mode by default and that is the only mode wired end to end.** Live
+order submission needs a signer you write and inject yourself; see
+[Going live](#going-live).
+
+### Start here: what the target actually costs
+
+If you point this at $100 with a $1,000,000 target, run `plan` before anything else.
+It does the arithmetic rather than the marketing:
+
+```bash
+python -m trading_desk plan
+```
+
+With the shipped defaults and the shipped assumed trade distribution, it reports:
+
+| | |
+|---|---|
+| Required return | 10,000x |
+| Configured risk per trade | 2.00% |
+| Growth-optimal risk (full Kelly) | 0.33% |
+| Expected log growth per trade | **negative** |
+| Monte Carlo: reached $1M | ~0% |
+| Monte Carlo: account dies | ~97% |
+
+Three findings drive that, and none of them are a bug:
+
+1. **Positive expectancy is not enough.** The default distribution has a genuinely
+   positive edge (+0.028R per trade) and still compounds *downward* at 2% risk,
+   because equity grows at `E[ln(1 + f·R)]`, not at the arithmetic mean. Bet past the
+   growth-optimal fraction and you lose growth and gain ruin at the same time.
+2. **A $100 account cannot bet small enough.** Risking 0.33% across a 30% stop is a
+   $1 position — under the minimum that gas makes worth placing. You would need about
+   $451 of equity before the smallest tradeable position stops being an overbet.
+3. **Below $75 the desk cannot trade at all.** At 2% risk and a 30% stop, a $5
+   minimum position needs $75 of equity behind it. A $100 account therefore has 25%
+   of drawdown before it is finished — not because it went to zero, but because it
+   can no longer place a valid order. Most simulated runs end exactly there.
+
+`plan` also prints a tail-sensitivity table, because one unknowable number decides the
+whole thing: how big the rare runner is. At a 10R best case the strategy is negative
+at any size; at 25R and up it turns positive. Nobody knows that number in advance,
+which is the honest summary of this trade.
+
+None of this stops the desk from running. It is here so the numbers are visible before
+real money is, rather than after.
+
+### Usage
+
+```bash
+pip install -r requirements.txt
+
+python -m trading_desk plan                      # the math above
+python -m trading_desk doctor                    # config + connectivity check
+python -m trading_desk scan                      # one screening pass, no trading
+python -m trading_desk run --ticks 20            # the loop, paper mode
+python -m trading_desk status                    # portfolio and performance
+python -m trading_desk panic                     # flatten every position now
+```
+
+Configuration is a JSON file (see `desk.config.example.json`), with environment
+overrides for the things you change often:
+
+```bash
+python -m trading_desk -c desk.config.example.json run
+DESK_RISK_PER_TRADE=0.01 DESK_CHAINS=solana python -m trading_desk run
+```
+
+A misspelled config key is reported rather than silently ignored — quietly falling back
+to a 2% default when you wrote `risk_per_trade` instead of `risk_per_trade_pct` is the
+kind of typo that costs an account.
+
+### How a tick works
+
+Every poll interval, in this order:
+
+1. **Refresh** quotes for open positions. A stale mark is a broken stop.
+2. **Exit** anything that has hit a rule — this runs *before* entries and *even while
+   halted*, because a circuit breaker must never trap the desk in a losing position.
+3. **Check the kill switches** (daily loss limit, losing streak, equity floor). If one
+   has tripped, the tick ends here and nothing new is opened.
+4. **Discover** candidates, run the safety gate, score the survivors.
+5. **Size and enter** the best of them, up to capacity.
+6. **Snapshot** equity and persist everything to SQLite.
+
+A failure in one chain, one feed or one token cannot stop the others; failures are
+collected and reported, not swallowed.
+
+### The safety gate
+
+Runs before any scoring, and is the harshest layer in the system. Its job is not to
+find winners — it is to refuse tokens whose structure means you may not be able to sell
+at all:
+
+- pool depth below a floor, or unknown
+- **unknown is not OK** — a missing liquidity number is a fact the desk could not
+  establish, and it does not put money behind those
+- pools too new (still in the launch-sniping window) or too old (the move is over)
+- market cap resting on a sliver of real float
+- volume far beyond what the pool's depth can support (wash trading)
+- **sell starvation** — near-100% buys with almost no sells, the honeypot signature of
+  a token whose sells revert
+- on Robinhood Chain, the full `robinhood_meme_scan` contract screen, gated on score
+
+### Sizing and exits
+
+Position size is the **smallest** of four independent caps: the risk budget
+(equity × risk% ÷ stop distance), a per-position cap, available cash net of reserve,
+and a cap on order size versus pool depth. That last one usually binds, and it is the
+one that matters — on a thin pool you are not a price taker, you are the price.
+
+Exits, in order of urgency: liquidity drain (the only condition where exiting may stop
+being *possible*), hard stop, trailing stop once the trade has earned one, a scale-out
+ladder that moves the stop to breakeven after the first tranche, momentum death, and a
+time stop for capital that is not working. After any full close, a cooldown blocks
+re-entering the same token — without it a stop-out and a re-buy land in the same tick,
+because the momentum fields still look strong the instant after a token drops through
+its stop.
+
+### What is real and what is modelled
+
+**Paper fills charge every real cost.** Price impact is derived from the constant-product
+invariant using the pool's own depth (buying `d` dollars from a pool with `Q` on the
+quote side fills at `spot × (1 + d/Q)`), plus DEX fee, plus chain gas. Buys and sells
+are asymmetric because the maths is. `--failure-rate` simulates transactions that never
+land. This is deliberately pessimistic: a paper result that ignores impact is the main
+reason memecoin strategies look profitable and are not.
+
+Concentrated-liquidity pools are deeper than this model near spot and much shallower
+outside the active range, so treat the numbers as a well-founded approximation rather
+than a quote.
+
+### Chain coverage
+
+| Chain | Source | Price | Depth | Volume / txn counts | Momentum |
+|---|---|---|---|---|---|
+| Solana | DexScreener | ✅ | ✅ | ✅ | from the feed |
+| BNB Chain | DexScreener | ✅ | ✅ | ✅ | from the feed |
+| Robinhood Chain | Blockscout + RPC | via V3 `slot0` | pool reserves | ❌ none published | **observed locally** |
+
+Robinhood Chain is new enough that no aggregator publishes rolling windows for it, so
+the desk records what it sees on each poll and derives the windows itself. Two
+consequences: it needs `--v3-factory`, `--weth` and `--native-usd` before it can price
+anything at all (and skips the chain loudly otherwise, rather than guessing), and a
+token there is not tradeable until the desk has watched it long enough to measure a
+real change. Volume and buy/sell counts stay `None` rather than being invented, and the
+safety gate falls back to observed price movement as its proof that trades are happening.
+
+### Going live
+
+Live routing is implemented — Jupiter on Solana, a 0x-compatible endpoint on BNB Chain,
+including decimals, slippage limits and turning a quote into a fill. **Signing and
+broadcasting are not.** That step needs a private key, and none of this code has ever
+run against a mainnet RPC; the environment it was written in has no route to any of
+those hosts. Shipping unexercised key-handling code that submits irreversible
+transactions would be the most dangerous thing in this repository.
+
+So the last step is a `TransactionSigner` you implement and inject. To arm it you must,
+separately and deliberately:
+
+1. set `execution.mode = "live"` **and** `execution.allow_live_trading = true`
+2. pass a `TransactionSigner` into `LiveExecutor`
+3. verify the first fills by hand, at the smallest size the desk will accept
+
+Two switches and an injected dependency, so no single typo can turn a simulation into
+real orders. Until then every live order raises `LiveTradingUnavailable`, loudly, with
+nothing sent. `python -m trading_desk doctor` lists what is still missing.
+
+### Persistence
+
+Everything lands in SQLite: every fill, every closed trade, an equity point per tick,
+the open book, the risk counters and the re-entry cooldown. The desk can die mid-session
+and come back holding the same positions and the same daily loss counter — a bot that
+forgets it is down 20% today because it was restarted has no daily loss limit at all.
+
+### Tests
+
+```bash
+python -m pytest tests/
+```
+
+198 tests, no network: the feeds are replaced at their seams with canned responses
+shaped like the real APIs. That includes end-to-end ticks of the desk — entries, stops,
+scale-outs, halts, restarts, feed outages.
+
+### Honest limitations
+
+- **The live path has never executed a real trade.** See [Going live](#going-live).
+- **The client code has never met the real APIs.** This environment cannot reach
+  DexScreener, Blockscout or any RPC, so field handling is written defensively
+  (degrade to "unknown" rather than guess) but is unverified against live responses.
+  Run `scan` against the real network before trusting it.
+- **The assumed trade distribution is an assumption**, not a measurement. Replace it
+  with your own realised results via `TradeDistribution.from_trades` once the desk has
+  traded enough to have them.
+- **The safety gate screens structure, not intent.** It can tell you a contract *can*
+  be used against holders. It cannot tell you a token will go up, and a token can pass
+  every check here and still go to zero.
+- **Autonomous memecoin trading is a way to lose money quickly and automatically.**
+  This is software, not investment advice.
+
+---
+
 ## robinhood_meme_scan
 
 A CLI heuristic health-check for ERC-20 meme coins on [Robinhood Chain](https://chain.robinhood.com)
