@@ -5,39 +5,14 @@ Needs: pip install "web3[tester]" ; npm install solc @openzeppelin/contracts
 """
 from __future__ import annotations
 
-import json
 import os
-import subprocess
 import sys
-import tempfile
 
 from web3 import EthereumTesterProvider, Web3
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from merkle import build_claims, leaf_hash  # noqa: E402
-
-CONTRACTS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "contracts")
-NODE_MODULES = os.environ.get("NODE_MODULES", os.path.join(os.getcwd(), "node_modules"))
-
-COMPILE_JS = r"""
-const fs=require('fs'),path=require('path'),solc=require(process.env.NODE_MODULES+'/solc');
-const SRC=process.env.CONTRACTS, NM=process.env.NODE_MODULES;
-const sources={};
-(function walk(d,pre){for(const f of fs.readdirSync(d)){const p=path.join(d,f);
- if(fs.statSync(p).isDirectory())walk(p,pre+f+'/');
- else if(f.endsWith('.sol'))sources[pre+f]={content:fs.readFileSync(p,'utf8')};}})(SRC,'');
-const findImport=p=>{const f=path.join(NM,p);
- return fs.existsSync(f)?{contents:fs.readFileSync(f,'utf8')}:{error:'not found '+p};};
-const out=JSON.parse(solc.compile(JSON.stringify({language:'Solidity',sources,settings:{
- optimizer:{enabled:true,runs:200},
- outputSelection:{'*':{'*':['abi','evm.bytecode.object']}}}}),{import:findImport}));
-const errs=(out.errors||[]).filter(e=>e.severity==='error');
-if(errs.length){errs.forEach(e=>console.error(e.formattedMessage));process.exit(1);}
-const flat={};
-for(const f of Object.keys(out.contracts))for(const[n,c]of Object.entries(out.contracts[f]))
- flat[n]={abi:c.abi,bin:c.evm.bytecode.object};
-fs.writeFileSync(process.env.OUT,JSON.stringify(flat));
-"""
+from compile import compile_contracts  # noqa: E402
+from merkle import build_claims  # noqa: E402
 
 PASSED, FAILED = [], []
 
@@ -52,17 +27,8 @@ def check(name, fn):
         print(f"  FAIL  {name}: {exc}")
 
 
-def compile_all():
-    with tempfile.TemporaryDirectory() as td:
-        js, out = os.path.join(td, "c.js"), os.path.join(td, "out.json")
-        open(js, "w").write(COMPILE_JS)
-        env = {**os.environ, "CONTRACTS": CONTRACTS, "NODE_MODULES": NODE_MODULES, "OUT": out}
-        subprocess.run(["node", js], check=True, env=env)
-        return json.load(open(out))
-
-
 def main():
-    art = compile_all()
+    art = compile_contracts(os.environ.get("NODE_MODULES"))["contracts"]
     w3 = Web3(EthereumTesterProvider())
     owner, alice, bob, carol = w3.eth.accounts[:4]
     w3.eth.default_account = owner

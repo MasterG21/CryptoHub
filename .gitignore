@@ -4,3 +4,9 @@ __pycache__/
 *.egg-info/
 .venv/
 venv/
+
+# launch secrets and output — never commit these
+.env
+node_modules/
+cpu_token/launch/out/
+epoch*.json
