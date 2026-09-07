@@ -164,23 +164,81 @@ safety gate falls back to observed price movement as its proof that trades are h
 
 ### Going live
 
-Live routing is implemented — Jupiter on Solana, a 0x-compatible endpoint on BNB Chain,
-including decimals, slippage limits and turning a quote into a fill. **Signing and
-broadcasting are not.** That step needs a private key, and none of this code has ever
-run against a mainnet RPC; the environment it was written in has no route to any of
-those hosts. Shipping unexercised key-handling code that submits irreversible
-transactions would be the most dangerous thing in this repository.
+Live trading is fully wired: routing through Jupiter on Solana and a 0x-compatible
+endpoint on BNB Chain, and signing through `trading_desk/execution/signers.py`
+(`SolanaSigner`, `EvmSigner`, `MultiChainSigner`).
 
-So the last step is a `TransactionSigner` you implement and inject. To arm it you must,
-separately and deliberately:
+**None of this code has ever run against a mainnet RPC.** It was written in an
+environment with no route to any chain, aggregator or explorer. It is careful and
+unit-tested where testable; that is not the same as proven. Treat your first live
+session as a test with real money.
 
-1. set `execution.mode = "live"` **and** `execution.allow_live_trading = true`
-2. pass a `TransactionSigner` into `LiveExecutor`
-3. verify the first fills by hand, at the smallest size the desk will accept
+#### Deployment
 
-Two switches and an injected dependency, so no single typo can turn a simulation into
-real orders. Until then every live order raises `LiveTradingUnavailable`, loudly, with
-nothing sent. `python -m trading_desk doctor` lists what is still missing.
+Run it on your own machine — not on a laptop that sleeps, and not in an ephemeral
+container. A VPS or a always-on box.
+
+```bash
+git clone https://github.com/MasterG21/CryptoHub.git && cd CryptoHub
+pip install -r requirements.txt -r requirements-live.txt
+
+# 1. Prove the plumbing works with no money involved.
+python -m trading_desk doctor
+python -m trading_desk scan                 # do real pairs come back?
+python -m trading_desk run --ticks 60       # paper, ~1 hour
+
+# 2. Keys, from the environment only. Never in a file, never committed.
+export DESK_SOLANA_PRIVATE_KEY='...'        # base58, or a JSON byte array
+export DESK_EVM_PRIVATE_KEY='0x...'
+
+# 3. Live, but not armed: builds and simulates real orders, broadcasts nothing.
+python -m trading_desk -c desk.config.json run --live
+
+# 4. Armed. Real, irreversible transactions.
+python -m trading_desk -c desk.config.json run --live --arm --max-order-usd 10
+```
+
+Step 3 is not optional. It exercises the whole live path — routing, decimals,
+allowances, simulation — against the real chain, and the only thing it does not do is
+broadcast. If anything is going to be wrong, it is wrong there, for free.
+
+#### The switches
+
+Four independent things must all be true before a transaction is broadcast, so that no
+single typo can turn a simulation into real orders:
+
+| | |
+|---|---|
+| `execution.mode = "live"` | config file, or `--live` |
+| `execution.allow_live_trading = true` | **config file only** — no CLI flag exists |
+| A key in the environment | `DESK_SOLANA_PRIVATE_KEY` / `DESK_EVM_PRIVATE_KEY` |
+| `--arm` | otherwise every order is simulated and dropped |
+
+`python -m trading_desk doctor` lists whichever are still missing. Without all four,
+orders raise `LiveTradingUnavailable`, loudly, with nothing sent.
+
+#### What the signers do for you
+
+- **Simulate before sending.** A transaction that reverts in simulation is never
+  broadcast — on Solana via `simulateTransaction`, on EVM via `eth_call`.
+- **Cap order size independently.** `--max-order-usd` is enforced inside the signer,
+  below the desk's own risk layer, so an upstream bug cannot produce a large order.
+- **Approve exactly, on sells only.** An EVM sell needs an ERC-20 allowance for the
+  router first — skipping it leaves a position that cannot be exited. The approval is
+  written for the exact amount, never unlimited: an infinite approval left sitting on a
+  memecoin router is a standing invitation to drain the wallet later.
+- **Resolve decimals on-chain.** Order sizes convert to raw integer units, and a wrong
+  decimals value misprices an order by powers of ten. There is no default — an order
+  whose decimals cannot be read is refused.
+- **Keep keys out of everything.** Environment only. Redacted from every repr; error
+  messages never quote key material.
+
+#### Use a burner wallet
+
+Fund it with only what the desk is allowed to lose. It holds hot keys on a running
+server, it approves arbitrary memecoin contracts, and it is driven by code that has
+never been tested against a live chain. Do not point it at a wallet holding anything
+you care about.
 
 ### Persistence
 
@@ -195,13 +253,17 @@ forgets it is down 20% today because it was restarted has no daily loss limit at
 python -m pytest tests/
 ```
 
-198 tests, no network: the feeds are replaced at their seams with canned responses
+221 tests, no network: the feeds are replaced at their seams with canned responses
 shaped like the real APIs. That includes end-to-end ticks of the desk — entries, stops,
-scale-outs, halts, restarts, feed outages.
+scale-outs, halts, restarts, feed outages — and the signer rails: caps, key redaction,
+approval handling, and the guarantee that a dry run broadcasts nothing.
 
 ### Honest limitations
 
-- **The live path has never executed a real trade.** See [Going live](#going-live).
+- **The live path has never executed a real trade**, and the broadcast step cannot be
+  unit-tested. Everything around it is: caps, key handling, approvals, and that a dry
+  run sends nothing. Run unarmed against the real chain first — see
+  [Going live](#going-live).
 - **The client code has never met the real APIs.** This environment cannot reach
   DexScreener, Blockscout or any RPC, so field handling is written defensively
   (degrade to "unknown" rather than guess) but is unverified against live responses.

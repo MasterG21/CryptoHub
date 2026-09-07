@@ -104,6 +104,11 @@ class Pair:
     # units an aggregator quotes in; feeds that price in USD directly leave it
     # None and live sizing refuses rather than guessing.
     native_usd_price: Optional[float] = None
+    # ERC-20 / SPL decimals for the base token. Live order sizing converts
+    # human amounts into raw integer units with this, so a wrong value misprices
+    # an order by powers of ten. Feeds that don't report it leave it None and
+    # live execution resolves it on-chain rather than assuming a default.
+    base_decimals: Optional[int] = None
 
     @property
     def key(self) -> str:

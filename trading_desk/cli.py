@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import sys
 from typing import Optional
 
@@ -26,6 +27,13 @@ from .config import DeskConfig, load_config, validate_config
 from .desk import TradingDesk
 from .execution.live import LiveExecutor
 from .execution.paper import PaperExecutor
+from .execution.signers import (
+    EVM_KEY_ENV,
+    SOLANA_KEY_ENV,
+    EvmSigner,
+    MultiChainSigner,
+    SignerLimits,
+)
 from .journal import Journal
 from .marketdata.base import MultiChainFeed
 from .marketdata.dexscreener import DexScreenerFeed
@@ -88,14 +96,42 @@ def build_safety_gate(cfg: DeskConfig, args: argparse.Namespace, history: PriceH
     return SafetyGate(cfg.safety, deep_screen=deep_screen, history=history)
 
 
+def build_signer(cfg: DeskConfig, args: argparse.Namespace):
+    """Assemble a signer from whichever chain keys are present in the env.
+
+    Returns None when no key is set, which leaves live mode unarmed and the
+    executor refusing every order — the correct outcome for a misconfigured
+    live run, and the reason this never falls back to paper silently.
+    """
+    limits = SignerLimits(
+        # Arming is a separate, explicit flag. Without it the signer builds and
+        # simulates real transactions but broadcasts nothing.
+        dry_run=not getattr(args, "arm", False),
+        max_order_usd=getattr(args, "max_order_usd", 25.0),
+        simulate_before_send=True,
+        max_slippage_pct=cfg.execution.max_slippage_pct,
+    )
+    signers = {}
+    if os.environ.get(SOLANA_KEY_ENV):
+        # Imported lazily: solders is an optional dependency and only Solana
+        # traders need it installed.
+        from .execution.signers import SolanaSigner
+
+        signers[Chain.SOLANA] = SolanaSigner(
+            rpc_url=args.solana_rpc, limits=limits
+        )
+    if os.environ.get(EVM_KEY_ENV):
+        signers[Chain.BNB] = EvmSigner(rpc_url=args.bnb_rpc, limits=limits)
+    return MultiChainSigner(signers) if signers else None
+
+
 def build_desk(cfg: DeskConfig, args: argparse.Namespace) -> TradingDesk:
     history = PriceHistory()
     journal = Journal(cfg.journal_path) if not args.no_journal else None
-    executor = (
-        LiveExecutor(cfg)
-        if cfg.execution.mode == "live"
-        else PaperExecutor(cfg, failure_rate=args.failure_rate)
-    )
+    if cfg.execution.mode == "live":
+        executor = LiveExecutor(cfg, signer=build_signer(cfg, args))
+    else:
+        executor = PaperExecutor(cfg, failure_rate=args.failure_rate)
     return TradingDesk(
         config=cfg,
         feed=build_feed(cfg, args, history),
@@ -384,6 +420,18 @@ def cmd_run(cfg: DeskConfig, args: argparse.Namespace) -> int:
                 print(f"  - {blocker}")
             print(f"{DIM}Nothing will be submitted. See trading_desk/execution/live.py.{RESET}\n")
             return 1
+        signer = getattr(desk.executor, "signer", None)
+        wallets = ", ".join(
+            f"{chain.label}: {sub.wallet_address(chain)}"
+            for chain, sub in getattr(signer, "signers", {}).items()
+        )
+        print(f"Wallets  {wallets or 'none'}")
+        if args.arm:
+            print(f"{RED}{BOLD}ARMED — real transactions will be broadcast.{RESET} "
+                  f"Per-order cap ${args.max_order_usd:,.2f}.")
+        else:
+            print(f"{YELLOW}Not armed:{RESET} orders will be built and simulated but "
+                  f"{BOLD}not broadcast{RESET}. Add --arm to trade for real.")
     for line in _risk_banner(cfg):
         print(line)
     print()
@@ -553,6 +601,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--no-journal", action="store_true", help="Run without persistence")
     parser.add_argument("--rpc-url", default=DEFAULT_RPC_URL, help="Robinhood Chain JSON-RPC")
     parser.add_argument("--explorer-api", default=DEFAULT_EXPLORER_API, help="Blockscout v2 API")
+    parser.add_argument(
+        "--solana-rpc",
+        default="https://api.mainnet-beta.solana.com",
+        help="Solana JSON-RPC endpoint used for signing and simulation",
+    )
+    parser.add_argument(
+        "--bnb-rpc",
+        default="https://bsc-dataseed.binance.org",
+        help="BNB Chain JSON-RPC endpoint used for signing and simulation",
+    )
     parser.add_argument("--v3-factory", help="Uniswap V3 factory on Robinhood Chain")
     parser.add_argument("--weth", help="Wrapped ETH address on Robinhood Chain")
     parser.add_argument(
@@ -586,6 +644,20 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--ticks", type=int, help="Stop after N ticks (default: run forever)")
     run.add_argument("--interval", type=float, help="Seconds between ticks")
     run.add_argument("--live", action="store_true", help="Attempt live mode (needs a signer)")
+    run.add_argument(
+        "--arm",
+        action="store_true",
+        help=(
+            "Broadcast real transactions. Without this, live mode builds and "
+            "simulates every order but sends nothing."
+        ),
+    )
+    run.add_argument(
+        "--max-order-usd",
+        type=float,
+        default=25.0,
+        help="Hard per-order ceiling enforced by the signer itself (default: 25)",
+    )
     run.add_argument(
         "--failure-rate",
         type=float,

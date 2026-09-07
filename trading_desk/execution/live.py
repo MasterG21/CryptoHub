@@ -48,6 +48,20 @@ class LiveTradingUnavailable(ExecutionError):
 
 
 @runtime_checkable
+class DecimalsResolver(Protocol):
+    """Reads a token's decimals from the chain.
+
+    Live sizing converts human amounts to raw integer units, so this cannot be
+    guessed: most BNB Chain tokens use 18 and most Solana memecoins use 6 or 9,
+    and picking wrong misprices an order by a factor of a thousand or more. A
+    resolver that cannot answer must raise, not return a default.
+    """
+
+    def token_decimals(self, chain: Chain, token_address: str) -> int:
+        ...
+
+
+@runtime_checkable
 class TransactionSigner(Protocol):
     """Signs and broadcasts one prepared swap, returning a transaction id.
 
@@ -95,12 +109,17 @@ class LiveExecutor:
         session: Optional[requests.Session] = None,
         zerox_api_key: Optional[str] = None,
         timeout: float = 12.0,
+        decimals_resolver: Optional[DecimalsResolver] = None,
     ):
         self.config = config
         self.signer = signer
         self.session = session or requests.Session()
         self.zerox_api_key = zerox_api_key
         self.timeout = timeout
+        # Signers that can read the chain double as decimals resolvers.
+        if decimals_resolver is None and isinstance(signer, DecimalsResolver):
+            decimals_resolver = signer
+        self.decimals_resolver = decimals_resolver
 
     # ------------------------------------------------------------- preflight
 
@@ -124,20 +143,45 @@ class LiveExecutor:
 
     # ---------------------------------------------------------------- quoting
 
-    def quote(self, order: Order, pair: Pair, decimals: int = 9) -> RouteQuote:
+    def resolve_decimals(self, order: Order, pair: Pair) -> int:
+        """Get the base token's decimals, or refuse the order.
+
+        Order of preference: what the feed reported, then an on-chain read.
+        There is deliberately no fallback default — an order sized with the
+        wrong decimals is not a slightly wrong order, it is off by orders of
+        magnitude, and it is better to skip the trade than to send that.
+        """
+        if pair.base_decimals is not None:
+            return int(pair.base_decimals)
+        if self.decimals_resolver is not None:
+            decimals = self.decimals_resolver.token_decimals(order.chain, order.token_address)
+            if decimals is not None:
+                pair.base_decimals = int(decimals)
+                return int(decimals)
+        raise ExecutionError(
+            f"decimals for {order.symbol} are unknown and no resolver is configured; "
+            "refusing to size a live order that could be wrong by powers of ten"
+        )
+
+    def quote(self, order: Order, pair: Pair, decimals: Optional[int] = None) -> RouteQuote:
         """Ask the chain's aggregator what this order fills at.
 
         Quoting is safe and read-only, so it is callable without a signer —
         useful for checking real routable depth before arming anything.
         """
+        # Check routability before decimals: "this chain has no router" is the
+        # more useful message, and there is no point reading a token's decimals
+        # for an order that cannot be placed anyway.
+        if order.chain not in (Chain.SOLANA, Chain.BNB):
+            raise ExecutionError(
+                f"no aggregator route configured for {order.chain.label}; "
+                "trade it in paper mode or add a router here"
+            )
+        if decimals is None:
+            decimals = self.resolve_decimals(order, pair)
         if order.chain is Chain.SOLANA:
             return self._quote_jupiter(order, pair, decimals)
-        if order.chain is Chain.BNB:
-            return self._quote_zerox(order, pair, decimals)
-        raise ExecutionError(
-            f"no aggregator route configured for {order.chain.label}; "
-            "trade it in paper mode or add a router here"
-        )
+        return self._quote_zerox(order, pair, decimals)
 
     def _http_get(self, url: str, params: dict, headers: Optional[dict] = None) -> dict:
         try:
@@ -209,7 +253,14 @@ class LiveExecutor:
             in_amount_raw=int(params["sellAmount"]),
             out_amount_raw=int(data.get("buyAmount") or 0),
             price_impact_pct=impact,
-            payload={"transaction": data},
+            payload={
+                "transaction": data,
+                # A sell must be approved for the router before it can execute.
+                # Buys spend the native asset, so they carry no sell token and
+                # the signer skips approval for them.
+                "sell_token": None if order.side is Side.BUY else order.token_address,
+                "sell_amount": None if order.side is Side.BUY else int(params["sellAmount"]),
+            },
             route_label=(data.get("sources") or [{}])[0].get("name", "0x"),
         )
 
@@ -242,6 +293,11 @@ class LiveExecutor:
         assert self.signer is not None  # guaranteed by _require_ready
         payload = dict(quote.payload)
         payload["wallet"] = self.signer.wallet_address(order.chain)
+        # The signer enforces its own hard cap below the desk's risk layer, so
+        # it needs to know what this order is worth in dollars.
+        payload["usd_amount"] = order.usd_amount or (
+            (order.quantity or 0) * (order.reference_price or pair.price_usd or 0)
+        )
         tx_ref = self.signer.sign_and_send(order.chain, payload)
 
         reference = order.reference_price or pair.price_usd or 0.0
