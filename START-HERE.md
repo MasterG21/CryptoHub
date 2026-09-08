@@ -133,6 +133,25 @@ like *Account details → Show private key*, and it asks for your password. If
 what you are looking at is a list of words, that is the seed phrase — wrong one,
 back out.
 
+### Going live: the settings that matter
+
+The "how careful should it be?" choice is the single biggest lever, and the
+differences are not small. Simulated on a $1,000 account:
+
+| Setting | Per trade | Chance the account dies | Median result |
+|---|---|---|---|
+| **Measured** | $16 | **1%** | $1,086 |
+| Cautious | $40 | 12% | $785 |
+| Normal | $67 | **54%** | $75 |
+| Bold | $114 | **95%** | $43 |
+
+That is the same strategy in every row. The only thing changing is bet size —
+and past a certain point, betting bigger lowers your expected result *and*
+raises your chance of ruin at the same time. It is not a risk/reward trade.
+
+**Start on Measured.** You can always raise it once you have your own numbers;
+you cannot un-lose money.
+
 ### You also need coin for transaction fees
 
 Every trade is a transaction on the blockchain, and every transaction costs a

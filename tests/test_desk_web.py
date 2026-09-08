@@ -307,8 +307,8 @@ def test_settings_report_the_current_config(settings_paths):
 
     assert out["mode"] == "paper"
     assert out["preset"] == "normal"
-    assert len(out["presets"]) == 3
-    assert [p["id"] for p in out["presets"]] == ["cautious", "normal", "bold"]
+    assert len(out["presets"]) == 4
+    assert [p["id"] for p in out["presets"]] == ["measured", "cautious", "normal", "bold"]
 
 
 def test_settings_never_return_key_material(settings_paths, monkeypatch):
@@ -843,3 +843,32 @@ def test_a_valid_key_still_saves(tmp_path, monkeypatch):
 
     assert result["ok"] is True
     assert env.exists()
+
+
+def test_a_growth_optimal_preset_is_offered(tmp_path):
+    """At $100 nothing was survivable, so the ladder started at 1%. A funded
+    account can bet near the growth-optimal fraction, and the UI must offer it."""
+    from trading_desk.growth import DEFAULT_DISTRIBUTION
+    from trading_desk.web.settings import PRESETS, read_settings
+
+    measured = PRESETS["measured"]["risk"]["risk_per_trade_pct"]
+    kelly = DEFAULT_DISTRIBUTION.optimal_fraction()
+    assert measured <= kelly * 1.5, "the lowest preset must be near growth-optimal"
+    assert DEFAULT_DISTRIBUTION.log_growth_per_trade(measured) > 0, (
+        "the lowest preset must actually compound upward"
+    )
+
+    offered = read_settings(DeskConfig(), tmp_path / "c.json", tmp_path / ".env")
+    assert [p["id"] for p in offered["presets"]][0] == "measured"
+
+
+def test_selecting_measured_applies_the_low_risk_fraction(tmp_path):
+    from trading_desk.web.settings import write_settings
+
+    config = tmp_path / "desk.config.json"
+    config.write_text("{}")
+    cfg = DeskConfig()
+
+    assert write_settings({"preset": "measured"}, cfg, config, tmp_path / ".env")["ok"]
+    assert cfg.risk.risk_per_trade_pct == 0.004
+    assert cfg.strategy.stop_loss_pct == 0.25

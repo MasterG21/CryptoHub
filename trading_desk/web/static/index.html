@@ -632,10 +632,18 @@ function paintSettings(cfg) {
 
   $("set-capital").value = cfg.starting_capital_usd;
 
-  $("set-preset").innerHTML = cfg.presets.map((p) =>
-    choice("preset", p.id, esc(p.label),
-      `${esc(p.blurb)} Risks ${pct(p.risk_pct)} per trade.`,
-      cfg.preset === p.id, p.id === "bold")).join("");
+  // Spell out what each setting means in dollars for the balance they actually
+  // have. "2% per trade" is abstract; "$67 a trade, stops working below $75" is
+  // the thing someone can judge.
+  const capital = Number(cfg.starting_capital_usd) || 0;
+  $("set-preset").innerHTML = cfg.presets.map((p) => {
+    const position = capital * p.risk_pct / p.stop_pct;
+    const floor = 5 * p.stop_pct / p.risk_pct;
+    const detail = `${esc(p.blurb)} About ${usd(position)} a trade; ` +
+      `cannot trade below ${usd(floor)}.`;
+    return choice("preset", p.id, esc(p.label), detail,
+                  cfg.preset === p.id, p.id === "bold");
+  }).join("");
 
   $("set-chains").innerHTML = cfg.available_chains.map((c) =>
     checkbox("chain", c.id, esc(c.label),

@@ -27,6 +27,15 @@ from ..models import Chain
 # "bold" is not "better", it is a larger bet with a correspondingly larger
 # chance of ending the account, and the UI says so.
 PRESETS: dict[str, dict[str, Any]] = {
+    "measured": {
+        "label": "Measured",
+        "blurb": ("Bets at roughly the size that maximises long-run growth for the "
+                  "assumed edge. Slowest, and the only setting that survives in "
+                  "simulation. Needs about $450 to be placeable at all."),
+        "risk": {"risk_per_trade_pct": 0.004, "max_concurrent_positions": 3,
+                 "max_positions_per_chain": 2, "daily_loss_limit_pct": 0.10},
+        "strategy": {"stop_loss_pct": 0.25, "min_entry_score": 0.62},
+    },
     "cautious": {
         "label": "Cautious",
         "blurb": "Small bets, tight stops, fewer coins at once. Slowest, survives longest.",
