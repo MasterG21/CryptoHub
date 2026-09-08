@@ -109,9 +109,58 @@ Two details it reports that most dashboards do not:
 - **Who blocked what, and who never got asked.** A veto stops the committee, so
   agents after it are shown as "not consulted" rather than silently passing.
 
-It is served by the standard library, binds to `127.0.0.1`, and **has no
-authentication** — anyone who can reach the port can flatten your book. Tunnel over
-SSH if you need it remotely; do not put it on the internet.
+#### Dashboard security
+
+Binding to localhost is not by itself a security model: localhost is reachable by
+every other program on the machine, and by every website open in your browser. A
+page on any other origin could send
+
+```js
+fetch("http://127.0.0.1:8787/api/control", {method: "POST", mode: "no-cors",
+  headers: {"Content-Type": "text/plain"}, body: '{"action":"panic"}'})
+```
+
+`text/plain` makes that a CORS *simple request*, so no preflight is sent. The
+attacker cannot read the reply, but the action runs. This was demonstrated
+against an earlier build: a visited page flattened the whole book.
+
+Four independent checks now apply to every API call:
+
+| | |
+|---|---|
+| **Access key** | minted per run, required on every call, never written to disk |
+| **Origin** | state-changing calls must come from the dashboard's own origin |
+| **Host** | must name a loopback address, defeating DNS rebinding |
+| **Content type** | POSTs must be `application/json`, which cannot be sent cross-origin unpreflighted |
+
+The key is passed once in the URL the browser opens, then stashed per-tab and
+stripped from the address bar. Refusals are identical for every failure, so a
+caller learns nothing to iterate against. Responses carry `X-Frame-Options: DENY`,
+`Referrer-Policy: no-referrer` and `Cache-Control: no-store`.
+
+Still: prefer an SSH tunnel to binding a public interface, and the desk refuses to
+arm real trading on a network-visible port.
+
+#### What a compromised dashboard could and could not do
+
+**The desk has no function that sends funds to an address.** No transfer, no
+withdraw, no sweep — the signer only submits swap transactions built by the
+aggregator, and the settings API reports only *whether* a wallet key exists, never
+its value. A test asserts no fund-moving function exists, so this stops being true
+loudly rather than quietly.
+
+So the worst a broken-into dashboard achieves is selling your positions back into
+your own wallet. Annoying and costly; not theft.
+
+**The wallet key file is the real exposure.** Whoever reads `.env` owns the wallet,
+from anywhere, forever. Before a live run the desk audits how that file is stored
+and refuses to arm on any of:
+
+- readable by other accounts on the machine (not `chmod 600`)
+- sitting in a cloud-synced folder — Dropbox, iCloud, OneDrive, Google Drive
+- inside a git repository without being gitignored, one `git push` from published
+
+`python -m trading_desk doctor` reports all of it before you get that far.
 
 ### The committee
 

@@ -34,6 +34,7 @@ from .execution.signers import (
     EvmSigner,
     MultiChainSigner,
     SignerLimits,
+    audit_key_storage,
 )
 from .journal import Journal
 from .marketdata.base import MultiChainFeed
@@ -491,8 +492,34 @@ def cmd_serve(cfg: DeskConfig, args: argparse.Namespace) -> int:
         print(f"{YELLOW}The dashboard is still starting so you can fix it — "
               f"open it and choose Practice, or add a wallet key.{RESET}")
 
-    runner = DeskRunner(desk)
+    # Before any real money moves, check how the wallet key is stored. A key in
+    # a synced folder or readable by other accounts is the failure that actually
+    # drains a wallet — the dashboard cannot, since the desk has no function
+    # that sends funds to an address.
     from pathlib import Path
+
+    env_path = Path(args.config).resolve().parent / ".env" if args.config else Path(".env")
+    if cfg.execution.mode == "live":
+        findings = audit_key_storage(env_path)
+        if findings:
+            print(f"\n{BOLD}Wallet key storage{RESET}")
+            for finding in findings:
+                mark = f"{RED}x{RESET}" if finding.blocking else f"{YELLOW}!{RESET}"
+                print(f"  {mark} {finding.message}")
+                if finding.fix:
+                    print(f"    {DIM}{finding.fix}{RESET}")
+        if any(f.blocking for f in findings) and getattr(args, "arm", False):
+            args.arm = False
+            desk_signer = getattr(desk.executor, "signer", None)
+            limits = getattr(desk_signer, "limits", None)
+            for sub in getattr(desk_signer, "signers", {}).values():
+                sub.limits.dry_run = True
+            if limits is not None:
+                limits.dry_run = True
+            print(f"{RED}{BOLD}Not arming.{RESET} Fix the items marked x first — "
+                  f"they are how a wallet gets emptied.")
+
+    runner = DeskRunner(desk)
 
     httpd = serve_http(
         runner,
@@ -502,17 +529,27 @@ def cmd_serve(cfg: DeskConfig, args: argparse.Namespace) -> int:
     )
 
     bound_port = httpd.server_address[1]
+    url = httpd.guard.dashboard_url()
+    # Hand the real, tokenised URL to whatever launched us (start.py opens it).
+    os.environ["DESK_DASHBOARD_URL"] = url
     mode = cfg.execution.mode
     colour = RED if mode == "live" else CYAN
     print(f"\n{BOLD}Trading desk{RESET}  mode={colour}{mode}{RESET}  "
           f"chains={', '.join(c.label for c in cfg.chains)}")
-    print(f"{BOLD}Dashboard{RESET}  http://{args.host}:{bound_port}")
+    print(f"{BOLD}Dashboard{RESET}  {url}")
     if bound_port != args.port:
         print(f"{YELLOW}Port {args.port} was busy — probably an older copy still "
               f"running. Using {bound_port} instead.{RESET}")
-    if args.host not in ("127.0.0.1", "localhost"):
-        print(f"{RED}Warning:{RESET} bound to {args.host} with no authentication — "
-              f"anyone who can reach this port can flatten your book.")
+    print(f"{DIM}That link contains this session's access key. It changes every "
+          f"time you start the desk. Don't paste it anywhere.{RESET}")
+    if args.host not in ("127.0.0.1", "localhost", "::1"):
+        print(f"{RED}{BOLD}Warning:{RESET} bound to {args.host}, so other machines "
+              f"can reach it. The access key is the only thing protecting your book — "
+              f"prefer an SSH tunnel to opening a port.")
+        if mode == "live" and getattr(args, "arm", False):
+            print(f"{RED}Refusing to arm real trading on a network-visible port.{RESET} "
+                  f"Bind to 127.0.0.1 and tunnel in instead.")
+            args.arm = False
     if blockers:
         print(f"{YELLOW}Entries are held until live mode is ready or you switch "
               f"back to Practice.{RESET}")
@@ -646,6 +683,26 @@ def cmd_doctor(cfg: DeskConfig, args: argparse.Namespace) -> int:
     else:
         for blocker in LiveExecutor(cfg).preflight():
             print(f"  {RED}x{RESET} {blocker}")
+
+    print(f"\n{BOLD}Wallet key storage{RESET}")
+    from pathlib import Path as _Path
+
+    key_findings = audit_key_storage(
+        _Path(args.config).resolve().parent / ".env" if args.config else _Path(".env")
+    )
+    if not key_findings:
+        print(f"  {GREEN}✓{RESET} no wallet key file yet, or it is stored safely")
+    for finding in key_findings:
+        mark = f"{RED}x{RESET}" if finding.blocking else f"{YELLOW}!{RESET}"
+        print(f"  {mark} {finding.message}")
+        if finding.fix:
+            print(f"    {DIM}{finding.fix}{RESET}")
+
+    print(f"\n{BOLD}Dashboard access{RESET}")
+    print(f"  {GREEN}✓{RESET} a new access key is minted each run and required on every call")
+    print(f"  {GREEN}✓{RESET} cross-site and DNS-rebinding requests are refused")
+    print(f"  {DIM}The desk has no function that sends funds to an address, so even "
+          f"a compromised dashboard cannot move money out of the wallet.{RESET}")
 
     print(f"\n{BOLD}Risk{RESET}")
     banner = _risk_banner(cfg)

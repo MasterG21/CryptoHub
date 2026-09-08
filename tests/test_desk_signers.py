@@ -304,3 +304,103 @@ def test_decimals_are_read_from_the_chain_and_cached(monkeypatch):
 
     assert signer.token_decimals(Chain.BNB, "0x" + "55" * 20) == 18
     assert signer._decimals_cache  # second call does not hit the chain
+
+
+# ---------------------------------------------------- how the key is stored
+#
+# This is the exposure that actually drains a wallet. A broken-into dashboard
+# can at worst sell positions back into your own wallet — the desk has no
+# function that sends funds to an address. Whoever reads the key file owns the
+# wallet outright, from anywhere, forever.
+
+
+def test_a_world_readable_key_file_is_critical(tmp_path):
+    from trading_desk.execution.signers import audit_key_storage
+
+    env = tmp_path / ".env"
+    env.write_text("DESK_EVM_PRIVATE_KEY=0xdead")
+    env.chmod(0o644)
+
+    findings = audit_key_storage(env)
+    assert any(f.blocking and "other accounts" in f.message for f in findings)
+
+
+def test_a_locked_down_key_file_passes(tmp_path, monkeypatch):
+    from trading_desk.execution.signers import EVM_KEY_ENV, SOLANA_KEY_ENV, audit_key_storage
+
+    monkeypatch.delenv(EVM_KEY_ENV, raising=False)
+    monkeypatch.delenv(SOLANA_KEY_ENV, raising=False)
+    env = tmp_path / ".env"
+    env.write_text("DESK_EVM_PRIVATE_KEY=0xdead")
+    env.chmod(0o600)
+
+    assert audit_key_storage(env) == []
+
+
+def test_a_key_in_a_synced_folder_is_critical(tmp_path):
+    """A key in Dropbox is a key in a cloud account and on every synced device."""
+    from trading_desk.execution.signers import audit_key_storage
+
+    synced = tmp_path / "Dropbox" / "desk"
+    synced.mkdir(parents=True)
+    env = synced / ".env"
+    env.write_text("DESK_EVM_PRIVATE_KEY=0xdead")
+    env.chmod(0o600)
+
+    findings = audit_key_storage(env)
+    assert any(f.blocking and "synced folder" in f.message for f in findings)
+
+
+def test_a_key_in_an_unignored_git_repo_is_critical(tmp_path):
+    """One `git push` would publish the wallet."""
+    from trading_desk.execution.signers import audit_key_storage
+
+    (tmp_path / ".git").mkdir()
+    (tmp_path / ".gitignore").write_text("__pycache__/\n")
+    env = tmp_path / ".env"
+    env.write_text("DESK_EVM_PRIVATE_KEY=0xdead")
+    env.chmod(0o600)
+
+    findings = audit_key_storage(env)
+    assert any(f.blocking and "git repository" in f.message for f in findings)
+
+
+def test_an_ignored_key_in_a_repo_is_fine(tmp_path, monkeypatch):
+    from trading_desk.execution.signers import EVM_KEY_ENV, SOLANA_KEY_ENV, audit_key_storage
+
+    monkeypatch.delenv(EVM_KEY_ENV, raising=False)
+    monkeypatch.delenv(SOLANA_KEY_ENV, raising=False)
+    (tmp_path / ".git").mkdir()
+    (tmp_path / ".gitignore").write_text("__pycache__/\n.env\n")
+    env = tmp_path / ".env"
+    env.write_text("DESK_EVM_PRIVATE_KEY=0xdead")
+    env.chmod(0o600)
+
+    assert audit_key_storage(env) == []
+
+
+def test_no_key_file_yet_is_not_a_finding(tmp_path):
+    from trading_desk.execution.signers import audit_key_storage
+
+    assert audit_key_storage(tmp_path / ".env") == []
+
+
+def test_this_repo_ignores_its_own_key_file():
+    """Regression: the shipped .gitignore must cover .env."""
+    from pathlib import Path
+
+    assert ".env" in Path(".gitignore").read_text().splitlines()
+
+
+def test_the_desk_has_no_function_that_sends_funds_to_an_address():
+    """The property that makes a compromised dashboard survivable.
+
+    If a transfer/withdraw path is ever added, this fails — and the security
+    story in the README stops being true.
+    """
+    import re
+    from pathlib import Path
+
+    banned = re.compile(r"\b(def\s+\w*(withdraw|transfer_out|send_funds|sweep)\w*)\b")
+    for path in Path("trading_desk").rglob("*.py"):
+        assert not banned.search(path.read_text()), f"{path} defines a fund-moving function"

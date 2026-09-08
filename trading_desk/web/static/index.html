@@ -313,6 +313,28 @@
 </div>
 
 <script>
+// The dashboard is opened with ?t=<token>. Stash it for this tab, then strip it
+// from the address bar so it does not end up in history, bookmarks or a
+// screenshot. Every API call carries it in a header from here on.
+const TOKEN = (() => {
+  const fromUrl = new URLSearchParams(location.search).get("t");
+  if (fromUrl) {
+    try { sessionStorage.setItem("desk-token", fromUrl); } catch (e) { /* ignore */ }
+    history.replaceState(null, "", location.pathname);
+    return fromUrl;
+  }
+  try { return sessionStorage.getItem("desk-token") || ""; } catch (e) { return ""; }
+})();
+
+// One wrapper so no call site can forget the token or the content type.
+async function api(path, options = {}) {
+  const headers = { "X-Desk-Token": TOKEN, ...(options.headers || {}) };
+  if (options.body) headers["Content-Type"] = "application/json";
+  const res = await fetch(path, { ...options, headers, credentials: "omit" });
+  if (res.status === 403) throw new Error("forbidden");
+  return res;
+}
+
 const $ = (id) => document.getElementById(id);
 const usd = (v, d = 2) =>
   (v < 0 ? "-$" : "$") + Math.abs(Number(v) || 0).toLocaleString("en-US",
@@ -460,7 +482,7 @@ function plainEnglish(s) {
 async function refresh() {
   let s;
   try {
-    s = await (await fetch("/api/state")).json();
+    s = await (await api("/api/state")).json();
   } catch (e) {
     $("clock").textContent = "disconnected";
     return;
@@ -560,9 +582,8 @@ async function refresh() {
 }
 
 async function control(action) {
-  await fetch("/api/control", {
+  await api("/api/control", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action }),
   });
   refresh();
@@ -632,7 +653,7 @@ function paintSettings(cfg) {
 }
 
 async function openSettings() {
-  const cfg = await (await fetch("/api/settings")).json();
+  const cfg = await (await api("/api/settings")).json();
   paintSettings(cfg);
   $("set-note").textContent = "";
   $("sheet").hidden = false;
@@ -675,9 +696,8 @@ async function saveSettings() {
   note.textContent = "Saving…";
   note.className = "save-note muted";
 
-  const res = await fetch("/api/settings", {
+  const res = await api("/api/settings", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   const out = await res.json();
@@ -702,16 +722,15 @@ async function saveSettings() {
     note.textContent = "Saved and applied.";
   }
   // Re-read so the form reflects what was actually stored, not what was typed.
-  paintSettings(await (await fetch("/api/settings")).json());
+  paintSettings(await (await api("/api/settings")).json());
   refresh();
 }
 
 // Reachable from the banner so a stuck desk can always be recovered in one
 // click, without opening Settings or editing a file.
 async function switchToPractice() {
-  const res = await fetch("/api/settings", {
+  const res = await api("/api/settings", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ mode: "paper" }),
   });
   const out = await res.json();

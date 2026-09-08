@@ -497,3 +497,92 @@ class MultiChainSigner(_RedactedRepr):
 
     def token_decimals(self, chain: Chain, token_address: str) -> int:
         return self._for(chain).token_decimals(chain, token_address)
+
+
+# Folder names that mean "this file is being copied to someone else's servers".
+# A key in a synced folder is a key in a cloud account, a second laptop, and a
+# vendor's backups — the most common way a hot wallet leaks without anyone
+# being hacked.
+_SYNCED_MARKERS = (
+    "dropbox", "onedrive", "google drive", "googledrive", "icloud",
+    "mobile documents", "sync.com", "pcloud", "mega", "box sync", "yandex.disk",
+)
+
+
+@dataclass
+class StorageFinding:
+    """One problem with how the wallet key is stored."""
+
+    severity: str  # "critical" blocks arming; "warning" is reported only
+    message: str
+    fix: str = ""
+
+    @property
+    def blocking(self) -> bool:
+        return self.severity == "critical"
+
+
+def audit_key_storage(env_path: "os.PathLike[str] | str") -> list[StorageFinding]:
+    """Check how the wallet key file is stored, before it is trusted with money.
+
+    This is the exposure that matters. A dashboard someone breaks into can, at
+    worst, sell your positions back into your own wallet — the desk has no
+    function that sends funds to an address. Whoever reads this file, by
+    contrast, owns the wallet outright, from anywhere, forever.
+    """
+    import os as _os
+    import platform as _platform
+    from pathlib import Path as _Path
+
+    path = _Path(env_path)
+    findings: list[StorageFinding] = []
+    if not path.exists():
+        return findings
+
+    resolved = str(path.resolve()).lower()
+    for marker in _SYNCED_MARKERS:
+        if marker in resolved:
+            findings.append(StorageFinding(
+                "critical",
+                f"the wallet key file is inside a synced folder ({marker})",
+                "Move the whole desk folder somewhere that is not backed up to the cloud.",
+            ))
+            break
+
+    if _platform.system() != "Windows":
+        mode = path.stat().st_mode & 0o777
+        if mode & 0o077:
+            findings.append(StorageFinding(
+                "critical",
+                f"the wallet key file is readable by other accounts (mode {mode:03o})",
+                f"Run: chmod 600 {path}",
+            ))
+
+    # A key committed to git is a key published the moment the repo is pushed.
+    repo_root = path.parent
+    for _ in range(4):
+        if (repo_root / ".git").exists():
+            ignore = repo_root / ".gitignore"
+            ignored = ignore.exists() and any(
+                line.strip() in (".env", "*.env", path.name)
+                for line in ignore.read_text().splitlines()
+            )
+            if not ignored:
+                findings.append(StorageFinding(
+                    "critical",
+                    "the wallet key file sits in a git repository and is not ignored",
+                    f"Add a line reading .env to {ignore}, and never commit it.",
+                ))
+            break
+        if repo_root.parent == repo_root:
+            break
+        repo_root = repo_root.parent
+
+    if _os.environ.get(SOLANA_KEY_ENV) or _os.environ.get(EVM_KEY_ENV):
+        findings.append(StorageFinding(
+            "warning",
+            "a wallet key is loaded into this process's environment",
+            "Normal — but it means any program running as you could read it. "
+            "Use a wallet holding only what you can lose.",
+        ))
+    return findings

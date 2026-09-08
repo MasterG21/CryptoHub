@@ -96,6 +96,19 @@ When you do:
    **Save**.
 4. Stop the desk and start it again.
 
+### Keeping other people out
+
+The dashboard now requires an access key that changes every time you start the
+desk. It is in the link that opens automatically — you never type it. Websites
+you visit can no longer touch the desk, which was possible in an earlier version.
+
+Worth knowing: **the desk cannot send your money anywhere.** It has no transfer or
+withdraw function at all — it only swaps coins back to SOL or BNB inside your own
+wallet. So even if someone got into the dashboard, they could annoy you by selling
+your positions, but they could not take the money.
+
+What they *could* take is the key file. Which is why:
+
 ### About the wallet key
 
 The key is a long line of letters and numbers. **That text is the money.** It is not a
@@ -105,6 +118,9 @@ can undo it.
 So:
 
 - It gets saved in a file called `.env` in the folder. That file *is* your wallet.
+- Keep the desk folder **out of Dropbox, iCloud, OneDrive and Google Drive.** A key
+  in a synced folder is a key on someone else's servers. The desk checks this and
+  refuses to trade for real if it finds one.
 - Never send it to anyone. Never paste it into a chat, an email, or a website.
   Not to me, not to "support", not to anyone who offers to help you set this up.
 - Nobody legitimate will ever ask you for it. Anyone who does is stealing from you.

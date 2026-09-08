@@ -176,19 +176,24 @@ def server(runner):
     run, _, _ = runner
     httpd = make_server(run, port=0)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
-    yield f"http://127.0.0.1:{httpd.server_address[1]}", run
+    port = httpd.server_address[1]
+    # The guard rewrites its port when the server binds one, as serve() does.
+    httpd.guard.port = port
+    yield f"http://127.0.0.1:{port}", run, httpd.guard.token
     httpd.shutdown()
 
 
-def get(url):
-    with urllib.request.urlopen(url, timeout=5) as response:
+def get(url, token=None, **headers):
+    request = urllib.request.Request(url, headers=_headers(token, headers))
+    with urllib.request.urlopen(request, timeout=5) as response:
         return response.status, response.read()
 
 
-def post(url, payload):
+def post(url, payload, token=None, content_type="application/json", **headers):
+    hdrs = _headers(token, headers)
+    hdrs["Content-Type"] = content_type
     request = urllib.request.Request(
-        url, data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json"}, method="POST",
+        url, data=json.dumps(payload).encode(), headers=hdrs, method="POST",
     )
     try:
         with urllib.request.urlopen(request, timeout=5) as response:
@@ -197,8 +202,15 @@ def post(url, payload):
         return exc.code, json.loads(exc.read())
 
 
+def _headers(token, extra):
+    hdrs = dict(extra)
+    if token:
+        hdrs["X-Desk-Token"] = token
+    return hdrs
+
+
 def test_the_page_is_served(server):
-    base, _ = server
+    base, _, _ = server
     status, body = get(base + "/")
     assert status == 200
     assert b"TRADING DESK" in body
@@ -206,39 +218,43 @@ def test_the_page_is_served(server):
 
 
 def test_the_state_endpoint_returns_the_snapshot(server):
-    base, _ = server
-    status, body = get(base + "/api/state")
+    base, _, token = server
+    status, body = get(base + "/api/state", token=token)
     assert status == 200
     assert "equity" in json.loads(body)
 
 
 def test_unknown_routes_404(server):
-    base, _ = server
+    base, _, token = server
     with pytest.raises(urllib.error.HTTPError) as exc:
-        get(base + "/api/nope")
+        get(base + "/api/nope", token=token)
     assert exc.value.code == 404
 
 
 def test_control_actions_are_accepted(server):
-    base, run = server
-    assert post(base + "/api/control", {"action": "pause"}) == (200, {"status": "paused"})
+    base, run, token = server
+    assert post(base + "/api/control", {"action": "pause"}, token=token) == (
+        200, {"status": "paused"})
     assert run.desk.paused is True
-    assert post(base + "/api/control", {"action": "resume"}) == (200, {"status": "running"})
+    assert post(base + "/api/control", {"action": "resume"}, token=token) == (
+        200, {"status": "running"})
     assert run.desk.paused is False
 
 
 def test_an_unknown_control_action_is_rejected(server):
-    base, _ = server
-    status, payload = post(base + "/api/control", {"action": "sell_everything_lol"})
+    base, _, token = server
+    status, payload = post(base + "/api/control", {"action": "sell_everything_lol"},
+                           token=token)
     assert status == 400
     assert "allowed" in payload
 
 
 def test_malformed_control_bodies_are_rejected(server):
-    base, _ = server
+    base, _, token = server
     request = urllib.request.Request(
         base + "/api/control", data=b"{not json",
-        headers={"Content-Type": "application/json"}, method="POST",
+        headers={"Content-Type": "application/json", "X-Desk-Token": token},
+        method="POST",
     )
     with pytest.raises(urllib.error.HTTPError) as exc:
         urllib.request.urlopen(request, timeout=5)
@@ -627,3 +643,120 @@ def test_switching_to_practice_takes_effect_without_a_restart(tmp_path):
     assert isinstance(desk.executor, Paper)
     assert cfg.execution.mode == "paper"
     assert desk.paused is False
+
+
+# -------------------------------------------------------------------- access
+#
+# The dashboard can flatten a book and store wallet keys, so "it only listens on
+# localhost" is not a security model: localhost is reachable by every other
+# program on the machine and by every website open in the browser.
+
+
+def test_the_api_refuses_calls_without_a_token(server):
+    base, _, _ = server
+    with pytest.raises(urllib.error.HTTPError) as exc:
+        get(base + "/api/state")
+    assert exc.value.code == 403
+
+
+def test_a_wrong_token_is_refused(server):
+    base, _, _ = server
+    with pytest.raises(urllib.error.HTTPError) as exc:
+        get(base + "/api/state", token="not-the-token")
+    assert exc.value.code == 403
+
+
+def test_the_cross_site_panic_attack_is_blocked(server):
+    """The demonstrated attack: a page on any other origin posts a flatten.
+
+    Before this guard it worked — the book was sold from an unrelated tab.
+    A wrong Origin is refused even when a token is somehow supplied.
+    """
+    base, run, token = server
+    status, _ = post(
+        base + "/api/control", {"action": "panic"},
+        token=token, Origin="http://evil.example",
+    )
+    assert status == 403
+    assert run._panic_requested is False
+
+
+def test_a_text_plain_post_cannot_reach_the_handler(server):
+    """text/plain is a CORS "simple request" and needs no preflight, which is
+    exactly how the original attack slipped through."""
+    base, run, token = server
+    status, _ = post(
+        base + "/api/control", {"action": "panic"}, token=token, content_type="text/plain"
+    )
+    assert status == 403
+    assert run._panic_requested is False
+
+
+def test_same_origin_requests_still_work(server):
+    base, run, token = server
+    port = base.rsplit(":", 1)[1]
+    status, payload = post(
+        base + "/api/control", {"action": "pause"},
+        token=token, Origin=f"http://127.0.0.1:{port}",
+    )
+    assert status == 200 and payload == {"status": "paused"}
+
+
+def test_dns_rebinding_is_refused(server):
+    """An attacker domain re-pointed at 127.0.0.1 would otherwise be same-origin."""
+    base, _, token = server
+    with pytest.raises(urllib.error.HTTPError) as exc:
+        get(base + "/api/state", token=token, Host="attacker.example")
+    assert exc.value.code == 403
+
+
+def test_the_page_itself_refuses_a_forged_host(server):
+    base, _, _ = server
+    with pytest.raises(urllib.error.HTTPError) as exc:
+        get(base + "/", Host="attacker.example")
+    assert exc.value.code == 403
+
+
+def test_responses_carry_hardening_headers(server):
+    base, _, token = server
+    request = urllib.request.Request(base + "/", headers={"X-Desk-Token": token})
+    with urllib.request.urlopen(request, timeout=5) as response:
+        headers = {k.lower(): v for k, v in response.headers.items()}
+    assert headers["x-frame-options"] == "DENY"
+    assert headers["referrer-policy"] == "no-referrer"
+    assert "no-store" in headers["cache-control"]
+
+
+def test_the_token_can_arrive_in_the_query_string(server):
+    """How the browser is first authenticated, before it stashes the token."""
+    base, _, token = server
+    status, _ = get(f"{base}/api/state?t={token}")
+    assert status == 200
+
+
+def test_refusals_do_not_reveal_which_check_failed(server):
+    """A caller that is not allowed in learns nothing it can iterate against."""
+    base, _, token = server
+    bodies = []
+    for kwargs in ({}, {"token": "wrong"}, {"token": token, "Host": "evil.example"}):
+        try:
+            get(base + "/api/state", **kwargs)
+        except urllib.error.HTTPError as exc:
+            bodies.append(exc.read())
+    assert len(set(bodies)) == 1
+
+
+def test_each_run_mints_a_new_token():
+    from trading_desk.web.security import new_token
+
+    assert new_token() != new_token()
+    assert len(new_token()) >= 32
+
+
+def test_the_page_never_hard_codes_a_raw_api_fetch():
+    """Every call must go through the wrapper that attaches the token."""
+    from pathlib import Path
+
+    page = Path("trading_desk/web/static/index.html").read_text()
+    assert 'fetch("/api/' not in page
+    assert "X-Desk-Token" in page

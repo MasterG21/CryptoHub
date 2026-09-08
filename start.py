@@ -230,18 +230,28 @@ def main() -> int:
     sys.path.insert(0, str(HERE))
     from trading_desk.cli import main as desk_main
 
-    url = f"http://127.0.0.1:{PORT}"
     say("")
-    say(f"  {GREEN}{BOLD}Dashboard:{RESET} {BOLD}{url}{RESET}")
-    say(f"  {DIM}Opening it in your browser now. If it doesn't open, click the link above.{RESET}")
+    say(f"  {DIM}Starting. Your browser will open by itself in a moment.{RESET}")
     say(f"  {DIM}This window must stay open. Press Ctrl-C here to stop the desk.{RESET}")
     say("")
 
+    # The dashboard mints a one-off access key per run and prints it as part of
+    # its URL. Wait for that line rather than guessing the address, so the
+    # browser opens already authenticated and the user never sees a key prompt.
+    def open_when_ready() -> None:
+        import time as _time
+
+        for _ in range(60):
+            _time.sleep(0.5)
+            url = os.environ.get("DESK_DASHBOARD_URL")
+            if url:
+                webbrowser.open(url)
+                return
+
     try:
-        # Give the server a moment to bind before the browser asks for the page.
         import threading
 
-        threading.Timer(1.5, lambda: webbrowser.open(url)).start()
+        threading.Thread(target=open_when_ready, daemon=True).start()
     except Exception:
         pass
 
