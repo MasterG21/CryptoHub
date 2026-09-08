@@ -91,6 +91,18 @@ class ExecutionConfig:
         }
     )
     max_slippage_pct: float = 0.15
+    # Gas is paid in the chain's native coin, never in the token being traded,
+    # and it is what an *exit* costs too. A wallet that runs dry cannot sell —
+    # stops stop firing and the position rides to zero with no way out. These
+    # floors are in native units (SOL, BNB) and are deliberately generous:
+    # roughly ten exits' worth, so a bad day cannot strand the book.
+    min_native_reserve: dict[str, float] = field(
+        default_factory=lambda: {
+            Chain.SOLANA.value: 0.02,   # ~10 swaps plus token-account rent
+            Chain.BNB.value: 0.005,     # ~10 swaps at typical BNB gas
+            Chain.ROBINHOOD.value: 0.002,
+        }
+    )
     # Live trading is refused unless this is explicitly true AND a signer is
     # supplied. Two independent switches, because one typo should not be able
     # to turn a simulation into real orders.
@@ -112,6 +124,10 @@ class DeskConfig:
 
     def gas_for(self, chain: Chain) -> float:
         return self.execution.gas_usd.get(chain.value, 0.10)
+
+    def native_reserve_for(self, chain: Chain) -> float:
+        """Native coin that must stay in the wallet to fund exits."""
+        return self.execution.min_native_reserve.get(chain.value, 0.0)
 
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self)

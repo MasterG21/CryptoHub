@@ -141,6 +141,21 @@ caller learns nothing to iterate against. Responses carry `X-Frame-Options: DENY
 Still: prefer an SSH tunnel to binding a public interface, and the desk refuses to
 arm real trading on a network-visible port.
 
+#### Gas reserves
+
+Fees are paid in the chain's native coin, never in the token being traded — and
+an *exit* costs one too. A wallet that runs dry cannot sell: the stops silently
+stop working and a position rides to zero with no way out. That is the worst
+failure mode a live desk has, and it is not detectable from the portfolio's own
+bookkeeping, which is why the desk reads the wallet directly.
+
+`check_gas_reserves()` runs every tick in live mode, records each chain's native
+balance, and holds new entries once any of them falls under
+`execution.min_native_reserve` (0.02 SOL / 0.005 BNB by default — roughly ten
+exits' worth). It runs *after* exits are processed and gates only the entry
+side, so being unable to buy never becomes being unable to sell. A balance that
+cannot be read counts as unsafe rather than as a pass.
+
 #### What a compromised dashboard could and could not do
 
 **The desk has no function that sends funds to an address.** No transfer, no

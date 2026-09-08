@@ -209,6 +209,14 @@ class DeskRunner:
                     "best_usd": stats["best_usd"],
                     "worst_usd": stats["worst_usd"],
                 },
+                "gas": {
+                    "balances": dict(getattr(desk, "native_balances", {})),
+                    "floors": {
+                        c.value: cfg.native_reserve_for(c) for c in cfg.chains
+                    },
+                    "symbols": {c.value: c.native_symbol for c in cfg.chains},
+                    "warnings": last.gas_warnings if last else [],
+                },
                 "risk": {
                     "halted_reason": last.halted_reason if last else None,
                     "consecutive_losses": desk.risk.state.consecutive_losses,

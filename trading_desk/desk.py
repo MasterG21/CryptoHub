@@ -67,6 +67,7 @@ class TickResult:
     entries: list[str] = field(default_factory=list)
     exits: list[str] = field(default_factory=list)
     halted_reason: Optional[str] = None
+    gas_warnings: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     top_candidates: list[Candidate] = field(default_factory=list)
     reviews: list[Review] = field(default_factory=list)
@@ -109,6 +110,8 @@ class TradingDesk:
             self.portfolio = Portfolio(config.starting_capital_usd)
             self.risk = RiskManager(config.risk)
         self.risk.sync_day(self.portfolio.equity_usd)
+        # Latest native-coin balance seen per chain, for the dashboard.
+        self.native_balances: dict[str, float] = {}
         self.recent_exits: dict[str, float] = (
             journal.load_recent_exits() if journal is not None else {}
         )
@@ -129,6 +132,14 @@ class TradingDesk:
         equity = self.portfolio.equity_usd
         self.risk.sync_day(equity)
         result.halted_reason = self.risk.check_halt(equity)
+
+        # Gas is what an exit costs. A wallet that runs dry cannot sell, so the
+        # stops silently stop working and a position rides to zero with no way
+        # out. Hold entries well before that point — but never hold exits, which
+        # is why this runs after _process_exits and only gates the entry side.
+        result.gas_warnings = self.check_gas_reserves()
+        if result.gas_warnings and result.halted_reason is None:
+            result.halted_reason = result.gas_warnings[0]
 
         if self.paused:
             result.halted_reason = result.halted_reason or "paused by operator"
@@ -274,6 +285,38 @@ class TradingDesk:
                 continue
             if self._enter(review, result):
                 capacity -= 1
+
+    def check_gas_reserves(self) -> list[str]:
+        """Chains whose wallet is too low on native coin to fund its exits.
+
+        Paper mode has no wallet, so this is a no-op there. In live mode a
+        failure to read the balance counts as a warning rather than a pass: not
+        knowing whether you can afford to sell is not the same as being able to.
+        """
+        signer = getattr(self.executor, "signer", None)
+        if signer is None or not hasattr(signer, "native_balance"):
+            return []
+
+        warnings: list[str] = []
+        for chain in self.config.chains:
+            floor = self.config.native_reserve_for(chain)
+            if floor <= 0:
+                continue
+            try:
+                balance = signer.native_balance(chain)
+            except Exception as exc:  # noqa: BLE001
+                warnings.append(
+                    f"cannot read the {chain.label} wallet's {chain.native_symbol} "
+                    f"balance ({exc}); not opening new positions"
+                )
+                continue
+            self.native_balances[chain.value] = balance
+            if balance < floor:
+                warnings.append(
+                    f"{chain.label} wallet has {balance:.4f} {chain.native_symbol}, "
+                    f"under the {floor:.4f} needed to fund exits — top it up"
+                )
+        return warnings
 
     def _cooling_off(self) -> set[str]:
         """Tokens closed too recently to buy back, pruned as they age out."""

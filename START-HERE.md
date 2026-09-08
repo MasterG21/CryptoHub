@@ -133,6 +133,34 @@ like *Account details → Show private key*, and it asks for your password. If
 what you are looking at is a list of words, that is the seed phrase — wrong one,
 back out.
 
+### You also need coin for transaction fees
+
+Every trade is a transaction on the blockchain, and every transaction costs a
+fee. Two things about that catch people out:
+
+**The fee is paid in the chain's own coin** — SOL on Solana, BNB on BNB Chain —
+never in the memecoin you are trading. So the wallet needs a balance of that
+coin sitting there, separate from what you are trading with.
+
+**Selling costs a fee too.** This is the one that hurts. If the wallet runs out
+of SOL or BNB while you hold positions, you cannot sell them. The stop-loss
+stops working — not because the desk is broken, but because it cannot pay to
+submit the sale. You would watch a position fall with no way to get out.
+
+The desk now guards against this: it checks the balance every round, stops
+buying anything new well before the wallet runs dry, and shows a red warning.
+**It never stops selling** — that is the whole point of the guard.
+
+Rough amounts to keep in the wallet on top of your trading money:
+
+| Chain | Keep at least | Why |
+|---|---|---|
+| Solana | **0.02 SOL** | ~10 trades, plus a small deposit each new coin locks up (you get it back) |
+| BNB Chain | **0.005 BNB** | ~10 trades at normal fees |
+
+Fees vary a lot with how busy the network is, so treat those as a floor rather
+than a budget. Top up before it warns you, not after.
+
 ### About the wallet key
 
 The key is a long line of letters and numbers. **That text is the money.** It is not a

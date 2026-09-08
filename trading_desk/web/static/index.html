@@ -376,6 +376,14 @@ function banners(s) {
     out.push(`<div class="banner red"><b>Armed.</b> Real transactions are being
       broadcast from ${esc(Object.values(s.mode.wallets).join(", ") || "an unknown wallet")}.</div>`);
   }
+  // Running out of native coin is the failure that strands a book: no gas
+  // means no exit, so the stops quietly stop working.
+  if (s.gas && s.gas.warnings && s.gas.warnings.length) {
+    out.push(`<div class="banner red"><b>Not enough coin left to pay
+      transaction fees.</b><br>${s.gas.warnings.map(esc).join("<br>")}<br>
+      New buys are on hold. Selling still works for now — top the wallet up
+      before that stops being true.</div>`);
+  }
   if (s.risk.halted_reason) {
     out.push(`<div class="banner"><b>Entries halted:</b> ${esc(s.risk.halted_reason)}.
       Open positions are still being managed.</div>`);

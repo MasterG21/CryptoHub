@@ -212,6 +212,14 @@ class SolanaSigner(_RedactedRepr):
             raise SignerError(f"Solana RPC {method} failed: {payload['error']}")
         return payload.get("result")
 
+    def native_balance(self, chain: Chain = Chain.SOLANA) -> float:
+        """SOL in the wallet, in whole units. This is what pays for exits."""
+        result = self._rpc("getBalance", [self.wallet_address()])
+        try:
+            return int(result["value"]) / 1e9
+        except (KeyError, TypeError, ValueError) as exc:
+            raise SignerError("could not read the wallet's SOL balance") from exc
+
     def token_decimals(self, chain: Chain, token_address: str) -> int:
         cached = self._decimals_cache.get(token_address)
         if cached is not None:
@@ -365,6 +373,16 @@ class EvmSigner(_RedactedRepr):
             address=Web3.to_checksum_address(token_address), abi=_ERC20_ABI
         )
 
+    def native_balance(self, chain: Optional[Chain] = None) -> float:
+        """BNB in the wallet, in whole units. This is what pays for exits."""
+        from web3 import Web3
+
+        try:
+            wei = self._w3().eth.get_balance(Web3.to_checksum_address(self.wallet_address()))
+        except Exception as exc:  # noqa: BLE001
+            raise SignerError(f"could not read the wallet's native balance: {exc}") from exc
+        return wei / 1e18
+
     def token_decimals(self, chain: Chain, token_address: str) -> int:
         cached = self._decimals_cache.get(token_address)
         if cached is not None:
@@ -497,6 +515,9 @@ class MultiChainSigner(_RedactedRepr):
 
     def token_decimals(self, chain: Chain, token_address: str) -> int:
         return self._for(chain).token_decimals(chain, token_address)
+
+    def native_balance(self, chain: Chain) -> float:
+        return self._for(chain).native_balance(chain)
 
 
 # Folder names that mean "this file is being copied to someone else's servers".
