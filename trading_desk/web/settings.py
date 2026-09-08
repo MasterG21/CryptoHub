@@ -129,10 +129,19 @@ def _validate(payload: dict) -> list[str]:
             if unknown:
                 problems.append(f"unknown chain(s): {', '.join(map(str, unknown))}")
 
-    for field in ("solana_key", "evm_key"):
+    for field, chain in (("solana_key", "solana"), ("evm_key", "evm")):
         value = payload.get(field)
-        if value is not None and not isinstance(value, str):
+        if value is None:
+            continue
+        if not isinstance(value, str):
             problems.append(f"{field} must be text")
+            continue
+        kind, message = classify_secret(value, chain)
+        # Anything that is not a usable key is refused here, before _write_keys
+        # touches the disk. A seed phrase written to .env "just to see if it
+        # works" is already a leaked seed phrase.
+        if kind not in ("ok", "empty"):
+            problems.append(message)
     return problems
 
 
@@ -291,3 +300,81 @@ def _load_json(path: Path) -> dict:
 
 def _write_json(path: Path, data: dict) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n")
+
+
+# Recognising what someone pasted, so the wrong secret is refused before it is
+# written anywhere. The dangerous case is a seed phrase: it is the master key to
+# every account a wallet will ever derive, so it must never reach disk — and
+# somebody who does not know the difference will reach for it first, because it
+# is the thing their wallet app showed them when they set it up.
+_MNEMONIC_LENGTHS = (12, 15, 18, 21, 24)
+_HEX = set("0123456789abcdefABCDEF")
+_BASE58 = set("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz")
+
+
+def classify_secret(value: str, chain: str) -> tuple[str, str]:
+    """Say what a pasted string is. Returns (kind, message).
+
+    ``kind`` is "ok" when it looks like a usable private key for that chain, and
+    otherwise names what was pasted so the message can be specific. Never echoes
+    the value — an error that quotes a seed phrase has leaked it into the logs.
+    """
+    text = (value or "").strip()
+    if not text:
+        return "empty", ""
+
+    words = text.split()
+    if len(words) > 1:
+        if len(words) in _MNEMONIC_LENGTHS and all(w.isalpha() for w in words):
+            return "mnemonic", (
+                f"That looks like a {len(words)}-word seed phrase. Never put a seed "
+                "phrase into any app — it controls every account in your wallet, "
+                "forever. This needs the private key of one single account instead."
+            )
+        return "phrase", (
+            "That looks like several words rather than a key. If it is a seed "
+            "phrase, do not paste it anywhere — export one account's private key."
+        )
+
+    body = text[2:] if text.lower().startswith("0x") else text
+
+    if chain == "evm":
+        if len(body) == 40 and set(body) <= _HEX:
+            return "address", (
+                "That is your wallet address, which is public and cannot sign "
+                "anything. The desk needs that account's private key — a longer "
+                "string, 64 characters after the 0x."
+            )
+        if len(body) == 64 and set(body) <= _HEX:
+            return "ok", ""
+        return "unknown", (
+            "That does not look like a BNB Chain private key. Expected 64 "
+            f"characters of 0-9 and a-f, usually written after 0x — this was "
+            f"{len(body)} characters."
+        )
+
+    # Solana: either a base58 secret (64 bytes) or the keygen JSON byte array.
+    if text.startswith("["):
+        try:
+            numbers = json.loads(text)
+        except json.JSONDecodeError:
+            return "unknown", "That looks like a JSON array but could not be read."
+        if isinstance(numbers, list) and len(numbers) in (64, 65):
+            return "ok", ""
+        return "unknown", (
+            "A Solana key file is an array of 64 numbers; this had "
+            f"{len(numbers) if isinstance(numbers, list) else 'a different shape'}."
+        )
+    if set(text) <= _BASE58:
+        if len(text) >= 80:
+            return "ok", ""
+        if 32 <= len(text) <= 45:
+            return "address", (
+                "That is your Solana wallet address, which is public and cannot "
+                "sign anything. The desk needs the account's private key, which is "
+                "roughly twice as long."
+            )
+    return "unknown", (
+        "That does not look like a Solana private key. Export the private key "
+        "from your wallet — it is a long string, or a file of 64 numbers."
+    )

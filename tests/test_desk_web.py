@@ -760,3 +760,86 @@ def test_the_page_never_hard_codes_a_raw_api_fetch():
     page = Path("trading_desk/web/static/index.html").read_text()
     assert 'fetch("/api/' not in page
     assert "X-Desk-Token" in page
+
+
+# ------------------------------------------------- what may be pasted as a key
+#
+# The dangerous confusion: a seed phrase controls every account a wallet will
+# ever derive, and it is the first thing a wallet app shows you. It must be
+# refused before anything reaches disk — writing it to .env "just to see" has
+# already leaked it.
+
+
+@pytest.mark.parametrize("chain,value,kind", [
+    ("evm", "0x" + "a1" * 32, "ok"),
+    ("evm", "0x" + "ab" * 20, "address"),
+    ("solana", "5" * 88, "ok"),
+    ("solana", "So11111111111111111111111111111111111111112", "address"),
+    ("solana", "[" + ",".join(["1"] * 64) + "]", "ok"),
+    ("evm", "legal winner thank year wave sausage worth useful legal winner thank yellow",
+     "mnemonic"),
+    ("evm", " ".join(["abandon"] * 23 + ["art"]), "mnemonic"),
+    ("evm", "", "empty"),
+])
+def test_pasted_secrets_are_classified(chain, value, kind):
+    from trading_desk.web.settings import classify_secret
+
+    assert classify_secret(value, chain)[0] == kind
+
+
+def test_a_seed_phrase_is_refused_and_never_written(tmp_path):
+    from trading_desk.web.settings import write_settings
+
+    seed = "legal winner thank year wave sausage worth useful legal winner thank yellow"
+    config = tmp_path / "desk.config.json"
+    config.write_text("{}")
+    env = tmp_path / ".env"
+
+    result = write_settings({"evm_key": seed}, DeskConfig(), config, env)
+
+    assert result["ok"] is False
+    assert any("seed phrase" in p for p in result["problems"])
+    assert not env.exists()  # nothing reached disk
+
+
+def test_a_wallet_address_is_refused_with_a_useful_reason(tmp_path):
+    from trading_desk.web.settings import write_settings
+
+    config = tmp_path / "desk.config.json"
+    config.write_text("{}")
+    env = tmp_path / ".env"
+
+    result = write_settings({"evm_key": "0x" + "ab" * 20}, DeskConfig(), config, env)
+
+    assert result["ok"] is False
+    assert any("address" in p and "public" in p for p in result["problems"])
+    assert not env.exists()
+
+
+def test_the_refusal_never_echoes_the_secret(tmp_path):
+    """An error message that quotes a seed phrase has published it to the logs."""
+    from trading_desk.web.settings import write_settings
+
+    seed = "legal winner thank year wave sausage worth useful legal winner thank yellow"
+    config = tmp_path / "desk.config.json"
+    config.write_text("{}")
+
+    result = write_settings({"evm_key": seed}, DeskConfig(), config, tmp_path / ".env")
+
+    blob = json.dumps(result)
+    assert "sausage" not in blob and seed not in blob
+
+
+def test_a_valid_key_still_saves(tmp_path, monkeypatch):
+    from trading_desk.execution.signers import EVM_KEY_ENV
+    from trading_desk.web.settings import write_settings
+
+    monkeypatch.delenv(EVM_KEY_ENV, raising=False)
+    config = tmp_path / "desk.config.json"
+    config.write_text("{}")
+    env = tmp_path / ".env"
+
+    result = write_settings({"evm_key": "0x" + "a1" * 32}, DeskConfig(), config, env)
+
+    assert result["ok"] is True
+    assert env.exists()

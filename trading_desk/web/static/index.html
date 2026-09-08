@@ -289,16 +289,23 @@
 
     <div class="field" id="set-keys-field" hidden>
       <div class="keybox">
-        <h4>Wallet key — read this bit</h4>
-        <p>This text <b>is</b> the money. Anyone who gets it can empty the wallet,
-           instantly, and it cannot be undone. Use a brand-new wallet holding only
-           what you would shrug at losing. Never paste your main wallet's key.</p>
-        <label for="set-evm-key">BNB Chain wallet key</label>
-        <input type="password" id="set-evm-key" placeholder="starts with 0x — leave blank to keep">
+        <h4>Private key — not your seed phrase</h4>
+        <p><b>Never put your 12 or 24 word seed phrase here, or anywhere.</b> A seed
+           phrase controls every account in your wallet, forever. This wants the
+           <b>private key of one single account</b> — a different, longer string that
+           your wallet exports separately.</p>
+        <p>Your wallet <em>address</em> is not it either; that one is public and
+           cannot sign anything.</p>
+        <p>Whatever you paste here can spend that account's money. Use a brand-new
+           wallet holding only what you would shrug at losing.</p>
+        <label for="set-evm-key">BNB Chain private key</label>
+        <input type="password" id="set-evm-key"
+               placeholder="0x then 64 characters — blank keeps what's saved">
         <div class="keystate" id="evm-key-state"></div>
         <div style="height:12px"></div>
-        <label for="set-sol-key">Solana wallet key</label>
-        <input type="password" id="set-sol-key" placeholder="leave blank to keep what's saved">
+        <label for="set-sol-key">Solana private key</label>
+        <input type="password" id="set-sol-key"
+               placeholder="long base58 string, or [1,2,3,...] — blank keeps what's saved">
         <div class="keystate" id="sol-key-state"></div>
       </div>
     </div>

@@ -109,6 +109,30 @@ your positions, but they could not take the money.
 
 What they *could* take is the key file. Which is why:
 
+### What goes in the key box — this bit matters
+
+Three different things get confused, and mixing them up is how people lose
+everything they own in crypto:
+
+| | What it is | Put it in the box? |
+|---|---|---|
+| **Wallet address** | `0x9f3B...` — public, like an account number. Safe to share. | **No.** It cannot sign anything. |
+| **Seed phrase** | 12 or 24 words. The master key to your **whole wallet and every account in it, forever.** | **Never. Not here, not anywhere, not for anyone.** |
+| **Private key** | One long string for **one single account** | **Yes — this one.** |
+
+A seed phrase gives away every account you will ever create from that wallet. A
+private key gives away one account. That is why you make a fresh burner wallet
+and export *its* private key.
+
+The desk refuses a seed phrase or an address if you paste one, and refuses it
+*before* writing anything to disk. But do not rely on that — know which one you
+are copying.
+
+**Where to find it:** in most wallets it is under the account menu, something
+like *Account details → Show private key*, and it asks for your password. If
+what you are looking at is a list of words, that is the seed phrase — wrong one,
+back out.
+
 ### About the wallet key
 
 The key is a long line of letters and numbers. **That text is the money.** It is not a
