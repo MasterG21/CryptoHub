@@ -45,6 +45,18 @@ class RiskConfig:
 @dataclass
 class StrategyConfig:
     stop_loss_pct: float = 0.30  # hard stop below entry
+    # Once a trade has run this far, its stop moves up to the entry price plus
+    # costs, so a winner can no longer become a loser. Without this there is no
+    # protection at all below trail_arm_multiple: a position could rally 55%,
+    # reverse, and still stop out at a full loss.
+    #
+    # The level is a genuine trade-off and not a solved one. Too low and normal
+    # memecoin volatility shakes you out of the runners that pay for everything;
+    # too high and the gap this closes reopens. 1.35 leaves a 26% retrace of
+    # room, which is wide for most assets and only average for these. Tune it
+    # against your own trades once you have a hundred of them.
+    breakeven_arm_multiple: float = 1.35
+    breakeven_buffer_pct: float = 0.012  # clear the round trip, not just entry
     trail_arm_multiple: float = 1.6  # arm the trailing stop at +60%
     trail_giveback_pct: float = 0.25  # then trail this far under the high
     scale_out_levels: tuple[float, ...] = (2.0, 4.0, 10.0)

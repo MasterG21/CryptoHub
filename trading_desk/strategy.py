@@ -185,6 +185,25 @@ def initial_stop_price(entry_price: float, cfg: StrategyConfig) -> float:
     return entry_price * (1 - cfg.stop_loss_pct)
 
 
+def arm_breakeven_stop(position: Position, cfg: StrategyConfig) -> bool:
+    """Lift the stop to break-even once the trade has run far enough.
+
+    This closes the gap between entry and ``trail_arm_multiple``, where nothing
+    else protects a gain: before it, a position could rally 55%, reverse, and
+    still stop out at a full loss. The stop only ever moves up.
+
+    Break-even means net of the round trip, not the raw entry price — exiting
+    at exactly what you paid still loses the fees and slippage on both legs.
+    """
+    if position.multiple < cfg.breakeven_arm_multiple:
+        return False
+    target = position.avg_entry_price * (1 + cfg.breakeven_buffer_pct)
+    if target <= position.stop_price:
+        return False
+    position.stop_price = target
+    return True
+
+
 def update_position_marks(position: Position, pair: Optional[Pair]) -> None:
     """Fold the latest quote into the position's tracked state.
 
@@ -233,7 +252,11 @@ def evaluate_exit(
                 f"pool depth down {drop * 100:.0f}% since entry",
             )
 
-    # 2. Hard stop.
+    # 2. Protect a gain before checking the stop, so a trade that has already
+    #    run is measured against the raised stop rather than the original one.
+    arm_breakeven_stop(position, cfg)
+
+    # 3. Hard stop.
     if price <= position.stop_price:
         return ExitDecision(
             ExitReason.STOP_LOSS,
@@ -241,7 +264,7 @@ def evaluate_exit(
             f"price ${price:.8g} hit stop ${position.stop_price:.8g}",
         )
 
-    # 3. Trailing stop, once the position has earned one.
+    # 4. Trailing stop, once the position has earned one.
     if position.multiple >= cfg.trail_arm_multiple:
         position.trailing_armed = True
     trail = trailing_stop_price(position, cfg)
@@ -252,7 +275,7 @@ def evaluate_exit(
             f"gave back {cfg.trail_giveback_pct * 100:.0f}% from the ${position.high_water_price:.8g} high",
         )
 
-    # 4. Scale-out ladder — bank size into strength, in original-position terms.
+    # 5. Scale-out ladder — bank size into strength, in original-position terms.
     level_index = position.scale_outs_done
     if level_index < len(cfg.scale_out_levels):
         level = cfg.scale_out_levels[level_index]
@@ -266,7 +289,7 @@ def evaluate_exit(
                     f"scaling out {cfg.scale_out_fractions[level_index] * 100:.0f}% at {level:.1f}x",
                 )
 
-    # 5. The move is over.
+    # 6. The move is over.
     if pair is not None and pair.change_1h is not None and pair.change_1h <= cfg.momentum_dead_change_1h:
         return ExitDecision(
             ExitReason.MOMENTUM_DEAD,
@@ -274,7 +297,7 @@ def evaluate_exit(
             f"1h change {pair.change_1h * 100:+.0f}% — the move is done",
         )
 
-    # 6. Capital that is not working should be somewhere else.
+    # 7. Capital that is not working should be somewhere else.
     if (
         position.age_minutes >= cfg.time_stop_minutes
         and position.multiple < cfg.time_stop_min_multiple

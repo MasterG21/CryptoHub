@@ -152,6 +152,28 @@ raises your chance of ruin at the same time. It is not a risk/reward trade.
 **Start on Measured.** You can always raise it once you have your own numbers;
 you cannot un-lose money.
 
+### When does it actually sell?
+
+Six things can close a position. In the order the desk checks them:
+
+| Trigger | What it means |
+|---|---|
+| **Liquidity drain** | The pool is being pulled — get out now, at any price |
+| **Break-even stop** | Once up 35%, the stop moves to what you paid. A winner can no longer turn into a loss. |
+| **Stop loss** | Down 25–30% from entry |
+| **Trailing stop** | Up 60%+, then gave back a quarter from the high |
+| **Take profit** | Sells 40% at 2x, 30% more at 4x, 20% more at 10x |
+| **Time / dead momentum** | Going nowhere for 3 hours, or the hour turned hard down |
+
+**It does not sell just because a position is green.** A coin up 15% has not
+triggered anything — that is deliberate. In this asset class most of the money
+comes from the rare trade that runs a long way, and selling every small gain
+cuts those off before they happen.
+
+The break-even stop is the compromise: below +35% you can still lose the full
+stop, above it you cannot lose at all. Earlier versions had no protection until
++60%, which meant a coin could rally 55%, reverse, and still stop out at −30%.
+
 ### You also need coin for transaction fees
 
 Every trade is a transaction on the blockchain, and every transaction costs a
