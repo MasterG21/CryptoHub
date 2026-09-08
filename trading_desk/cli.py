@@ -542,6 +542,8 @@ def cmd_serve(cfg: DeskConfig, args: argparse.Namespace) -> int:
               f"running. Using {bound_port} instead.{RESET}")
     print(f"{DIM}That link contains this session's access key. It changes every "
           f"time you start the desk. Don't paste it anywhere.{RESET}")
+    print(f"{DIM}Your browser will say 'Not secure' — expected. That means no HTTPS, "
+          f"which protects data crossing a network; this never leaves your computer.{RESET}")
     if args.host not in ("127.0.0.1", "localhost", "::1"):
         print(f"{RED}{BOLD}Warning:{RESET} bound to {args.host}, so other machines "
               f"can reach it. The access key is the only thing protecting your book — "

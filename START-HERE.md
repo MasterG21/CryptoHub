@@ -173,6 +173,7 @@ That is roughly what this kind of thing actually returns on a good day.
 | `No pairs returned by any feed` | Your internet is down, or a firewall is blocking it. |
 | Browser says it can't connect | The black window probably closed. Start it again. |
 | Nothing is being bought | Normal. It refuses most coins. Check the Activity list to see why. |
+| The browser says **"Not secure"** | Expected, and not a problem. It means "no HTTPS", which protects data crossing a network. `127.0.0.1` is your own computer talking to itself — the data never reaches a network. Adding HTTPS would replace this with a *worse* warning about an untrusted certificate. |
 
 Anything else: copy what the black window says and ask. Copy the text — **never a
 screenshot showing your `.env` file or a wallet key.**
