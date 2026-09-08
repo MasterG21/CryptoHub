@@ -165,6 +165,11 @@ class DeskRunner:
                 except Exception as exc:  # noqa: BLE001 - a missing key is not fatal here
                     wallets[chain.label] = f"unavailable ({type(exc).__name__})"
 
+            # What still stands between this config and a real order. Surfaced so
+            # the dashboard can offer the way out instead of the operator being
+            # stuck with a desk that will not trade and will not say why.
+            blockers = executor.preflight() if live else []
+
             floor = stall_equity(
                 cfg.risk.risk_per_trade_pct,
                 cfg.risk.min_position_usd,
@@ -179,6 +184,8 @@ class DeskRunner:
                     "paused": desk.paused,
                     "wallets": wallets,
                     "chains": [c.label for c in cfg.chains],
+                    "blockers": blockers,
+                    "can_trade": not blockers,
                 },
                 "equity": {
                     "usd": equity,

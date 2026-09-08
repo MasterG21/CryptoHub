@@ -474,13 +474,22 @@ def cmd_serve(cfg: DeskConfig, args: argparse.Namespace) -> int:
     )
     desk = build_desk(cfg, args)
 
-    if cfg.execution.mode == "live":
-        blockers = desk.executor.preflight() if isinstance(desk.executor, LiveExecutor) else []
-        if blockers:
-            print(f"{RED}Live mode is not armed:{RESET}")
-            for blocker in blockers:
-                print(f"  - {blocker}")
-            return 1
+    # The dashboard always starts, even when live mode is misconfigured. It is
+    # the only way to change the setting back, so refusing to start it strands
+    # the operator: one click in Settings would otherwise lock them out of the
+    # UI permanently, with no route back to paper mode.
+    blockers: list[str] = []
+    if cfg.execution.mode == "live" and isinstance(desk.executor, LiveExecutor):
+        blockers = desk.executor.preflight()
+    if blockers:
+        # Unarmed live mode cannot place an order anyway — every one raises. Say
+        # so once and hold entries, rather than failing noisily on every tick.
+        desk.paused = True
+        print(f"\n{RED}{BOLD}Live mode is not ready, so nothing will be traded:{RESET}")
+        for blocker in blockers:
+            print(f"  {RED}-{RESET} {blocker}")
+        print(f"{YELLOW}The dashboard is still starting so you can fix it — "
+              f"open it and choose Practice, or add a wallet key.{RESET}")
 
     runner = DeskRunner(desk)
     from pathlib import Path
@@ -492,15 +501,22 @@ def cmd_serve(cfg: DeskConfig, args: argparse.Namespace) -> int:
         config_path=Path(args.config) if args.config else None,
     )
 
+    bound_port = httpd.server_address[1]
     mode = cfg.execution.mode
     colour = RED if mode == "live" else CYAN
     print(f"\n{BOLD}Trading desk{RESET}  mode={colour}{mode}{RESET}  "
           f"chains={', '.join(c.label for c in cfg.chains)}")
-    print(f"{BOLD}Dashboard{RESET}  http://{args.host}:{args.port}")
+    print(f"{BOLD}Dashboard{RESET}  http://{args.host}:{bound_port}")
+    if bound_port != args.port:
+        print(f"{YELLOW}Port {args.port} was busy — probably an older copy still "
+              f"running. Using {bound_port} instead.{RESET}")
     if args.host not in ("127.0.0.1", "localhost"):
         print(f"{RED}Warning:{RESET} bound to {args.host} with no authentication — "
               f"anyone who can reach this port can flatten your book.")
-    if mode == "live" and getattr(args, "arm", False):
+    if blockers:
+        print(f"{YELLOW}Entries are held until live mode is ready or you switch "
+              f"back to Practice.{RESET}")
+    elif mode == "live" and getattr(args, "arm", False):
         print(f"{RED}{BOLD}ARMED — real transactions will be broadcast.{RESET}")
     for line in _risk_banner(cfg):
         print(line)

@@ -117,6 +117,18 @@ class Journal:
         with self._lock:
             self.conn.close()
 
+    def reset(self) -> None:
+        """Wipe every record and start the account over.
+
+        Used when the operator changes the practice budget: keeping the old
+        equity curve and win rate against a different starting balance would
+        make every reported percentage meaningless.
+        """
+        with self._lock:
+            for table in ("fills", "trades", "equity", "open_positions", "meta"):
+                self.conn.execute(f"DELETE FROM {table}")
+            self.conn.commit()
+
     def __enter__(self) -> "Journal":
         return self
 

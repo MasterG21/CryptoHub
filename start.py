@@ -120,6 +120,29 @@ def _requirements_stamp(requirements: Path) -> str:
         return ""
 
 
+def force_paper_mode() -> None:
+    """Put the saved config back into practice mode.
+
+    The escape hatch for a desk that will not start: choosing real money without
+    a wallet key used to leave the dashboard unreachable, and the dashboard is
+    where that setting lives. `python3 start.py --paper` fixes it with no file
+    editing and no browser.
+    """
+    if not CONFIG.exists():
+        return
+    try:
+        data = json.loads(CONFIG.read_text())
+    except (OSError, json.JSONDecodeError):
+        say(f"    {YELLOW}config unreadable — replacing it with the defaults{RESET}")
+        CONFIG.unlink(missing_ok=True)
+        return
+    execution = data.setdefault("execution", {})
+    execution["mode"] = "paper"
+    execution["allow_live_trading"] = False
+    CONFIG.write_text(json.dumps(data, indent=2) + "\n")
+    say(f"    {GREEN}reset to practice mode{RESET}")
+
+
 def ensure_config() -> None:
     if CONFIG.exists():
         return
@@ -197,6 +220,8 @@ def main() -> int:
 
     step(3, total, "Loading your settings")
     ensure_config()
+    if "--paper" in sys.argv[1:] or "--reset" in sys.argv[1:]:
+        force_paper_mode()
     protect_env_file()
     load_env_file()
     say("    ready")
@@ -220,7 +245,9 @@ def main() -> int:
     except Exception:
         pass
 
-    argv = ["-c", str(CONFIG), "serve", "--port", str(PORT)] + sys.argv[1:]
+    # --paper/--reset are handled here, not by the desk's own parser.
+    passthrough = [a for a in sys.argv[1:] if a not in ("--paper", "--reset")]
+    argv = ["-c", str(CONFIG), "serve", "--port", str(PORT)] + passthrough
     return desk_main(argv)
 
 
@@ -229,3 +256,13 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except KeyboardInterrupt:
         say(f"\n{DIM}Stopped. Your positions and history are saved.{RESET}\n")
+    except SystemExit:
+        raise
+    except Exception as exc:  # noqa: BLE001 - the last line must be readable
+        say(f"\n{RED}Something went wrong:{RESET} {exc}")
+        say(f"{YELLOW}Try this first:{RESET} python3 start.py --paper")
+        say(f"{DIM}If it keeps happening, copy the lines above and ask — "
+            f"but never copy your wallet key.{RESET}\n")
+        if platform.system() == "Windows":
+            input("Press Enter to close this window. ")
+        raise SystemExit(1)

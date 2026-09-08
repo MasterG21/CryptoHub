@@ -67,7 +67,11 @@ class DeskHandler(BaseHTTPRequestHandler):
 
         if route == "/api/settings":
             result = write_settings(
-                payload, self.runner.desk.config, self.config_path, self.env_path
+                payload,
+                self.runner.desk.config,
+                self.config_path,
+                self.env_path,
+                desk=self.runner.desk,
             )
             return self._send_json(result, status=200 if result.get("ok") else 400)
 
@@ -138,9 +142,25 @@ def serve(
     port: int = 8787,
     config_path: Optional[Path] = None,
     env_path: Optional[Path] = None,
+    port_attempts: int = 8,
 ) -> ThreadingHTTPServer:
-    """Start the desk thread and the HTTP server. Returns the running server."""
-    runner.start()
-    httpd = make_server(runner, host, port, config_path, env_path)
-    threading.Thread(target=httpd.serve_forever, name="dashboard", daemon=True).start()
-    return httpd
+    """Start the desk thread and the HTTP server. Returns the running server.
+
+    If the port is already taken — usually a previous run still holding it, or
+    one that crashed without releasing it — the next few ports are tried rather
+    than crashing. A dashboard on 8788 is fine; a traceback is not.
+    """
+    last_error: Optional[OSError] = None
+    for candidate in range(port, port + max(1, port_attempts)):
+        try:
+            httpd = make_server(runner, host, candidate, config_path, env_path)
+        except OSError as exc:
+            last_error = exc
+            continue
+        runner.start()
+        threading.Thread(target=httpd.serve_forever, name="dashboard", daemon=True).start()
+        return httpd
+    raise OSError(
+        f"could not bind any port between {port} and {port + port_attempts - 1} "
+        f"on {host}: {last_error}"
+    )

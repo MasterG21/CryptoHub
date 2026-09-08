@@ -390,3 +390,240 @@ def test_the_closed_settings_sheet_cannot_swallow_clicks():
 
     page = (Path("trading_desk/web/static/index.html")).read_text()
     assert ".sheet[hidden] { display: none; }" in page
+
+
+# --------------------------------------------- recovery from a stuck config
+
+
+def test_the_dashboard_starts_even_when_live_mode_is_misconfigured(tmp_path):
+    """The single worst bug this had: choosing "Real money" with no wallet key
+    made `serve` exit before starting the dashboard — and the dashboard is the
+    only place that setting can be changed back. One click locked the operator
+    out with no route to paper mode."""
+    from trading_desk.cli import build_parser
+
+    config = tmp_path / "desk.config.json"
+    config.write_text(json.dumps({
+        "starting_capital_usd": 100.0,
+        "chains": ["solana"],
+        "execution": {"mode": "live", "allow_live_trading": True},
+    }))
+
+    args = build_parser().parse_args(
+        ["-c", str(config), "serve", "--port", "0", "--interval", "3600"]
+    )
+    # cmd_serve blocks on the runner, so assert the gate itself is gone: the
+    # code path that used to `return 1` before serving no longer exists.
+    from pathlib import Path
+
+    source = Path("trading_desk/cli.py").read_text()
+    gate = source.split("def cmd_serve")[1].split("runner = DeskRunner")[0]
+    assert "return 1" not in gate
+    assert "desk.paused = True" in gate
+    assert args.port == 0
+
+
+def test_unarmed_live_mode_reports_blockers_and_refuses_to_trade():
+    from trading_desk.execution.live import LiveExecutor
+
+    cfg = DeskConfig()
+    cfg.chains = (Chain.SOLANA,)
+    cfg.execution.mode = "live"
+    cfg.execution.allow_live_trading = True
+    desk = TradingDesk(cfg, MultiChainFeed([FakeFeed(pairs=[make_hot_pair()])]),
+                       LiveExecutor(cfg))
+    desk.paused = True  # what cmd_serve now does when preflight reports blockers
+
+    state = DeskRunner(desk).snapshot()["mode"]
+    assert state["can_trade"] is False
+    assert state["blockers"]
+    assert state["paused"] is True
+
+
+def test_switching_back_to_paper_also_clears_the_live_switch(tmp_path):
+    """Leaving allow_live_trading set would re-arm the next accidental flip."""
+    from trading_desk.web.settings import write_settings
+
+    config = tmp_path / "desk.config.json"
+    config.write_text(json.dumps({"execution": {"mode": "live", "allow_live_trading": True}}))
+    cfg = DeskConfig()
+    cfg.execution.mode = "live"
+    cfg.execution.allow_live_trading = True
+
+    result = write_settings({"mode": "paper"}, cfg, config, tmp_path / ".env")
+
+    assert result["ok"]
+    stored = json.loads(config.read_text())["execution"]
+    assert stored["mode"] == "paper"
+    assert stored["allow_live_trading"] is False
+    assert cfg.execution.allow_live_trading is False
+
+
+def test_a_busy_port_falls_back_instead_of_crashing():
+    """A previous run still holding the port must not be a fatal error."""
+    import socket
+
+    from trading_desk.web.server import serve
+
+    cfg = DeskConfig()
+    cfg.chains = (Chain.SOLANA,)
+    cfg.poll_interval_seconds = 3600
+    desk = TradingDesk(cfg, MultiChainFeed([FakeFeed(pairs=[])]), PaperExecutor(cfg))
+
+    blocker = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    blocker.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    blocker.bind(("127.0.0.1", 0))
+    blocker.listen(1)
+    taken = blocker.getsockname()[1]
+
+    runner = DeskRunner(desk)
+    httpd = serve(runner, port=taken)
+    try:
+        assert httpd.server_address[1] != taken
+        assert httpd.server_address[1] > taken
+    finally:
+        httpd.shutdown()
+        runner.stop()
+        blocker.close()
+
+
+def test_the_recovery_banner_offers_the_fix_not_just_the_diagnosis():
+    from pathlib import Path
+
+    page = Path("trading_desk/web/static/index.html").read_text()
+    assert "switchToPractice" in page
+    assert "Switch back to practice mode" in page
+
+
+def test_changing_the_practice_budget_actually_takes_effect(tmp_path):
+    """Writing the number to a file was not enough: the journal's saved balance
+    won on every load, so the setting silently did nothing, restart or not."""
+    from trading_desk.journal import Journal
+    from trading_desk.web.settings import write_settings
+
+    cfg = DeskConfig()
+    cfg.chains = (Chain.SOLANA,)
+    cfg.journal_path = str(tmp_path / "j.sqlite3")
+    journal = Journal(cfg.journal_path)
+    desk = TradingDesk(cfg, MultiChainFeed([FakeFeed(pairs=[make_hot_pair()])]),
+                       PaperExecutor(cfg), journal=journal)
+    desk.tick()
+    assert desk.portfolio.open_positions  # a book exists before the change
+
+    config = tmp_path / "desk.config.json"
+    config.write_text("{}")
+    result = write_settings(
+        {"starting_capital_usd": 1000}, cfg, config, tmp_path / ".env", desk=desk
+    )
+
+    assert result["ok"] and result["account_reset"] is True
+    assert result["needs_restart"] == []  # no restart needed, it is applied
+    assert desk.portfolio.starting_cash_usd == 1000
+    assert desk.portfolio.cash_usd == 1000
+    assert desk.portfolio.open_positions == []
+    assert desk.portfolio.closed_trades == []
+
+    # And it survives a reload, rather than the old balance coming back.
+    assert journal.load_portfolio(1000).cash_usd == 1000
+    journal.close()
+
+
+def test_the_budget_change_persists_across_a_restart(tmp_path):
+    from trading_desk.journal import Journal
+    from trading_desk.web.settings import write_settings
+
+    cfg = DeskConfig()
+    cfg.chains = (Chain.SOLANA,)
+    cfg.journal_path = str(tmp_path / "j.sqlite3")
+    journal = Journal(cfg.journal_path)
+    desk = TradingDesk(cfg, MultiChainFeed([FakeFeed(pairs=[])]), PaperExecutor(cfg),
+                       journal=journal)
+    config = tmp_path / "desk.config.json"
+    config.write_text("{}")
+    write_settings({"starting_capital_usd": 1000}, cfg, config, tmp_path / ".env", desk=desk)
+    journal.close()
+
+    reopened = Journal(cfg.journal_path)
+    restored = reopened.load_portfolio(100.0)  # config default must not win back
+    assert restored.starting_cash_usd == 1000
+    assert restored.cash_usd == 1000
+    reopened.close()
+
+
+class _StubSigner:
+    def sign_and_send(self, chain, payload):
+        raise AssertionError("no order should be placed in these tests")
+
+    def wallet_address(self, chain):
+        return "0xwallet"
+
+
+def test_a_live_budget_change_is_not_silently_applied_to_a_real_book(tmp_path):
+    """Wiping a real account's history because a number was edited would be wrong.
+
+    The test is what makes it real: a fully armed live executor, since an
+    unarmed one has never placed an order and is safe to reset.
+    """
+    from trading_desk.execution.live import LiveExecutor
+    from trading_desk.web.settings import write_settings
+
+    cfg = DeskConfig()
+    cfg.chains = (Chain.SOLANA,)
+    cfg.execution.mode = "live"
+    cfg.execution.allow_live_trading = True
+    executor = LiveExecutor(cfg, signer=_StubSigner())
+    assert executor.preflight() == []  # genuinely armed
+
+    desk = TradingDesk(cfg, MultiChainFeed([FakeFeed(pairs=[])]), executor)
+    config = tmp_path / "desk.config.json"
+    config.write_text("{}")
+
+    result = write_settings(
+        {"starting_capital_usd": 5000}, cfg, config, tmp_path / ".env", desk=desk
+    )
+
+    assert result["account_reset"] is False
+    assert "starting_capital_usd" in result["needs_restart"]
+    assert desk.portfolio.starting_cash_usd == 100.0
+
+
+def test_an_unarmed_live_desk_can_still_be_reset(tmp_path):
+    """It has never placed an order, so its account is pretend either way."""
+    from trading_desk.execution.live import LiveExecutor
+    from trading_desk.web.settings import write_settings
+
+    cfg = DeskConfig()
+    cfg.chains = (Chain.SOLANA,)
+    cfg.execution.mode = "live"
+    desk = TradingDesk(cfg, MultiChainFeed([FakeFeed(pairs=[])]), LiveExecutor(cfg))
+    config = tmp_path / "desk.config.json"
+    config.write_text("{}")
+
+    result = write_settings(
+        {"starting_capital_usd": 1000}, cfg, config, tmp_path / ".env", desk=desk
+    )
+
+    assert result["account_reset"] is True
+    assert desk.portfolio.starting_cash_usd == 1000
+
+
+def test_switching_to_practice_takes_effect_without_a_restart(tmp_path):
+    """Requiring a restart to escape a broken live setup is how people stay stuck."""
+    from trading_desk.execution.live import LiveExecutor
+    from trading_desk.execution.paper import PaperExecutor as Paper
+    from trading_desk.web.settings import write_settings
+
+    cfg = DeskConfig()
+    cfg.chains = (Chain.SOLANA,)
+    cfg.execution.mode = "live"
+    desk = TradingDesk(cfg, MultiChainFeed([FakeFeed(pairs=[])]), LiveExecutor(cfg))
+    desk.paused = True
+    config = tmp_path / "desk.config.json"
+    config.write_text("{}")
+
+    result = write_settings({"mode": "paper"}, cfg, config, tmp_path / ".env", desk=desk)
+
+    assert result["needs_restart"] == []
+    assert isinstance(desk.executor, Paper)
+    assert cfg.execution.mode == "paper"
+    assert desk.paused is False

@@ -136,7 +136,13 @@ def _validate(payload: dict) -> list[str]:
     return problems
 
 
-def write_settings(payload: dict, cfg: DeskConfig, config_path: Path, env_path: Path) -> dict:
+def write_settings(
+    payload: dict,
+    cfg: DeskConfig,
+    config_path: Path,
+    env_path: Path,
+    desk=None,
+) -> dict:
     """Apply settings: to the running desk where safe, to disk always."""
     problems = _validate(payload)
     if problems:
@@ -158,18 +164,44 @@ def write_settings(payload: dict, cfg: DeskConfig, config_path: Path, env_path: 
 
     if "mode" in payload and payload["mode"] != cfg.execution.mode:
         stored.setdefault("execution", {})["mode"] = payload["mode"]
-        needs_restart.append("mode")
+        if payload["mode"] == "paper" and desk is not None:
+            # Live -> paper is the safe direction and needs no restart: swap the
+            # executor for the simulated one right now. Requiring a restart to
+            # get *out* of a broken live setup is how someone stays stuck.
+            from ..execution.paper import PaperExecutor
+
+            cfg.execution.mode = "paper"
+            desk.executor = PaperExecutor(cfg)
+            desk.paused = False
+        else:
+            # paper -> live builds a signer from the environment at startup, so
+            # that direction genuinely has to wait for a restart.
+            needs_restart.append("mode")
 
     if payload.get("mode") == "live":
         # Arming the second switch is what the operator is asking for by
         # choosing live here; --arm is still required to broadcast.
         stored.setdefault("execution", {})["allow_live_trading"] = True
+    elif payload.get("mode") == "paper":
+        # Clear it on the way back too. Leaving it set means the next accidental
+        # flip to live is armed again without anyone choosing that.
+        stored.setdefault("execution", {})["allow_live_trading"] = False
+        cfg.execution.allow_live_trading = False
 
+    account_reset = False
     if "starting_capital_usd" in payload:
         amount = float(payload["starting_capital_usd"])
         if amount != cfg.starting_capital_usd:
             stored["starting_capital_usd"] = amount
-            needs_restart.append("starting_capital_usd")
+            cfg.starting_capital_usd = amount
+            if desk is not None and _is_simulated(cfg, desk):
+                # Apply it for real. Writing the number to a file while the
+                # journal's saved balance keeps winning is how this setting came
+                # to look broken: it changed nothing, restart or not.
+                desk.reset_account(amount)
+                account_reset = True
+            else:
+                needs_restart.append("starting_capital_usd")
 
     if payload.get("chains"):
         chains = list(dict.fromkeys(payload["chains"]))
@@ -186,7 +218,8 @@ def write_settings(payload: dict, cfg: DeskConfig, config_path: Path, env_path: 
     return {
         "ok": True,
         "needs_restart": sorted(set(needs_restart)),
-        "applied_now": bool(preset),
+        "applied_now": bool(preset) or account_reset,
+        "account_reset": account_reset,
     }
 
 
@@ -227,6 +260,25 @@ def _write_keys(payload: dict, env_path: Path) -> bool:
         except OSError:
             pass
     return True
+
+
+def _is_simulated(cfg: DeskConfig, desk) -> bool:
+    """Whether this desk's trades are pretend, so its account can be reset.
+
+    Judged from the executor actually in use rather than the config string: the
+    two disagree while a mode change is pending, and what decides whether real
+    money is involved is what would execute an order, not what a file says. An
+    unarmed live executor has never placed one either.
+    """
+    from ..execution.live import LiveExecutor
+
+    executor = getattr(desk, "executor", None)
+    if not isinstance(executor, LiveExecutor):
+        return True
+    try:
+        return bool(executor.preflight())
+    except Exception:  # noqa: BLE001 - if we cannot tell, assume it is real
+        return False
 
 
 def _load_json(path: Path) -> dict:

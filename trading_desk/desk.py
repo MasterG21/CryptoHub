@@ -422,6 +422,25 @@ class TradingDesk:
         except Exception as exc:  # noqa: BLE001 - never let disk kill the loop
             result.errors.append(f"journal write failed: {exc}")
 
+    def reset_account(self, starting_usd: float) -> None:
+        """Start the account over at a new balance, flat and with no history.
+
+        Changing the practice budget is only meaningful if it actually takes
+        effect: the journal's stored balance otherwise wins on every restart,
+        and the setting appears to do nothing at all. Positions are dropped
+        rather than sold — in practice mode they are not real, and carrying
+        them across a reset would leave a book that does not match the cash.
+        """
+        self.portfolio = Portfolio(starting_cash_usd=starting_usd)
+        self.risk = RiskManager(self.config.risk)
+        self.risk.sync_day(starting_usd)
+        self.recent_exits = {}
+        self.history = PriceHistory()
+        self.safety.history = self.history
+        if self.journal is not None:
+            self.journal.reset()
+            self.journal.save_state(self.portfolio, self.risk.state, self.recent_exits)
+
     def progress_to_target(self) -> dict:
         """Where the account stands against the target it was pointed at."""
         equity = self.portfolio.equity_usd

@@ -109,6 +109,13 @@
   }
   .banner.red { border-color: #4a1f1f; background: #2a1414; color: var(--red); }
   .banner b { color: inherit; }
+  .banner .fix {
+    display: block; margin-top: 10px; font: 600 12px/1 inherit;
+    color: var(--text); background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 6px;
+    padding: 8px 13px; cursor: pointer;
+  }
+  .banner .fix:hover { border-color: #39414d; }
   footer { color: var(--faint); font-size: 11px; margin: 16px 0 8px; }
 
   /* Plain-language strip: the one thing a non-trader should be able to read. */
@@ -264,7 +271,8 @@
 
     <div class="field">
       <label>How much are you starting with?</label>
-      <div class="hint">In dollars. Used to size every trade.</div>
+      <div class="hint">In dollars. Sizes every trade. Changing it in practice
+        mode starts the account over at the new amount and clears the history.</div>
       <input type="number" id="set-capital" min="1" step="1">
     </div>
 
@@ -327,6 +335,14 @@ function badges(m) {
 
 function banners(s) {
   const out = [];
+  // Live mode that cannot trade is the one state a person can get stuck in, so
+  // this banner carries the way out rather than only naming the problem.
+  if (s.mode.blockers && s.mode.blockers.length) {
+    out.push(`<div class="banner red"><b>Real-money mode isn't ready, so nothing
+      is being traded.</b><br>${s.mode.blockers.map(esc).join("<br>")}
+      <button class="fix" onclick="switchToPractice()">Switch back to practice mode</button>
+      </div>`);
+  }
   if (s.mode.execution === "live" && s.mode.armed) {
     out.push(`<div class="banner red"><b>Armed.</b> Real transactions are being
       broadcast from ${esc(Object.values(s.mode.wallets).join(", ") || "an unknown wallet")}.</div>`);
@@ -639,6 +655,22 @@ async function saveSettings() {
   if (evm) body.evm_key = evm;
   if (sol) body.solana_key = sol;
 
+  // Changing the budget restarts the practice account, so it clears trades and
+  // the equity curve. Say that before doing it, not after.
+  const capitalChanged =
+    settings && Number($("set-capital").value) !== Number(settings.starting_capital_usd);
+  if (capitalChanged && body.mode === "paper") {
+    const ok = confirm(
+      `Start the practice account over at $${Number($("set-capital").value).toLocaleString()}?\n\n` +
+      "This clears the practice history — trades, the equity curve, everything. " +
+      "No real money is involved."
+    );
+    if (!ok) {
+      $("set-note").textContent = "";
+      return;
+    }
+  }
+
   const note = $("set-note");
   note.textContent = "Saving…";
   note.className = "save-note muted";
@@ -662,9 +694,32 @@ async function saveSettings() {
   if (out.needs_restart && out.needs_restart.length) {
     note.className = "save-note warn";
     note.textContent = "Saved. Close this window and start the desk again to apply.";
+  } else if (out.account_reset) {
+    note.className = "save-note up";
+    note.textContent = "Saved. The practice account has been restarted.";
   } else {
     note.className = "save-note up";
     note.textContent = "Saved and applied.";
+  }
+  // Re-read so the form reflects what was actually stored, not what was typed.
+  paintSettings(await (await fetch("/api/settings")).json());
+  refresh();
+}
+
+// Reachable from the banner so a stuck desk can always be recovered in one
+// click, without opening Settings or editing a file.
+async function switchToPractice() {
+  const res = await fetch("/api/settings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mode: "paper" }),
+  });
+  const out = await res.json();
+  if (out.ok) {
+    alert("Switched to practice mode.\n\nStop the desk (Ctrl-C in the black " +
+          "window, or just close it) and start it again to apply.");
+  } else {
+    alert("Could not switch: " + (out.problems || ["unknown error"]).join(" "));
   }
   refresh();
 }

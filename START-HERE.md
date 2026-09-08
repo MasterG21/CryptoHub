@@ -150,6 +150,10 @@ That is roughly what this kind of thing actually returns on a good day.
 |---|---|
 | `python: command not found` | Python isn't installed, or the PATH box wasn't ticked on Windows. Redo Step 1. |
 | The window flashes and closes | Open Terminal / Command Prompt and run it from there (see Step 3) so you can read the error. |
+| It says real-money mode isn't ready | Open the dashboard and click **Switch back to practice mode**. If the dashboard won't open at all, run `python3 start.py --paper`. |
+| It won't start after changing a setting | `python3 start.py --paper` puts it back to practice. Nothing is lost. |
+| Changing the budget seems to do nothing | Fixed. In practice mode it now applies immediately and restarts the practice account at the new amount, clearing the old history. |
+| `Address already in use` | An older copy is still running. It now picks the next free port by itself and tells you which. |
 | `No pairs returned by any feed` | Your internet is down, or a firewall is blocking it. |
 | Browser says it can't connect | The black window probably closed. Start it again. |
 | Nothing is being bought | Normal. It refuses most coins. Check the Activity list to see why. |
