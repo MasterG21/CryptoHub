@@ -2,10 +2,15 @@
 voices/*.onnx
 voices/*.onnx.json
 
-# Rendered output - rebuild with render/build.sh
+# Rendered output - rebuild with render/build.sh.
+# The ** matters: episode outputs live in out/<ep>/, and a bare out/*.mp4
+# only matches the top level.
+out/**/*.mp4
+out/**/*.wav
 out/*.mp4
 out/*.wav
 out/_*
+out/**/_*
 out/audition_raw.json
 
 node_modules/
