@@ -89,6 +89,44 @@ export function buildOverlay() {
     f.lines.forEach((l, i) => ctx.fillText(l, 960, y0 + i * lh));
   }
 
+  // Numeral plus that many dots: toddlers who cannot read "3" can still match
+  // the pips to the things on screen.
+  function drawCount(n, alpha) {
+    if (!n || alpha <= 0.01) return;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    const w = 250, h = 300, x = 92, y = 128;
+    ctx.shadowColor = 'rgba(20,14,40,0.34)';
+    ctx.shadowBlur = 26; ctx.shadowOffsetY = 12;
+    roundRect(x, y, w, h, 44);
+    ctx.fillStyle = 'rgba(255,255,255,0.96)';
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.lineWidth = 11; ctx.strokeStyle = '#ffb03f';
+    roundRect(x, y, w, h, 44);
+    ctx.stroke();
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '800 176px Baloo2';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 14; ctx.strokeStyle = '#3b2358';
+    ctx.strokeText(String(n), x + w / 2, y + 118);
+    ctx.fillStyle = '#ffb03f';
+    ctx.fillText(String(n), x + w / 2, y + 118);
+
+    for (let i = 0; i < n; i++) {                    // pips
+      const cx = x + w / 2 + (i - (n - 1) / 2) * 40;
+      ctx.beginPath();
+      ctx.arc(cx, y + 234, 15, 0, Math.PI * 2);
+      ctx.fillStyle = '#ff7fa8';
+      ctx.fill();
+      ctx.lineWidth = 5; ctx.strokeStyle = '#3b2358';
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   function drawTitle(title, subtitle, alpha) {
     ctx.clearRect(0, 0, W, H);
     ctx.save();
@@ -179,7 +217,10 @@ export function buildOverlay() {
       if (key === last) return;
       last = key;
       if (state.title) drawTitle(state.title, state.subtitle, state.alpha ?? 1);
-      else drawCaption(state.text, state.color);
+      else {
+        drawCaption(state.text, state.color);
+        drawCount(state.count, state.countAlpha ?? 1);
+      }
       tex.needsUpdate = true;
     },
   };

@@ -1,0 +1,706 @@
+{
+  "meta": {
+    "title": "Meadow Friends",
+    "episode": "The Sounds in the Meadow",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "model": "voices/en-us-libritts-high.onnx",
+    "gap_scale": 1.75
+  },
+  "cast": {
+    "milo": {
+      "name": "Milo",
+      "species": "mouse",
+      "speaker": 151,
+      "pitch": 1.14,
+      "rate": 0.918,
+      "body": "#c8b6e2",
+      "belly": "#f2e6ff",
+      "inner": "#ffb8cf",
+      "nose": "#ff8fb0"
+    },
+    "ellie": {
+      "name": "Ellie",
+      "species": "elephant",
+      "speaker": 220,
+      "pitch": 0.99,
+      "rate": 0.936,
+      "body": "#9fc4e8",
+      "belly": "#d6e9f7",
+      "inner": "#ffc2d6",
+      "nose": "#8fb4dd"
+    },
+    "bella": {
+      "name": "Bella",
+      "species": "cow",
+      "speaker": 728,
+      "pitch": 0.97,
+      "rate": 0.927,
+      "body": "#fdfbf7",
+      "belly": "#ffe8ee",
+      "inner": "#ffb8cf",
+      "nose": "#ffb0c4"
+    },
+    "pip": {
+      "name": "Pip",
+      "species": "duck",
+      "speaker": 698,
+      "pitch": 1.09,
+      "rate": 0.918,
+      "body": "#ffd45e",
+      "belly": "#ffe9a8",
+      "inner": "#ff9b21",
+      "nose": "#ff9b21"
+    },
+    "hop": {
+      "name": "Hop",
+      "species": "frog",
+      "speaker": 106,
+      "pitch": 1.07,
+      "rate": 0.927,
+      "body": "#7fd95f",
+      "belly": "#d8f5b0",
+      "inner": "#5cb840",
+      "nose": "#5cb840"
+    },
+    "leo": {
+      "name": "Leo",
+      "species": "lion",
+      "speaker": 288,
+      "pitch": 0.93,
+      "rate": 0.9,
+      "body": "#ffc861",
+      "belly": "#ffe6b0",
+      "inner": "#ff9b6b",
+      "nose": "#c96f2a",
+      "mane": "#f2903c"
+    }
+  },
+  "scenes": [
+    {
+      "id": "morning",
+      "set": "meadow",
+      "sky": "morning",
+      "stage": {
+        "ellie": {
+          "x": 1.25,
+          "z": 0.1,
+          "face": -1
+        },
+        "milo": {
+          "x": -1.15,
+          "z": 0.35,
+          "face": 1
+        }
+      },
+      "beats": [
+        {
+          "t": "title",
+          "dur": 3.4,
+          "shot": "wide",
+          "text": "Meadow Friends"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.3,
+          "text": "Ellie! Ellie! Wake up, sleepy elephant.",
+          "mood": "happy"
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "close:ellie",
+          "gap": 0.3,
+          "text": "Good morning, Milo!"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Good morning, Ellie! What a sunny day."
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "two",
+          "gap": 0.3,
+          "text": "Shall we go and play in the meadow?"
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "two",
+          "gap": 0.35,
+          "text": "The meadow is full of friends today."
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.5,
+          "mood": "happy",
+          "text": "Yes please! Let's go."
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "two",
+          "gap": 0.35,
+          "mood": "think",
+          "text": "Wait. Listen, Ellie. Do you hear that?"
+        },
+        {
+          "t": "sfx",
+          "sound": "moo",
+          "shot": "wide",
+          "gap": 0.5
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.3,
+          "mood": "surprise",
+          "text": "What was that?"
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "close:ellie",
+          "gap": 0.6,
+          "text": "I don't know. Let's go and find out!"
+        }
+      ]
+    },
+    {
+      "id": "cow",
+      "set": "field",
+      "sky": "day",
+      "stage": {
+        "bella": {
+          "x": 0.1,
+          "z": -0.5,
+          "face": 0
+        },
+        "ellie": {
+          "x": 3.1,
+          "z": 1.4,
+          "face": -1
+        },
+        "milo": {
+          "x": -2.7,
+          "z": 1.5,
+          "face": 1
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "bella",
+          "shot": "close:bella",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Moo! Moo! Good morning, friends!"
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "two",
+          "gap": 0.3,
+          "text": "Look, Milo. It is Bella the cow."
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "two",
+          "gap": 0.3,
+          "text": "Bella lives here in the big green field."
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.3,
+          "text": "Hello Bella! What sound do you make?"
+        },
+        {
+          "t": "line",
+          "who": "bella",
+          "shot": "close:bella",
+          "gap": 0.4,
+          "mood": "happy",
+          "text": "I say moo! Moo! Moo!"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.2,
+          "mood": "ask",
+          "text": "Can you say moo with me?"
+        },
+        {
+          "t": "pause",
+          "dur": 2.4,
+          "shot": "close:milo"
+        },
+        {
+          "t": "line",
+          "who": "bella",
+          "shot": "close:bella",
+          "gap": 0.25,
+          "text": "Would you like to hear it one more time?",
+          "mood": "ask"
+        },
+        {
+          "t": "line",
+          "who": "bella",
+          "shot": "close:bella",
+          "gap": 0.4,
+          "text": "Moo! Moo!",
+          "mood": "happy"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "wide",
+          "gap": 0.6,
+          "mood": "happy",
+          "text": "Moo! Moo! That was wonderful."
+        }
+      ]
+    },
+    {
+      "id": "duck",
+      "set": "pond",
+      "sky": "day",
+      "stage": {
+        "pip": {
+          "x": 0.0,
+          "z": -0.7,
+          "face": 0
+        },
+        "ellie": {
+          "x": 3.24,
+          "z": 1.5,
+          "face": -1
+        },
+        "milo": {
+          "x": -2.84,
+          "z": 1.6,
+          "face": 1
+        }
+      },
+      "beats": [
+        {
+          "t": "sfx",
+          "sound": "quack",
+          "shot": "wide",
+          "gap": 0.35
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "two",
+          "gap": 0.3,
+          "mood": "surprise",
+          "text": "Ellie, look! Down by the pond."
+        },
+        {
+          "t": "line",
+          "who": "pip",
+          "shot": "close:pip",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Quack! Quack! Hello everyone!"
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "two",
+          "gap": 0.3,
+          "text": "That is Pip the duck. Pip loves to swim."
+        },
+        {
+          "t": "line",
+          "who": "pip",
+          "shot": "wide",
+          "gap": 0.3,
+          "text": "Come and see my lovely blue pond!",
+          "mood": "happy"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.3,
+          "text": "Pip, what sound do you make?"
+        },
+        {
+          "t": "line",
+          "who": "pip",
+          "shot": "close:pip",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "I say quack! Quack, quack!"
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "close:ellie",
+          "gap": 0.2,
+          "mood": "ask",
+          "text": "Can you say quack?"
+        },
+        {
+          "t": "pause",
+          "dur": 2.4,
+          "shot": "close:ellie"
+        },
+        {
+          "t": "line",
+          "who": "pip",
+          "shot": "wide",
+          "gap": 0.6,
+          "mood": "happy",
+          "text": "Quack! Quack! Very good!"
+        }
+      ]
+    },
+    {
+      "id": "frog",
+      "set": "pond",
+      "sky": "warm",
+      "stage": {
+        "hop": {
+          "x": -0.2,
+          "z": -0.4,
+          "face": 0
+        },
+        "ellie": {
+          "x": 3.24,
+          "z": 1.5,
+          "face": -1
+        },
+        "milo": {
+          "x": -2.97,
+          "z": 1.5,
+          "face": 1
+        }
+      },
+      "beats": [
+        {
+          "t": "sfx",
+          "sound": "ribbit",
+          "shot": "wide",
+          "gap": 0.3
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.3,
+          "mood": "surprise",
+          "text": "Oh! Who said that?"
+        },
+        {
+          "t": "line",
+          "who": "hop",
+          "shot": "close:hop",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Ribbit! Down here, on the lily pad!"
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "two",
+          "gap": 0.3,
+          "text": "Hello Hop! Hop is a little green frog."
+        },
+        {
+          "t": "line",
+          "who": "hop",
+          "shot": "close:hop",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "I say ribbit! And I love to jump."
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "two",
+          "gap": 0.3,
+          "text": "Frogs are wonderful jumpers."
+        },
+        {
+          "t": "line",
+          "who": "hop",
+          "shot": "close:hop",
+          "gap": 0.35,
+          "text": "Watch me go. Hop, hop, hop!",
+          "mood": "happy"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.2,
+          "mood": "ask",
+          "text": "Can you jump and say ribbit?"
+        },
+        {
+          "t": "pause",
+          "dur": 2.4,
+          "shot": "wide"
+        },
+        {
+          "t": "line",
+          "who": "hop",
+          "shot": "close:hop",
+          "gap": 0.6,
+          "mood": "happy",
+          "text": "Ribbit! Ribbit! Hooray!"
+        }
+      ]
+    },
+    {
+      "id": "lion",
+      "set": "grass",
+      "sky": "warm",
+      "stage": {
+        "leo": {
+          "x": 0.3,
+          "z": -0.6,
+          "face": 0
+        },
+        "ellie": {
+          "x": 3.5,
+          "z": 1.5,
+          "face": -1
+        },
+        "milo": {
+          "x": -3.08,
+          "z": 1.6,
+          "face": 1
+        }
+      },
+      "beats": [
+        {
+          "t": "sfx",
+          "sound": "roar",
+          "shot": "wide",
+          "gap": 0.35
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.3,
+          "mood": "surprise",
+          "text": "Oh my! That was a very big sound."
+        },
+        {
+          "t": "line",
+          "who": "leo",
+          "shot": "close:leo",
+          "gap": 0.3,
+          "text": "Roar! Hello there. My name is Leo."
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "two",
+          "gap": 0.3,
+          "text": "Do not worry, Milo. Leo is a friendly lion."
+        },
+        {
+          "t": "line",
+          "who": "leo",
+          "shot": "close:leo",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "I say roar! But I am very gentle."
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.2,
+          "mood": "ask",
+          "text": "Can you roar like Leo?"
+        },
+        {
+          "t": "line",
+          "who": "leo",
+          "shot": "close:leo",
+          "gap": 0.2,
+          "text": "Would you like to try a big roar?",
+          "mood": "ask"
+        },
+        {
+          "t": "pause",
+          "dur": 2.4,
+          "shot": "close:leo"
+        },
+        {
+          "t": "line",
+          "who": "leo",
+          "shot": "wide",
+          "gap": 0.6,
+          "mood": "happy",
+          "text": "Roar! What a brave sound!"
+        }
+      ]
+    },
+    {
+      "id": "together",
+      "set": "meadow",
+      "sky": "golden",
+      "stage": {
+        "ellie": {
+          "x": 0.0,
+          "z": -0.2,
+          "face": 0
+        },
+        "milo": {
+          "x": -1.6,
+          "z": 0.5,
+          "face": 0.4
+        },
+        "bella": {
+          "x": 2.6,
+          "z": 0.3,
+          "face": -0.4
+        },
+        "pip": {
+          "x": -3.0,
+          "z": 0.9,
+          "face": 0.5
+        },
+        "hop": {
+          "x": 1.5,
+          "z": 1.0,
+          "face": -0.2
+        },
+        "leo": {
+          "x": 4.0,
+          "z": 1.1,
+          "face": -0.6
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "group",
+          "gap": 0.35,
+          "mood": "happy",
+          "text": "Let us all make our sounds together!"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "group",
+          "gap": 0.3,
+          "text": "One, two, three... everybody!",
+          "mood": "happy"
+        },
+        {
+          "t": "line",
+          "who": "bella",
+          "shot": "close:bella",
+          "gap": 0.15,
+          "mood": "happy",
+          "text": "Moo!"
+        },
+        {
+          "t": "line",
+          "who": "pip",
+          "shot": "close:pip",
+          "gap": 0.15,
+          "mood": "happy",
+          "text": "Quack!"
+        },
+        {
+          "t": "line",
+          "who": "hop",
+          "shot": "close:hop",
+          "gap": 0.15,
+          "mood": "happy",
+          "text": "Ribbit!"
+        },
+        {
+          "t": "line",
+          "who": "leo",
+          "shot": "close:leo",
+          "gap": 0.15,
+          "mood": "happy",
+          "text": "Roar!"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.25,
+          "mood": "happy",
+          "text": "Squeak, squeak!"
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "close:ellie",
+          "gap": 0.4,
+          "mood": "happy",
+          "text": "And the elephant says toot, toot!"
+        },
+        {
+          "t": "sfx",
+          "sound": "toot",
+          "shot": "group",
+          "gap": 0.5
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "group",
+          "gap": 0.3,
+          "text": "Thank you for playing with us today."
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "group",
+          "gap": 0.35,
+          "text": "You did so well today. Well done!",
+          "mood": "happy"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Come back soon. Goodbye, friends!"
+        },
+        {
+          "t": "chorus",
+          "who": [
+            "ellie",
+            "milo",
+            "bella",
+            "pip"
+          ],
+          "shot": "group",
+          "gap": 1.6,
+          "text": "Bye bye!"
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-# Upload pack — Meadow Friends: The Sounds in the Meadow
+# Upload pack — episode 1: Meadow Friends: The Sounds in the Meadow
 
 Channel: **Milo Meets** (`@milomeets`). Channel name, description and episode
 title conventions live in `youtube/CHANNEL.md`; the profile picture is
@@ -68,3 +68,48 @@ changes them.
    voices are synthesised from an MIT-licensed model, and the music and animal
    noises are generated in `render/voices.py` and `render/make_audio.py`. No
    stock assets, samples or loops anywhere in the video.
+
+
+---
+
+# Upload pack — episode 2: Milo Meets Bea
+
+Built by `render/build.sh ep02`; files live in `out/ep02/`.
+
+| What | File |
+|---|---|
+| Video (1080p24, H.264 + AAC) | `out/ep02/milo-meets-ep02.mp4` |
+| English subtitles | `out/ep02/ep02.en.srt` |
+| Thumbnail | `out/ep02/thumbnail.jpg` |
+| Description + chapters | `out/ep02/description.txt` |
+| Transcript | `out/ep02/transcript.txt` |
+
+## Title
+
+    Milo Meets Bea the Bee 🐝 Count 1 to 5 for Toddlers
+
+Alternates:
+
+    Counting 1 to 5 in the Garden 🌻 Milo Meets Bea the Bee
+    Let's Count to Five! 🐞 A Counting Story for Toddlers | Milo Meets
+
+## Tags
+
+    counting for toddlers, count to 5, learn to count, numbers for kids,
+    counting song, toddler learning, preschool maths, 3d cartoon for kids,
+    kids stories, milo meets, bee cartoon, garden, educational videos for toddlers,
+    counting 1 to 5, story for babies
+
+## Why this is a second episode, not a re-skin
+
+YouTube's inauthentic-content policy excludes mass-produced, templated uploads,
+so this one deliberately changes more than the cast list:
+
+- **Different curriculum.** Counting one to five, not animal sounds.
+- **New character.** Bea the bee, with her own voice (LibriTTS speaker 250,
+  pitched up) and a hovering rig the other characters do not use.
+- **New set.** A flower garden with an arch, a hive and beds of flowers.
+- **New on-screen teaching device.** A number card showing the numeral and that
+  many pips, revealed only *after* the child has had a chance to answer.
+- **Different story shape.** A goal and a payoff (a present for Ellie) rather
+  than a tour, plus a recap that counts back through all five groups.

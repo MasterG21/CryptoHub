@@ -1,0 +1,760 @@
+{
+  "meta": {
+    "title": "Milo Meets Bea",
+    "episode": "Counting in the Flower Garden",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "gap_scale": 1.75,
+    "model": "voices/en-us-libritts-high.onnx"
+  },
+  "cast": {
+    "milo": {
+      "name": "Milo",
+      "species": "mouse",
+      "speaker": 151,
+      "pitch": 1.14,
+      "rate": 0.918,
+      "body": "#c8b6e2",
+      "belly": "#f2e6ff",
+      "inner": "#ffb8cf",
+      "nose": "#ff8fb0"
+    },
+    "ellie": {
+      "name": "Ellie",
+      "species": "elephant",
+      "speaker": 220,
+      "pitch": 0.99,
+      "rate": 0.936,
+      "body": "#9fc4e8",
+      "belly": "#d6e9f7",
+      "inner": "#ffc2d6",
+      "nose": "#8fb4dd"
+    },
+    "bea": {
+      "name": "Bea",
+      "species": "bee",
+      "speaker": 250,
+      "pitch": 1.18,
+      "rate": 0.94,
+      "body": "#ffd23f",
+      "belly": "#fff0b0",
+      "inner": "#3f3550",
+      "nose": "#3f3550"
+    }
+  },
+  "scenes": [
+    {
+      "id": "garden",
+      "set": "garden",
+      "sky": "morning",
+      "stage": {
+        "milo": {
+          "x": -0.6,
+          "z": 0.4,
+          "face": 0.6
+        }
+      },
+      "beats": [
+        {
+          "t": "title",
+          "dur": 3.4,
+          "shot": "wide",
+          "text": "Milo Meets Bea"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Today is Ellie's special day."
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "wide",
+          "gap": 0.3,
+          "text": "The garden is full of pretty things.",
+          "mood": "happy"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.3,
+          "text": "I want to pick her some flowers."
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "wide",
+          "gap": 0.35,
+          "mood": "think",
+          "text": "But how many flowers should I pick?"
+        }
+      ]
+    },
+    {
+      "id": "meet",
+      "set": "garden",
+      "sky": "morning",
+      "stage": {
+        "milo": {
+          "x": -1.5,
+          "z": 0.5,
+          "face": 0.7
+        },
+        "bea": {
+          "x": 1.1,
+          "z": 0.0,
+          "face": -0.7
+        }
+      },
+      "beats": [
+        {
+          "t": "sfx",
+          "sound": "buzz",
+          "shot": "wide",
+          "gap": 0.3
+        },
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "close:bea",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Buzz buzz! Hello down there!"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.3,
+          "mood": "surprise",
+          "text": "Oh! Who are you?"
+        },
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "close:bea",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "I am Bea the bee. I love this garden."
+        },
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "close:bea",
+          "gap": 0.3,
+          "text": "I visit every flower in the garden.",
+          "mood": "happy"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "two",
+          "gap": 0.3,
+          "text": "Hello Bea! Can you help me count?"
+        },
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "close:bea",
+          "gap": 0.4,
+          "mood": "happy",
+          "text": "Yes! Counting is my favourite thing."
+        }
+      ]
+    },
+    {
+      "id": "one",
+      "set": "garden",
+      "sky": "day",
+      "count": 1,
+      "prop": "sunflower",
+      "stage": {
+        "milo": {
+          "x": -1.7,
+          "z": 0.6,
+          "face": 0.7
+        },
+        "bea": {
+          "x": 1.3,
+          "z": 0.2,
+          "face": -0.7
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "wide",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Look! A big yellow sunflower."
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.3,
+          "text": "It is taller than me!",
+          "mood": "surprise"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.2,
+          "mood": "ask",
+          "text": "How many sunflowers can you see?"
+        },
+        {
+          "t": "pause",
+          "dur": 2.4,
+          "shot": "wide"
+        },
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "wide",
+          "gap": 0.4,
+          "mood": "happy",
+          "text": "One! One tall sunflower.",
+          "reveal": true
+        }
+      ]
+    },
+    {
+      "id": "two",
+      "set": "garden",
+      "sky": "day",
+      "count": 2,
+      "prop": "butterfly",
+      "stage": {
+        "milo": {
+          "x": -1.7,
+          "z": 0.6,
+          "face": 0.7
+        },
+        "bea": {
+          "x": 1.3,
+          "z": 0.2,
+          "face": -0.7
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "wide",
+          "gap": 0.3,
+          "mood": "surprise",
+          "text": "Bea, look at the butterflies!"
+        },
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "close:bea",
+          "gap": 0.2,
+          "mood": "ask",
+          "text": "Can you count them with me?"
+        },
+        {
+          "t": "pause",
+          "dur": 2.4,
+          "shot": "wide"
+        },
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "wide",
+          "gap": 0.4,
+          "mood": "happy",
+          "text": "One, two. Two butterflies!",
+          "reveal": true
+        }
+      ]
+    },
+    {
+      "id": "three",
+      "set": "garden",
+      "sky": "day",
+      "count": 3,
+      "prop": "ladybird",
+      "stage": {
+        "milo": {
+          "x": -1.7,
+          "z": 0.6,
+          "face": 0.7
+        },
+        "bea": {
+          "x": 1.3,
+          "z": 0.2,
+          "face": -0.7
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "wide",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Little red ladybirds on the leaf."
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.3,
+          "text": "They have tiny black spots.",
+          "mood": "happy"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.2,
+          "mood": "ask",
+          "text": "Let's count the ladybirds. Ready?"
+        },
+        {
+          "t": "pause",
+          "dur": 2.4,
+          "shot": "wide"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "wide",
+          "gap": 0.4,
+          "mood": "happy",
+          "text": "One, two, three. Three ladybirds!",
+          "reveal": true
+        }
+      ]
+    },
+    {
+      "id": "four",
+      "set": "garden",
+      "sky": "warm",
+      "count": 4,
+      "prop": "apple",
+      "stage": {
+        "milo": {
+          "x": -1.7,
+          "z": 0.6,
+          "face": 0.7
+        },
+        "bea": {
+          "x": 1.3,
+          "z": 0.2,
+          "face": -0.7
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "wide",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Red apples on the little tree."
+        },
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "close:bea",
+          "gap": 0.3,
+          "text": "They look juicy and sweet.",
+          "mood": "happy"
+        },
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "close:bea",
+          "gap": 0.2,
+          "mood": "ask",
+          "text": "How many apples? Count with us."
+        },
+        {
+          "t": "pause",
+          "dur": 2.4,
+          "shot": "wide"
+        },
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "wide",
+          "gap": 0.4,
+          "mood": "happy",
+          "text": "One, two, three, four. Four apples!",
+          "reveal": true
+        }
+      ]
+    },
+    {
+      "id": "five",
+      "set": "garden",
+      "sky": "warm",
+      "count": 5,
+      "prop": "flower",
+      "stage": {
+        "milo": {
+          "x": -1.7,
+          "z": 0.6,
+          "face": 0.7
+        },
+        "bea": {
+          "x": 1.3,
+          "z": 0.2,
+          "face": -0.7
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "wide",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Here are the pretty pink flowers."
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.2,
+          "mood": "ask",
+          "text": "This is for Ellie. Count them all!"
+        },
+        {
+          "t": "pause",
+          "dur": 2.6,
+          "shot": "wide"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "wide",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "One, two, three, four, five!",
+          "reveal": true
+        },
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "close:bea",
+          "gap": 0.4,
+          "mood": "happy",
+          "text": "Five flowers. What a lovely present.",
+          "reveal": true
+        }
+      ]
+    },
+    {
+      "id": "recap0",
+      "set": "garden",
+      "sky": "warm",
+      "stage": {
+        "milo": {
+          "x": -1.7,
+          "z": 0.6,
+          "face": 0.7
+        },
+        "bea": {
+          "x": 1.3,
+          "z": 0.2,
+          "face": -0.7
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "two",
+          "gap": 0.35,
+          "text": "Now let's count them all again!",
+          "mood": "happy"
+        }
+      ]
+    },
+    {
+      "id": "recap1",
+      "set": "garden",
+      "sky": "warm",
+      "count": 1,
+      "prop": "sunflower",
+      "stage": {
+        "milo": {
+          "x": -1.7,
+          "z": 0.6,
+          "face": 0.7
+        },
+        "bea": {
+          "x": 1.3,
+          "z": 0.2,
+          "face": -0.7
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "wide",
+          "gap": 0.25,
+          "text": "One sunflower.",
+          "mood": "happy",
+          "reveal": true
+        }
+      ]
+    },
+    {
+      "id": "recap2",
+      "set": "garden",
+      "sky": "warm",
+      "count": 2,
+      "prop": "butterfly",
+      "stage": {
+        "milo": {
+          "x": -1.7,
+          "z": 0.6,
+          "face": 0.7
+        },
+        "bea": {
+          "x": 1.3,
+          "z": 0.2,
+          "face": -0.7
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "wide",
+          "gap": 0.25,
+          "text": "Two butterflies.",
+          "mood": "happy",
+          "reveal": true
+        }
+      ]
+    },
+    {
+      "id": "recap3",
+      "set": "garden",
+      "sky": "warm",
+      "count": 3,
+      "prop": "ladybird",
+      "stage": {
+        "milo": {
+          "x": -1.7,
+          "z": 0.6,
+          "face": 0.7
+        },
+        "bea": {
+          "x": 1.3,
+          "z": 0.2,
+          "face": -0.7
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "wide",
+          "gap": 0.25,
+          "text": "Three ladybirds.",
+          "mood": "happy",
+          "reveal": true
+        }
+      ]
+    },
+    {
+      "id": "recap4",
+      "set": "garden",
+      "sky": "warm",
+      "count": 4,
+      "prop": "apple",
+      "stage": {
+        "milo": {
+          "x": -1.7,
+          "z": 0.6,
+          "face": 0.7
+        },
+        "bea": {
+          "x": 1.3,
+          "z": 0.2,
+          "face": -0.7
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "wide",
+          "gap": 0.25,
+          "text": "Four apples.",
+          "mood": "happy",
+          "reveal": true
+        }
+      ]
+    },
+    {
+      "id": "recap5",
+      "set": "garden",
+      "sky": "warm",
+      "count": 5,
+      "prop": "flower",
+      "stage": {
+        "milo": {
+          "x": -1.7,
+          "z": 0.6,
+          "face": 0.7
+        },
+        "bea": {
+          "x": 1.3,
+          "z": 0.2,
+          "face": -0.7
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "wide",
+          "gap": 0.25,
+          "text": "Five flowers for Ellie.",
+          "mood": "happy",
+          "reveal": true
+        }
+      ]
+    },
+    {
+      "id": "recapEnd",
+      "set": "garden",
+      "sky": "warm",
+      "stage": {
+        "milo": {
+          "x": -1.7,
+          "z": 0.6,
+          "face": 0.7
+        },
+        "bea": {
+          "x": 1.3,
+          "z": 0.2,
+          "face": -0.7
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "two",
+          "gap": 0.4,
+          "text": "We counted all the way to five!",
+          "mood": "happy"
+        }
+      ]
+    },
+    {
+      "id": "surprise",
+      "set": "garden",
+      "sky": "golden",
+      "stage": {
+        "ellie": {
+          "x": 1.5,
+          "z": -0.3,
+          "face": -0.5
+        },
+        "milo": {
+          "x": -1.6,
+          "z": 0.6,
+          "face": 0.6
+        },
+        "bea": {
+          "x": -0.7,
+          "z": -0.9,
+          "face": 0.3
+        }
+      },
+      "beats": [
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "group",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Ellie! We made something for you."
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "close:ellie",
+          "gap": 0.3,
+          "mood": "surprise",
+          "text": "Oh my! Flowers for me?"
+        },
+        {
+          "t": "line",
+          "who": "bea",
+          "shot": "close:bea",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Milo counted every single one."
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "close:ellie",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Thank you Milo. Thank you Bea."
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "group",
+          "gap": 0.2,
+          "mood": "ask",
+          "text": "Can you count them one more time?"
+        },
+        {
+          "t": "pause",
+          "dur": 2.6,
+          "shot": "group"
+        },
+        {
+          "t": "chorus",
+          "who": [
+            "milo",
+            "bea",
+            "ellie"
+          ],
+          "shot": "group",
+          "gap": 0.4,
+          "text": "One, two, three, four, five!",
+          "reveal": true
+        },
+        {
+          "t": "line",
+          "who": "ellie",
+          "shot": "group",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "You counted beautifully. Well done!"
+        },
+        {
+          "t": "line",
+          "who": "milo",
+          "shot": "close:milo",
+          "gap": 0.3,
+          "mood": "happy",
+          "text": "Come and count again soon. Bye bye!"
+        }
+      ]
+    }
+  ]
+}

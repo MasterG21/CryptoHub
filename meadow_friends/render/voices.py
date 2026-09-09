@@ -85,6 +85,16 @@ def _toot():
     return out
 
 
+def _buzz():
+    n = int(1.1 * SR); t = np.arange(n) / SR
+    f = np.interp(t, [0, 0.5, 1.1], [210, 240, 200])
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    tone = np.sign(np.sin(ph)) * 0.5 + np.sin(ph) + 0.3 * np.sin(2 * ph)
+    wobble = 1 + 0.35 * np.sin(2 * np.pi * 27 * t)
+    x = lowpass(tone * wobble, 1700)
+    return x * env_adsr(n, 0.14, 0.2, 0.8, 0.3)
+
+
 def _squeak():
     n = int(0.22 * SR); t = np.arange(n) / SR
     f = np.interp(t, [0, 0.1, 0.22], [900, 1500, 1100])
@@ -101,7 +111,7 @@ def _levelled(fn):
 
 SOUNDS = {k: _levelled(v) for k, v in {
     'moo': _moo, 'quack': _quack, 'ribbit': _ribbit, 'roar': _roar,
-    'toot': _toot, 'squeak': _squeak}.items()}
+    'toot': _toot, 'squeak': _squeak, 'buzz': _buzz}.items()}
 
 
 def birds(seconds, seed=7):

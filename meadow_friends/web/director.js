@@ -9,7 +9,7 @@ import { updateCharacter } from './rig.js';
 
 const CAPTION_COLOR = {
   milo: '#b98cf0', ellie: '#4aa3e0', bella: '#f26c6c',
-  pip: '#f2a03c', hop: '#4cb85c', leo: '#e8873a',
+  pip: '#f2a03c', hop: '#4cb85c', leo: '#e8873a', bea: '#ffb03f',
 };
 
 export function buildDirector(scene, script, timeline, world) {
@@ -55,10 +55,11 @@ export function buildDirector(scene, script, timeline, world) {
       const facing = c._gazeYaw ?? (st.face || 0) * 0.5;
       const angle = facing + 0.34 + drift;                // three-quarter view
       const dist = 5.9 * c.headR + 0.52 - push * 0.09;
-      const target = new THREE.Vector3(st.x, c.headY - c.headR * 0.30, st.z);
+      const base = c.baseY || 0;
+      const target = new THREE.Vector3(st.x, base + c.headY - c.headR * 0.30, st.z);
       const pos = new THREE.Vector3(
         st.x + Math.sin(angle) * dist,
-        c.headY + c.headR * 0.34 + Math.sin(shotT * 0.5) * 0.012,
+        base + c.headY + c.headR * 0.34 + Math.sin(shotT * 0.5) * 0.012,
         st.z + Math.cos(angle) * dist);
       return { pos, target, fov };
     }
@@ -72,7 +73,7 @@ export function buildDirector(scene, script, timeline, world) {
       const st = stage[k];
       minX = Math.min(minX, st.x - 0.75);
       maxX = Math.max(maxX, st.x + 0.75);
-      maxY = Math.max(maxY, cast[k].height);
+      maxY = Math.max(maxY, (cast[k].baseY || 0) + cast[k].height);
       sumZ += st.z;
     }
     const cx = (minX + maxX) / 2;
@@ -125,6 +126,7 @@ export function buildDirector(scene, script, timeline, world) {
       lastScene = ev.scene;
       world.showSet(ev.set);
       world.applySky(ev.sky);
+      if (world.showProps) world.showProps(sceneDef.prop, sceneDef.count);
       for (const key of Object.keys(cast)) {
         const c = cast[key];
         const st = sceneDef.stage[key];
@@ -204,10 +206,16 @@ export function buildDirector(scene, script, timeline, world) {
     for (const c of cues) {
       if (t >= c.a - 0.12 && t <= c.b + 0.22) { cue = c; break; }
     }
-    if (!cue) return { text: '' };
+    // the number card appears only once they have counted, never before
+    let count = 0, countAlpha = 0;
+    if (sceneDef.count && ev.reveal) {
+      count = sceneDef.count;
+      countAlpha = Math.min(1, (t - ev.start) / 0.35);
+    }
+    if (!cue) return { text: '', count, countAlpha };
     const idxColon = cue.text.indexOf(': ');
     const text = idxColon > 0 && idxColon < 12 ? cue.text.slice(idxColon + 2) : cue.text;
-    return { text, color: CAPTION_COLOR[speakerKey] || '#ff6b9d' };
+    return { text, color: CAPTION_COLOR[speakerKey] || '#ff6b9d', count, countAlpha };
   }
 
   const _u = update;

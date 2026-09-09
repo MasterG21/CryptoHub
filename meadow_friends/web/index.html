@@ -55,9 +55,11 @@ const scene = new THREE.Scene();
 const world = buildWorld(scene, renderer, +(Q.get('smap') || 1024));
 const overlay = buildOverlay();
 
+const EP = Q.get('ep') || 'ep01';
+const TIMELINE = EP === 'ep01' ? '../out/timeline.json' : `../out/${EP}/timeline.json`;
 const [script, timeline] = await Promise.all([
-  fetch('../script.json').then(r => r.json()),
-  fetch('../out/timeline.json').then(r => r.json()),
+  fetch(`../episodes/${EP}.json`).then(r => r.json()),
+  fetch(TIMELINE).then(r => r.json()),
 ]);
 const director = buildDirector(scene, script, timeline, world);
 const DUR = timeline.duration;

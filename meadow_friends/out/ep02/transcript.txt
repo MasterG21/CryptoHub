@@ -1,0 +1,77 @@
+Milo Meets Bea - Counting in the Flower Garden
+
+
+[0:00] GARDEN
+    Milo: Today is Ellie's special day.
+    Milo: The garden is full of pretty things.
+    Milo: I want to pick her some flowers.
+    Milo: But how many flowers should I pick?
+
+[0:12] MEET
+    (buzz)
+    Bea: Buzz buzz! Hello down there!
+    Milo: Oh! Who are you?
+    Bea: I am Bea the bee. I love this garden.
+    Bea: I visit every flower in the garden.
+    Milo: Hello Bea! Can you help me count?
+    Bea: Yes! Counting is my favourite thing.
+
+[0:29] ONE
+    Bea: Look! A big yellow sunflower.
+    Milo: It is taller than me!
+    Milo: How many sunflowers can you see?
+    Bea: One! One tall sunflower.
+
+[0:41] TWO
+    Milo: Bea, look at the butterflies!
+    Bea: Can you count them with me?
+    Bea: One, two. Two butterflies!
+
+[0:49] THREE
+    Bea: Little red ladybirds on the leaf.
+    Milo: They have tiny black spots.
+    Milo: Let's count the ladybirds. Ready?
+    Milo: One, two, three. Three ladybirds!
+
+[1:02] FOUR
+    Milo: Red apples on the little tree.
+    Bea: They look juicy and sweet.
+    Bea: How many apples? Count with us.
+    Bea: One, two, three, four. Four apples!
+
+[1:14] FIVE
+    Bea: Here are the pretty pink flowers.
+    Milo: This is for Ellie. Count them all!
+    Milo: One, two, three, four, five!
+    Bea: Five flowers. What a lovely present.
+
+[1:28] RECAP0
+    Bea: Now let's count them all again!
+
+[1:30] RECAP1
+    Bea: One sunflower.
+
+[1:31] RECAP2
+    Milo: Two butterflies.
+
+[1:33] RECAP3
+    Bea: Three ladybirds.
+
+[1:35] RECAP4
+    Milo: Four apples.
+
+[1:36] RECAP5
+    Bea: Five flowers for Ellie.
+
+[1:38] RECAPEND
+    Milo: We counted all the way to five!
+
+[1:41] SURPRISE
+    Milo: Ellie! We made something for you.
+    Ellie: Oh my! Flowers for me?
+    Bea: Milo counted every single one.
+    Ellie: Thank you Milo. Thank you Bea.
+    Milo: Can you count them one more time?
+    EVERYONE: One, two, three, four, five!
+    Ellie: You counted beautifully. Well done!
+    Milo: Come and count again soon. Bye bye!

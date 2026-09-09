@@ -217,8 +217,180 @@ export function buildWorld(scene, renderer, shadowSize = 1024) {
   scene.add(tall);
   world.sets.grass = tall;
 
+  // ---- flower garden (episode 2) ----
+  const garden = new THREE.Group();
+  for (let i = 0; i < 22; i++) {                     // beds of tall flowers
+    const a = -0.5 + (i / 22) * 5.6;
+    const d = 6.2 + (i % 3) * 1.5;
+    const x = Math.cos(a) * d, z = Math.sin(a) * d - 2;
+    const stem = new THREE.Mesh(cyl(6), mat('#3f9c52', { rough: 1 }));
+    stem.scale.set(0.05, 0.86, 0.05);
+    stem.position.set(x, 0.43, z);
+    garden.add(stem);
+    const col = ['#ff7fa8', '#ffd84a', '#b98cf0', '#ff9d5c'][i % 4];
+    const head = new THREE.Group();
+    head.position.set(x, 0.92, z + 0.05);
+    for (let p = 0; p < 6; p++) {                    // petals stand up, facing +Z
+      const ang = (p / 6) * Math.PI * 2;
+      head.add(blob(col, 0.10, 0.14, 0.035,
+                    [Math.cos(ang) * 0.15, Math.sin(ang) * 0.15, 0],
+                    { seg: 10, shadow: false }));
+    }
+    head.add(blob('#ffe98a', 0.085, 0.085, 0.05, [0, 0, 0.03], { seg: 10, shadow: false }));
+    garden.add(head);
+  }
+  for (const side of [-1, 1]) {                      // garden arch
+    const post = new THREE.Mesh(cyl(10), mat('#c9a06b'));
+    post.scale.set(0.075, 1.25, 0.075);
+    post.position.set(side * 3.1, 0.62, -3.6);
+    post.castShadow = true;
+    garden.add(post);
+  }
+  for (let i = 0; i <= 10; i++) {                    // arch top
+    const a = Math.PI * (i / 10);
+    const seg = ball('#c9a06b', 0.075,
+                     [Math.cos(a) * -3.1, 1.25 + Math.sin(a) * 0.85, -3.6], { seg: 10 });
+    garden.add(seg);
+    if (i % 2 === 0) {
+      garden.add(ball('#4fae5f', 0.14,
+                      [Math.cos(a) * -3.1, 1.25 + Math.sin(a) * 0.85 + 0.08, -3.5],
+                      { seg: 10, shadow: false }));
+    }
+  }
+  const hive = new THREE.Group();                    // beehive on a post
+  for (let i = 0; i < 4; i++) {
+    hive.add(blob('#e8b45c', 0.30 - i * 0.045, 0.09, 0.30 - i * 0.045,
+                  [0, 0.10 + i * 0.16, 0], { seg: 16 }));
+  }
+  hive.add(ball('#5a4530', 0.055, [0, 0.14, 0.24], { seg: 10, shadow: false }));
+  hive.position.set(4.3, 0.95, -2.6);
+  const hivePost = new THREE.Mesh(cyl(8), mat('#a5793f'));
+  hivePost.scale.set(0.07, 1.0, 0.07);
+  hivePost.position.set(4.3, 0.5, -2.6);
+  garden.add(hive, hivePost);
+  scene.add(garden);
+  world.sets.garden = garden;
+
   world.sets.meadow = new THREE.Group();
   scene.add(world.sets.meadow);
+
+  // ---- countable props: five of each, revealed one at a time ----
+  world.props = {};
+  const propRoot = new THREE.Group();
+  scene.add(propRoot);
+  const slot = (i, n) => (n === 1 ? 0 : (i - (n - 1) / 2) * 1.15);
+
+  function makeSunflower(x) {
+    const g = new THREE.Group();
+    const stem = new THREE.Mesh(cyl(8), mat('#3f9c52', { rough: 1 }));
+    stem.scale.set(0.06, 1.25, 0.06);
+    stem.position.y = 0.62;
+    stem.castShadow = true;
+    g.add(stem);
+    for (const [ly, lz, r] of [[0.55, 1, -0.5], [0.8, -1, 0.5]]) {
+      const leaf = blob('#4fae5f', 0.20, 0.045, 0.11, [lz * 0.16, ly, 0], { seg: 12 });
+      leaf.rotation.z = lz * 0.5;
+      g.add(leaf);
+    }
+    const head = new THREE.Group();
+    head.position.set(0, 1.34, 0.10);
+    for (let p = 0; p < 14; p++) {                   // petals in the XY plane
+      const a = (p / 14) * Math.PI * 2;
+      const pet = blob('#ffd23f', 0.13, 0.21, 0.045,
+                       [Math.cos(a) * 0.30, Math.sin(a) * 0.30, 0], { seg: 12 });
+      pet.rotation.z = a - Math.PI / 2;
+      head.add(pet);
+    }
+    head.add(blob('#8a5a3b', 0.235, 0.235, 0.09, [0, 0, 0.05], { seg: 18 }));
+    g.add(head);
+    g.position.set(x, 0, -1.5);
+    return g;
+  }
+
+  function makeButterfly(x, i) {
+    const g = new THREE.Group();
+    const cols = ['#ff7fa8', '#8fd0ff', '#ffd84a', '#c48bff', '#ff9d5c'];
+    const c = cols[i % cols.length];
+    g.add(blob('#5a4530', 0.035, 0.05, 0.13, [0, 0, 0], { seg: 10 }));
+    for (const sd of [-1, 1]) {
+      const wing = new THREE.Group();
+      wing.position.set(sd * 0.03, 0.02, 0);
+      wing.add(blob(c, 0.20, 0.17, 0.022, [sd * 0.19, 0.07, 0], { seg: 12, shadow: false }));
+      wing.add(blob(c, 0.15, 0.12, 0.022, [sd * 0.16, -0.11, 0], { seg: 12, shadow: false }));
+      wing.rotation.y = sd * 0.35;
+      g.add(wing);
+      g.userData['w' + sd] = wing;
+    }
+    g.position.set(x, 1.15 + (i % 2) * 0.18, -1.4);
+    return g;
+  }
+
+  function makeLadybird(x, i) {
+    const g = new THREE.Group();
+    const leaf = blob('#4fae5f', 0.34, 0.04, 0.26, [0, 0.30, 0], { seg: 14 });
+    const stalk = new THREE.Mesh(cyl(6), mat('#3f9c52', { rough: 1 }));
+    stalk.scale.set(0.03, 0.30, 0.03);
+    stalk.position.y = 0.15;
+    g.add(stalk, leaf);
+    const body = blob('#e2402f', 0.21, 0.16, 0.24, [0, 0.46, 0], { seg: 16 });
+    g.add(body, ball('#3f3550', 0.115, [0, 0.47, 0.19], { seg: 12 }));
+    for (const [sx, sz] of [[-0.095, 0.03], [0.095, -0.03], [-0.06, -0.11], [0.06, 0.11]]) {
+      g.add(ball('#3f3550', 0.042, [sx, 0.58, sz], { seg: 8, shadow: false }));
+    }
+    g.position.set(x, 0, -1.35);
+    return g;
+  }
+
+  function makeApple(x, i) {
+    const g = new THREE.Group();
+    g.add(ball('#e2402f', 0.155, [0, 0, 0], { seg: 16 }));
+    const stalk = new THREE.Mesh(cyl(6), mat('#6b4a2a'));
+    stalk.scale.set(0.018, 0.10, 0.018);
+    stalk.position.y = 0.19;
+    g.add(stalk, blob('#4fae5f', 0.09, 0.02, 0.055, [0.07, 0.21, 0], { seg: 10, shadow: false }));
+    g.position.set(x, 0.155, -1.45);
+    return g;
+  }
+
+  function makeFlower(x, i) {
+    const g = new THREE.Group();
+    const stem = new THREE.Mesh(cyl(6), mat('#3f9c52', { rough: 1 }));
+    stem.scale.set(0.035, 0.72, 0.035);
+    stem.position.y = 0.36;
+    stem.castShadow = true;
+    g.add(stem);
+    g.add(blob('#4fae5f', 0.11, 0.03, 0.06, [0.09, 0.30, 0], { seg: 10 }));
+    const head = new THREE.Group();
+    head.position.set(0, 0.80, 0.06);
+    for (let p = 0; p < 6; p++) {                    // petals stand up to camera
+      const a = (p / 6) * Math.PI * 2;
+      const pet = blob('#ff7fa8', 0.10, 0.15, 0.04,
+                       [Math.cos(a) * 0.16, Math.sin(a) * 0.16, 0], { seg: 12 });
+      pet.rotation.z = a - Math.PI / 2;
+      head.add(pet);
+    }
+    head.add(blob('#ffe98a', 0.10, 0.10, 0.055, [0, 0, 0.035], { seg: 12 }));
+    g.add(head);
+    g.position.set(x, 0, -1.35);
+    return g;
+  }
+
+  const FACTORY = { sunflower: makeSunflower, butterfly: makeButterfly,
+                    ladybird: makeLadybird, apple: makeApple, flower: makeFlower };
+  for (const [kind, make] of Object.entries(FACTORY)) {
+    world.props[kind] = [];
+    for (let n = 1; n <= 5; n++) {                    // one layout per count
+      const row = new THREE.Group();
+      for (let i = 0; i < n; i++) row.add(make(slot(i, n), i));
+      row.visible = false;
+      propRoot.add(row);
+      world.props[kind].push(row);
+    }
+  }
+  world.showProps = (kind, n) => {
+    for (const rows of Object.values(world.props)) rows.forEach(r => { r.visible = false; });
+    if (kind && n >= 1 && world.props[kind]) world.props[kind][n - 1].visible = true;
+  };
 
   // ---- lighting ----
   const hemi = new THREE.HemisphereLight('#cfeaff', '#6aa85c', 1.1);
@@ -260,8 +432,26 @@ export function buildWorld(scene, renderer, shadowSize = 1024) {
     field.visible = name === 'field';
     pond.visible = name === 'pond';
     tall.visible = name === 'grass';
+    garden.visible = name === 'garden';
   };
   world.tick = (t) => {
+    for (const [kind, rows] of Object.entries(world.props || {})) {
+      for (const row of rows) {
+        if (!row.visible) continue;
+        row.children.forEach((p, i) => {
+          if (kind === 'butterfly') {
+            p.position.y = (1.15 + (i % 2) * 0.18) + Math.sin(t * 1.9 + i) * 0.10;
+            const f = Math.sin(t * 13 + i) * 0.45;
+            if (p.userData['w-1']) p.userData['w-1'].rotation.y = -0.35 - f;
+            if (p.userData['w1']) p.userData['w1'].rotation.y = 0.35 + f;
+          } else if (kind === 'apple') {
+            p.rotation.z = Math.sin(t * 1.1 + i) * 0.05;
+          } else {
+            p.rotation.z = Math.sin(t * 1.1 + i * 0.7) * 0.035;
+          }
+        });
+      }
+    }
     world.clouds.forEach((c, i) => {
       c.position.x += 0.0016 * (1 + (i % 3) * 0.4);
       if (c.position.x > 42) c.position.x = -42;

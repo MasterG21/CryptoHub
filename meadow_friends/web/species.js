@@ -342,7 +342,81 @@ function lion(C) {
            ] };
 }
 
-const BUILDERS = { mouse, elephant, cow, duck, frog, lion };
+/* -------------------------------------------------------------------- bee --
+ * Bea hovers rather than stands, so she is built around a floating body with
+ * fast wings. `hover` lifts her off the ground; the rig does the rest.
+ */
+function bee(C) {
+  const g = new THREE.Group();
+  // Abdomen sits low and forward of the head so the stripes stay in view from
+  // the front - a bee seen head-on is otherwise just a yellow ball.
+  const body = blob(C.body, 0.225, 0.20, 0.235, [0, -0.15, -0.05]);
+  g.add(body);
+  for (let i = 0; i < 2; i++) {                       // two slim stripes
+    const band = new THREE.Mesh(torus(0.14), mat(C.inner, { rough: 0.6 }));
+    const r = 0.222 - i * 0.028;
+    band.scale.set(r, r * 0.92, r * 0.22);
+    band.position.set(0, -0.11 - i * 0.11, -0.05);
+    band.rotation.x = Math.PI / 2;
+    g.add(band);
+  }
+  const stinger = new THREE.Mesh(cone(10), mat(C.inner));
+  stinger.scale.set(0.05, 0.13, 0.05);
+  stinger.position.set(0, -0.30, -0.24);
+  stinger.rotation.x = -2.2;
+  g.add(stinger);
+
+  const head = new THREE.Group();
+  head.position.set(0, 0.10, 0.10);
+  g.add(head);
+  head.add(ball(C.body, 0.21, [0, 0, 0]));
+  head.add(blob(C.inner, 0.145, 0.095, 0.10, [0, 0.125, 0.10], { seg: 12, shadow: false }));
+  const eyes = [
+    makeEye(head, { x: -0.088, y: 0.03, z: 0.165, r: 0.066, skin: C.body }),
+    makeEye(head, { x: 0.088, y: 0.03, z: 0.165, r: 0.066, skin: C.body }),
+  ];
+  const mouth = makeMouth(head, { x: 0, y: -0.10, z: 0.172, w: 0.064, h: 0.055,
+                                  skin: C.body, lip: '#c98a1e' });
+  const antennae = [];
+  for (const sd of [-1, 1]) {
+    const a = new THREE.Group();
+    a.position.set(sd * 0.065, 0.15, 0.05);
+    const st = new THREE.Mesh(cyl(6), mat(C.inner));
+    st.scale.set(0.012, 0.16, 0.012);
+    st.position.y = 0.08;
+    a.add(st, ball(C.inner, 0.033, [0, 0.17, 0], { seg: 12 }));
+    a.rotation.z = sd * 0.42;
+    head.add(a); antennae.push(a);
+  }
+  const wings = [];
+  for (const sd of [-1, 1]) {                          // big visible wings
+    const w = new THREE.Group();
+    w.position.set(sd * 0.10, 0.06, -0.10);
+    const blade = new THREE.Mesh(sphere(14), new THREE.MeshPhongMaterial({
+      color: new THREE.Color('#eaf6ff'), transparent: true, opacity: 0.5,
+      shininess: 70, depthWrite: false }));
+    blade.scale.set(0.13, 0.30, 0.03);
+    blade.position.set(sd * 0.20, 0.20, 0);
+    blade.rotation.z = sd * 0.55;
+    w.add(blade);
+    g.add(w); wings.push(w);
+  }
+  for (const sd of [-1, 1]) {                          // little legs
+    g.add(blob(C.inner, 0.022, 0.09, 0.022, [sd * 0.13, -0.32, 0.02], { seg: 8 }));
+  }
+
+  return { group: g, head, body, eyes, mouth, armRest: 0,
+           bodyScale: body.scale.clone(), height: 0.62, headY: 0.12, headR: 0.275,
+           hover: 0.92,
+           wigglers: [
+             { node: wings[0], axis: 'z', base: 0, amp: 0.45, speed: 24, talk: 0 },
+             { node: wings[1], axis: 'z', base: 0, amp: -0.45, speed: 24, talk: 0 },
+             { node: antennae[0], axis: 'z', base: -0.42, amp: 0.10, speed: 3.2, talk: 0.08 },
+             { node: antennae[1], axis: 'z', base: 0.42, amp: -0.10, speed: 3.2, talk: -0.08 },
+           ] };
+}
+
+const BUILDERS = { mouse, elephant, cow, duck, frog, lion, bee };
 
 export function buildCharacter(key, spec, index) {
   const c = BUILDERS[spec.species](spec);
@@ -350,7 +424,7 @@ export function buildCharacter(key, spec, index) {
   c.seed = index * 2.7 + 1.3;
   c.root = new THREE.Group();
   c.root.add(c.group);
-  c.baseY = 0;
+  c.baseY = c.hover || 0;              // bees float; everyone else stands
   c.eyes = c.eyes || [];
   c.wigglers = c.wigglers || [];
   return c;

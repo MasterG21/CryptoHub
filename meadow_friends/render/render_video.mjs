@@ -24,9 +24,10 @@ const arg = (n, d) => { const i = process.argv.indexOf('--' + n); return i > 0 ?
 const FPS = +arg('fps', 30);
 const SCALE = +arg('scale', 1);
 const WORKERS = +arg('workers', 3);
-const QUALITY = arg('quality', 'mat=phong&aa=1&shadow=pcf&smap=1024');
+const EP = arg('ep', 'ep01');
+const QUALITY = arg('quality', 'mat=phong&aa=1&shadow=pcf&smap=1024') + '&ep=' + EP;
 const OUT = resolve(ROOT, arg('out', 'out/meadow-friends.mp4'));
-const AUDIO = resolve(ROOT, arg('audio', 'out/audio.wav'));
+const AUDIO = resolve(ROOT, arg('audio', EP === 'ep01' ? 'out/audio.wav' : `out/${EP}/audio.wav`));
 const TMP = resolve(ROOT, 'out/_segments');
 const W = Math.round(1920 * SCALE), H = Math.round(1080 * SCALE);
 

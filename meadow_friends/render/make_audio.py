@@ -139,7 +139,7 @@ def lipsync(x, fps):
 # ------------------------------------------------------------------- build --
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--script', default=os.path.join(ROOT, 'script.json'))
+    ap.add_argument('--script', default=os.path.join(ROOT, 'episodes', 'ep01.json'))
     ap.add_argument('--out', default=os.path.join(ROOT, 'out'))
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
@@ -163,6 +163,8 @@ def main():
             kind = beat['t']
             ev = {'scene': scene['id'], 'set': scene['set'], 'sky': scene.get('sky', 'day'),
                   'shot': beat.get('shot', 'wide'), 'kind': kind, 'start': round(t, 4)}
+            if beat.get('reveal'):
+                ev['reveal'] = True
 
             if kind == 'line':
                 char = cast[beat['who']]
@@ -258,6 +260,9 @@ def main():
     for ev in events:
         ev.pop('_audio', None)
     json.dump({'meta': script['meta'], 'cast': cast, 'duration': round(total, 3),
+               'scenes': [{'id': s['id'], 'set': s['set'], 'sky': s.get('sky', 'day'),
+                           'stage': s['stage'], 'count': s.get('count'),
+                           'prop': s.get('prop')} for s in script['scenes']],
                'events': events,
                'cues': [{'a': round(a, 3), 'b': round(b, 3), 'text': c} for a, b, c in cues]},
               open(os.path.join(args.out, 'timeline.json'), 'w'))
